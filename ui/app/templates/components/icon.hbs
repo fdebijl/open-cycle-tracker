@@ -1,0 +1,11 @@
+<div class="oct-icon-wrapper" ...attributes>
+  <div class="oct-icon" style={{this.iconStyle}}>
+    <MdIcon
+      @icon={{@icon}}
+      @size={{this.iconSize}}
+    />
+  </div>
+  {{#if (has-block)}}
+    <span class="{{if @heavy "text--heavy"}}">{{yield}}</span>
+  {{/if}}
+</div>
