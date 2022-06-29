@@ -1,0 +1,17 @@
+<nav class="oct-nav-bar {{if this.responsive.isDesktop "desktop"}}">
+  <LinkTo @route="tracking">
+    <Icon @icon="pencil-outline" @size="50">Tracking</Icon>
+  </LinkTo>
+  <LinkTo @route="calendar">
+    <Icon @icon="calendar-month" @size="50">Calendar</Icon>
+  </LinkTo>
+  <LinkTo @route="cycle" class="oct-nav-bar__priority">
+    <Icon @icon="reload" @size="60" @heavy={{true}}>Cycle</Icon>
+  </LinkTo>
+  <LinkTo @route="info">
+    <Icon @icon="account-outline" @size="50">My Info</Icon>
+  </LinkTo>
+  <LinkTo @route="settings">
+    <Icon @icon="cog-outline" @size="50">Settings</Icon>
+  </LinkTo>
+</nav>
