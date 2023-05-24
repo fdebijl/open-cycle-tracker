@@ -1,11 +1,10 @@
-import DS from 'ember-data';
+import Model, { attr } from '@ember-data/model';
+
 import Calendar from './calendar';
 import Cycle from './cycle';
 import Info from './info';
 
-export default class User extends DS.Model.extend({
-
-}) {
+export default class User extends Model {
   // attr
   name: string;
   // hasOne
@@ -18,7 +17,7 @@ export default class User extends DS.Model.extend({
   settings: object;
 }
 
-// DO NOT DELETE: this is how TypeScript knows how to look up your models.
+
 declare module 'ember-data/types/registries/model' {
   export default interface ModelRegistry {
     'user': User;

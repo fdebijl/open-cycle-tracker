@@ -1,1 +1,7 @@
+{{page-title "Cycle"}}
+
 <TopBar>Current Cycle</TopBar>
+
+<div class="oct-sub-page" {{child-proximity-scaler '.oct-day-marker'}}>
+  <Cycle::Circle @cycle={{this.cycle}}/>
+</div>

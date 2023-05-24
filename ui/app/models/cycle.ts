@@ -1,14 +1,14 @@
-import DS from 'ember-data';
+import Model, { attr } from '@ember-data/model';
+import Day from './day';
 
-export default class Cycle extends DS.Model.extend({
-
-}) {
-  duration: number;
+export default class Cycle extends Model {
+  @attr()
+  days: Day[];
 }
 
-// DO NOT DELETE: this is how TypeScript knows how to look up your models.
+
 declare module 'ember-data/types/registries/model' {
   export default interface ModelRegistry {
-    'cycle': Cycle;
+    'Cycle': Cycle;
   }
 }

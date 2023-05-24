@@ -1,0 +1,18 @@
+{
+  "extends": [
+    "@fdebijl",
+    "plugin:ember/recommended"
+  ],
+  "plugins": [
+    "ember"
+  ],
+  "env": {
+    "browser": true
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*-test.{js,ts}"],
+      "extends": ["plugin:qunit/recommended"]
+    }
+  ]
+}

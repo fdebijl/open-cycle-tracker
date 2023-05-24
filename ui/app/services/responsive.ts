@@ -1,3 +1,4 @@
+import Evented from '@ember/object/evented';
 import Service from '@ember/service';
 import { on } from '@ember-decorators/object';
 import { computed } from '@ember/object';
@@ -15,11 +16,10 @@ export const MIN_DESKTOP_HEIGHT = 720;
 export const MIN_LAYOUT_HEIGHT = 850;
 export const MIN_LARGE_HEIGHT = 960;
 
-export default class ResponsiveService extends Service.extend({
-  // anything which *must* be merged to prototype here
-}) {
+export default class ResponsiveService extends Service.extend(Evented) {
   width: number = 0;
   height: number = 0;
+  _boundResize: EventListenerOrEventListenerObject;
 
   @on('init')
   bindResize() {
@@ -58,13 +58,12 @@ export default class ResponsiveService extends Service.extend({
   onResize() {
     debounce(this, () => {
       if (!this.isDestroyed) {
-        this['trigger']('didResize');
+        this.trigger('didResize')
       }
     }, 100);
   }
 }
 
-// DO NOT DELETE: this is how TypeScript knows how to look up your services.
 declare module '@ember/service' {
   interface Registry {
     'responsive': ResponsiveService;

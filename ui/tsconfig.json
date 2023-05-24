@@ -80,7 +80,6 @@
   },
   "include": [
     "app/**/*",
-    "tests/**/*",
-    "types/**/*"
-  ]
+    "types/**/*",
+    "app/router.js" ]
 }
