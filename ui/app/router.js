@@ -7,9 +7,19 @@ export default class Router extends EmberRouter {
 }
 
 Router.map(function () {
-  this.route('calendar');
+  // Public Routes
+  this.route('login');
+  this.route('register');
+
+  // Authenticated Routes
   this.route('cycle');
   this.route('info');
   this.route('settings');
-  this.route('tracking');
+  this.route('calendar');
+
+  this.route('tracking', function() {
+    this.route('day', { path: '/days/:day_id' });
+  });
+
+  this.route('not-found', { path: '/*' });
 });

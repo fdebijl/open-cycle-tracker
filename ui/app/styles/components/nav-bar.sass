@@ -1,0 +1,28 @@
+nav.oct-nav-bar
+  position: relative
+  display: flex
+  justify-content: space-evenly
+  align-items: center
+  bottom: 0
+  width: 100vw
+  padding: 8px
+  background: #FFF
+  box-shadow: 0px -4px 8px rgba(0, 0, 0, 0.15)
+
+  > a
+    text-decoration: none
+
+  &.desktop
+    left: 0
+    height: 100vh
+    width: unset
+    flex-flow: column nowrap
+    justify-content: flex-start
+    box-shadow: 4px 0px 8px rgba(0, 0, 0, 0.15)
+
+    > *
+      padding: 6px
+
+    > .oct-nav-bar__priority
+      order: -1
+

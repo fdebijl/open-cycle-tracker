@@ -1,12 +1,10 @@
-import DS from 'ember-data';
+import Model, { attr } from '@ember-data/model';
 
-export default class Info extends DS.Model.extend({
-
-}) {
+export default class Info extends Model {
   duration: number;
 }
 
-// DO NOT DELETE: this is how TypeScript knows how to look up your models.
+
 declare module 'ember-data/types/registries/model' {
   export default interface ModelRegistry {
     'info': Info;

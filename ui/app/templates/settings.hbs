@@ -1,1 +1,19 @@
+{{page-title "Settings"}}
+
 <TopBar>Settings</TopBar>
+
+<div class="oct-sub-page oct-sub-page__top-align">
+  <h3>System</h3>
+  <LinkTo @route="settings">Account</LinkTo>
+  <LinkTo @route="settings">Notifications</LinkTo>
+  <LinkTo @route="settings">Server</LinkTo>
+  <LinkTo @route="settings">Share Cycle</LinkTo>
+  <LinkTo @route="settings">Passcode</LinkTo>
+
+  <h3>Customize</h3>
+  {{!-- SettingRow - Hide/Show Factor --}}
+  {{!-- SettingRow - Hide/Show Cycle Phases --}}
+  {{!-- SettingRow - Hide/Show Predictions --}}
+
+  <button type="button">Delete all Data</button>
+</div>

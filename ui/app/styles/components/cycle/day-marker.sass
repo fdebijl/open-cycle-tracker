@@ -1,0 +1,41 @@
+$ring-width: 4px
+
+.oct-day-marker
+  display: flex
+  justify-content: center
+  align-items: center
+  position: absolute
+  border-radius: 50%
+  font-size: 14px
+  width: 1em
+  height: 1em
+  color: #FFF
+  transform-origin: 50% 50%
+
+  > p
+    opacity: 0
+    transition: opacity 0.25s ease-in-out
+
+  &.childProximityScaler__scaled > p
+    opacity: 1
+
+  &__None
+    background: #D4CEEC
+    &.oct-day-marker__Today
+      border: $ring-width solid #8A7EBE
+
+  &__PMS
+    background: #FBC87B
+    &.oct-day-marker__Today
+      border: $ring-width solid #B88B48
+
+  &__Period
+    background: #E76666
+    &.oct-day-marker__Today
+      border: $ring-width solid #D14A4A
+
+  &__Fertile
+    background: #778CFA
+    &.oct-day-marker__Today
+      border: $ring-width solid #435BD4
+

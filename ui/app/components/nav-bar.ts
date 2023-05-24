@@ -6,4 +6,6 @@ type NavBarArgs = {};
 
 export default class NavBar extends Component<NavBarArgs> {
   @service responsive: ResponsiveService;
+
+  // Get the latest Day for this user and pass that along to the tracking page
 }

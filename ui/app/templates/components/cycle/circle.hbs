@@ -1,0 +1,10 @@
+<div class="oct-cycle-circle__wrapper">
+  <div class="oct-cycle-circle">
+    {{#each @cycle.days as |day|}}
+      <a href="#" {{on "click" (fn this.transitionToDay day)}} {{on "touchend" (fn this.transitionToDay day)}}>
+        <Cycle::DayMarker @day={{day}} style={{circle-style day @cycle.days.length this.radius}}/>
+      </a>
+    {{/each}}
+  </div>
+  <p class="oct-cycle-circle__countdown"><b>25 days</b> until next period</p>
+</div>
