@@ -3,8 +3,8 @@ import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import { inject as service } from '@ember/service';
 import RouterService from '@ember/routing/router-service';
-import ResponsiveService from 'open-cycle-tracker/services/responsive';
 
+import ResponsiveService from 'open-cycle-tracker/services/responsive';
 import Cycle from 'open-cycle-tracker/models/cycle';
 import Day from 'open-cycle-tracker/models/day';
 
@@ -21,6 +21,11 @@ export default class CycleCircle extends Component<CycleCircleArgs> {
 
   get radius() {
     return Math.min(this.width, this.height) / 3;
+  }
+
+  get daysToNextPeriod() {
+    // TODO: Implement
+    return '25 days';
   }
 
   constructor(owner: unknown, args: CycleCircleArgs) {
