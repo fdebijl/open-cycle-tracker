@@ -1,4 +1,9 @@
 <PowerCalendar class="oct-calendar" as |calendar|>
+  {{!-- Would like to have a border at the bottom of every day cell indicating the type of that day (i.e. ovulation, period, pms, etc.) --}}
   <calendar.Nav/>
-  <calendar.Days/>
+  <calendar.Days @startOfWeek="1" as |day|>
+    <LinkTo @route="tracking.date" @model={{day}} class="oct-calendar__day">
+      {{day.number}}
+    </LinkTo>
+  </calendar.Days>
 </PowerCalendar>
