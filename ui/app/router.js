@@ -19,6 +19,7 @@ Router.map(function () {
 
   this.route('tracking', function() {
     this.route('day', { path: '/days/:day_id' });
+    this.route('date', { path: '/dates/:date_id' });
   });
 
   this.route('not-found', { path: '/*' });
