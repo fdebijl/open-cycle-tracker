@@ -35,6 +35,9 @@ export default modifier(function childProximityScaler(element, [childSelector]: 
       child.style.width = `${widthScaleFactor}em`;
       child.style.height = `${heightScaleFactor}em`;
 
+      // Set the z-index of the child
+      child.style.zIndex = `${Math.round(scaleFactor * 100)}`;
+
       // Replace the 0.5em margin with a margin that is half the width and height of the child
       child.style.marginLeft = child.style.marginLeft.replace(/ [0-9\.]+em\)/gi, ` ${widthScaleFactor / 2}em)`);
       child.style.marginTop = child.style.marginTop.replace(/ [0-9\.]+em\)/gi, ` ${heightScaleFactor / 2}em)`);

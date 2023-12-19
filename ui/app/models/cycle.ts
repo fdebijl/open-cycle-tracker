@@ -1,9 +1,38 @@
-import Model, { attr } from '@ember-data/model';
-import Day from './day';
+import Model, { hasMany, type AsyncHasMany, belongsTo, type AsyncBelongsTo } from '@ember-data/model';
+import type Day from './day';
+import type User from './user';
 
 export default class Cycle extends Model {
-  @attr()
-  days: Day[];
+  @hasMany('day')
+  days: AsyncHasMany<Day>
+
+  @belongsTo('user')
+  user: AsyncBelongsTo<User>;
+
+  get daysUntilNextPeriod() {
+    const today = new Date();
+    const lastDay = this.days.lastObject;
+    if (lastDay) {
+      const daysUntilLastDay = Math.ceil((lastDay.date.getTime() - today.getTime()) / (1000 * 3600 * 24));
+      return daysUntilLastDay;
+    } else {
+      return 0;
+    }
+  }
+
+  get daysUntilNextPeriodLabel() {
+    const daysUntilNextPeriod = this.daysUntilNextPeriod;
+
+    if (daysUntilNextPeriod < 0) {
+      return `Your period is ${daysUntilNextPeriod} days late`;
+    } else if (daysUntilNextPeriod == 0) {
+      return 'Your period may start today';
+    } else if (daysUntilNextPeriod == 1) {
+      return 'Your period may start tomorrow';
+    } else {
+      return `${daysUntilNextPeriod} days until next period`;
+    }
+  }
 }
 
 

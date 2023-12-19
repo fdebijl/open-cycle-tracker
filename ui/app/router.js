@@ -12,7 +12,10 @@ Router.map(function () {
   this.route('register');
 
   // Authenticated Routes
-  this.route('cycle');
+  this.route('cycle', function() {
+    this.route('current');
+    this.route('show', { path: '/:cycle_id' });
+  });
   this.route('info');
   this.route('settings');
   this.route('calendar');

@@ -1,20 +1,19 @@
-import Model, { attr } from '@ember-data/model';
+import Model, { attr, hasMany, type AsyncHasMany } from '@ember-data/model';
 
-import Calendar from './calendar';
-import Cycle from './cycle';
-import Info from './info';
+import type Cycle from './cycle';
 
 export default class User extends Model {
-  // attr
+  @attr('string')
   name: string;
-  // hasOne
-  info: Info;
-  // hasMany
-  cycles: Cycle[];
-  // hasOne
-  calendar: Calendar;
-  // hasOne
-  settings: object;
+
+  @attr()
+  info: Record<string, unknown>
+
+  @attr()
+  settings: Record<string, unknown>
+
+  @hasMany('cycle')
+  cycles: AsyncHasMany<Cycle>
 }
 
 
