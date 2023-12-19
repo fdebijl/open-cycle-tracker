@@ -1,17 +1,22 @@
-import Model, { attr } from '@ember-data/model';
+import Model, { attr, belongsTo, type AsyncBelongsTo } from '@ember-data/model';
+import type Cycle from './cycle';
 
-enum CycleDayType {
-  None,
-  PMS,
-  Period,
-  Fertile
-}
+type CycleDayType = 'none' | 'period' | 'fertile' | 'ovulation' | 'pms';
 
 export default class Day extends Model {
+  @attr('date')
   date: Date;
+
+  @attr('number')
   order: number;
-  type: CycleDayType;
-  // Factors
+
+  @attr('string')
+  dayType: CycleDayType;
+
+  @belongsTo('cycle')
+  cycle: AsyncBelongsTo<Cycle>;
+
+  // TODO: Factors
 
   get isToday() {
     const today = new Date()

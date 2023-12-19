@@ -1,6 +1,23 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Authentication
+  devise_for :users, path: '', path_names: {
+    sign_in: 'login',
+    sign_out: 'logout',
+    registration: 'signup'
+  },
+  controllers: {
+    sessions: 'users/sessions',
+    registrations: 'users/registrations'
+  }
 
-  # Defines the root path route ("/")
-  # root "articles#index"
+  # Resources
+  [:cycles, :days].each do |resource|
+    resources resource do
+      get :filter, on: :collection, path: '', constraints: ->(request) { request.params.key? :filter }
+    end
+  end
+
+  # Might not be needed
+  # root to: redirect { Rails.application.config.app[:ui_url] }
 end
+

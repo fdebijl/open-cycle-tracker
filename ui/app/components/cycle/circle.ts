@@ -5,8 +5,8 @@ import { inject as service } from '@ember/service';
 import RouterService from '@ember/routing/router-service';
 
 import ResponsiveService from 'open-cycle-tracker/services/responsive';
-import Cycle from 'open-cycle-tracker/models/cycle';
-import Day from 'open-cycle-tracker/models/day';
+import type Cycle from 'open-cycle-tracker/models/cycle';
+import type Day from 'open-cycle-tracker/models/day';
 
 type CycleCircleArgs = {
   cycle: Cycle;
@@ -24,8 +24,7 @@ export default class CycleCircle extends Component<CycleCircleArgs> {
   }
 
   get daysToNextPeriod() {
-    // TODO: Implement
-    return '25 days';
+    return this.args.cycle.daysUntilNextPeriodLabel;
   }
 
   constructor(owner: unknown, args: CycleCircleArgs) {
@@ -36,6 +35,8 @@ export default class CycleCircle extends Component<CycleCircleArgs> {
 
   willDestroy() {
     this.responsive.off('didResize', this.handleResize);
+
+    super.willDestroy();
   }
 
   handleResize = () => {

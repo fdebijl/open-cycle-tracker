@@ -25,9 +25,17 @@
   "devDependencies": {
     "@ember/optional-features": "2.0.0",
     "@ember/test-helpers": "2.7.0",
+    "@fdebijl/eslint-config": "1.3.0",
     "@glimmer/component": "1.1.2",
     "@glimmer/tracking": "1.1.2",
     "@mdi/svg": "6.8.96",
+    "@types/ember-data": "4.0.1",
+    "@types/ember-data__adapter": "4.0.0",
+    "@types/ember-data__model": "4.0.0",
+    "@types/ember-data__serializer": "4.0.0",
+    "@types/ember-data__store": "4.0.0",
+    "@types/ember-qunit": "5.0.0",
+    "@types/ember-resolver": "5.0.11",
     "@types/ember__application": "4.0.0",
     "@types/ember__array": "4.0.1",
     "@types/ember__component": "4.0.8",
@@ -45,16 +53,11 @@
     "@types/ember__test": "4.0.0",
     "@types/ember__test-helpers": "2.6.1",
     "@types/ember__utils": "4.0.0",
-    "@types/ember-data": "4.0.1",
-    "@types/ember-data__adapter": "4.0.0",
-    "@types/ember-data__model": "4.0.0",
-    "@types/ember-data__serializer": "4.0.0",
-    "@types/ember-data__store": "4.0.0",
-    "@types/ember-qunit": "5.0.0",
-    "@types/ember-resolver": "5.0.11",
     "@types/htmlbars-inline-precompile": "3.0.0",
     "@types/qunit": "2.19.1",
     "@types/rsvp": "4.0.4",
+    "@typescript-eslint/eslint-plugin": "6.15.0",
+    "@typescript-eslint/parser": "6.15.0",
     "babel-eslint": "10.1.0",
     "broccoli-asset-rev": "3.0.0",
     "ember-auto-import": "2.4.1",
@@ -97,12 +100,13 @@
     "webpack": "5.72.1"
   },
   "engines": {
-    "node": ">= 16"
+    "node": ">= 20"
   },
   "ember": {
     "edition": "octane"
   },
   "dependencies": {
-    "@types/ember__owner": "4.0.3"
+    "@types/ember__owner": "4.0.3",
+    "ember-inflector": "^4.0.2"
   }
 }
