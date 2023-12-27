@@ -77,6 +77,7 @@ GEM
       activerecord (>= 3.2, < 8.0)
       rake (>= 10.4, < 14.0)
     ast (2.4.2)
+    awesome_print (1.9.2)
     bcrypt (3.1.20)
     bigdecimal (3.1.5)
     bindex (0.8.1)
@@ -147,8 +148,6 @@ GEM
       activesupport (>= 5.0.0)
     json (2.7.1)
     jsonapi-renderer (0.2.2)
-    jsonapi-serializer (2.2.0)
-      activesupport (>= 4.2)
     jwt (2.7.1)
     language_server-protocol (3.17.0.3)
     launchy (2.5.2)
@@ -213,6 +212,8 @@ GEM
     public_suffix (5.0.4)
     puma (5.6.5)
       nio4r (~> 2.0)
+    pundit (2.3.1)
+      activesupport (>= 3.0.0)
     racc (1.6.2)
     rack (2.2.7)
     rack-cors (2.0.1)
@@ -340,6 +341,7 @@ PLATFORMS
 DEPENDENCIES
   active_model_serializers
   annotate
+  awesome_print (~> 1.9)
   bcrypt (~> 3.1.7)
   bootsnap
   byebug
@@ -351,7 +353,6 @@ DEPENDENCIES
   guard-rspec
   guard-rubocop
   jbuilder
-  jsonapi-serializer (~> 2.2)
   letter_opener
   oj
   pg (~> 1.1)
@@ -361,6 +362,7 @@ DEPENDENCIES
   pry-rescue
   pry-stack_explorer
   puma (~> 5.0)
+  pundit (~> 2.3)
   rack-cors
   rack-mini-profiler
   rails (~> 7.0.4, >= 7.0.4.3)

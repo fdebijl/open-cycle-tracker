@@ -1,0 +1,19 @@
+<div class="oct-form">
+  <form action="#" {{on "submit" this.login}}>
+    <Field
+      @identifier="email"
+      @label="Email"
+      @type="email"
+      @value={{this.username}}
+    />
+
+    <Field
+      @identifier="password"
+      @label="Password"
+      @type="password"
+      @value={{this.password}}
+    />
+
+    <button type="submit">Login</button>
+  </form>
+</div>

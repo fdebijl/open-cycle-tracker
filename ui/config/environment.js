@@ -1,7 +1,16 @@
 'use strict';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config();
+
+const defaults = {
+  UI_URL: 'http://localhost:4200',
+  API_URL: 'http://localhost:3000',
+}
+
+// When adding new env vars, make sure to also adjust app/config/environment.d.ts
 module.exports = function (environment) {
-  let ENV = {
+  const ENV = {
     modulePrefix: 'open-cycle-tracker',
     environment,
     rootURL: '/',
@@ -21,6 +30,9 @@ module.exports = function (environment) {
       // Here you can pass flags/options to your application instance
       // when it is created
     },
+
+    UI_URL: process.env.UI_URL || defaults.UI_URL,
+    API_URL: process.env.API_URL || defaults.API_URL
   };
 
   if (environment === 'development') {

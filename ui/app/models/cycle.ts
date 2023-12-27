@@ -20,6 +20,7 @@ export default class Cycle extends Model {
     }
   }
 
+  // Move this to i18n or component
   get daysUntilNextPeriodLabel() {
     const daysUntilNextPeriod = this.daysUntilNextPeriod;
 
@@ -31,6 +32,21 @@ export default class Cycle extends Model {
       return 'Your period may start tomorrow';
     } else {
       return `${daysUntilNextPeriod} days until next period`;
+    }
+  }
+
+  async populateDays(count = 28): Promise<void> {
+    const today = new Date();
+
+    for (let i = 0; i < count; i++) {
+      const day = this.store.createRecord('day', {
+        date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + i),
+        cycle: this,
+        order: i + 1,
+        dayType: 'none'
+      });
+
+      await day.save();
     }
   }
 }

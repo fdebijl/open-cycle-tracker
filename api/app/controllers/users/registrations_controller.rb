@@ -1,6 +1,8 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   include RackSessionsFix
 
+  skip_after_action :verify_authorized
+
   respond_to :json
 
   private
