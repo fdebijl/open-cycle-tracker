@@ -8,8 +8,11 @@ export default class Router extends EmberRouter {
 
 Router.map(function () {
   // Public Routes
-  this.route('login');
-  this.route('register');
+  this.route('auth', function() {
+    this.route('login');
+    this.route('logout');
+    this.route('register');
+  });
 
   // Authenticated Routes
   this.route('cycle', function() {

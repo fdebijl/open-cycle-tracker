@@ -9,20 +9,22 @@
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  cycle_id   :uuid             not null
+#  user_id    :uuid             not null
 #
 # Indexes
 #
 #  index_days_on_cycle_id  (cycle_id)
 #  index_days_on_date      (date) UNIQUE
+#  index_days_on_user_id   (user_id)
 #
 # Foreign Keys
 #
 #  fk_rails_...  (cycle_id => cycles.id)
+#  fk_rails_...  (user_id => users.id)
 #
 class Day < ApplicationRecord
+  belongs_to :user
   belongs_to :cycle
-
-  delegate :user, to: :cycle
 
   def is_today?
     today = Date.today

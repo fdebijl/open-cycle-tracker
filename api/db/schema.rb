@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_12_19_181650) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_27_004136) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -29,8 +29,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_19_181650) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "cycle_id", null: false
+    t.uuid "user_id", null: false
     t.index ["cycle_id"], name: "index_days_on_cycle_id"
     t.index ["date"], name: "index_days_on_date", unique: true
+    t.index ["user_id"], name: "index_days_on_user_id"
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -52,4 +54,5 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_19_181650) do
 
   add_foreign_key "cycles", "users"
   add_foreign_key "days", "cycles"
+  add_foreign_key "days", "users"
 end

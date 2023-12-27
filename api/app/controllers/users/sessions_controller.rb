@@ -1,6 +1,8 @@
 class Users::SessionsController < Devise::SessionsController
   include RackSessionsFix
 
+  skip_after_action :verify_authorized
+
   respond_to :json
 
   private
@@ -9,7 +11,7 @@ class Users::SessionsController < Devise::SessionsController
     render json: {
       status: {
         code: 200, message: 'Logged in successfully.',
-        data: { user: UserSerializer.new(current_user).serializable_hash[:data][:attributes] }
+        data: { user: ActiveModelSerializers::SerializableResource.new(current_user).as_json[:data] }
       }
     }, status: :ok
   end

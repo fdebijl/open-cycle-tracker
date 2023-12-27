@@ -1,0 +1,22 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  style="margin:auto;background:#fff;display:block;"
+  width="100px" height="100px" viewBox="0 0 100 100"
+  preserveAspectRatio="xMidYMid"
+>
+  {{#each (range 1 this.dotCount true) as |dot|}}
+    <g transform="rotate({{mult (div 360 this.dotCount) dot}} 50 50)">
+      <rect x="45" y="4" rx="4" ry="4" width="8" height="8" fill={{or (object-at dot this.colors) "#D4CEEC"}}>
+        <animate
+          attributeName="opacity"
+          values="0.8;-0.2"
+          keyTimes="0;1"
+          dur={{add this.duration this.pause}}
+          begin="-{{sub this.duration (mult (div this.duration this.dotCount) dot)}}s"
+          repeatCount="indefinite">
+        </animate>
+      </rect>
+    </g>
+  {{/each}}
+</svg>
