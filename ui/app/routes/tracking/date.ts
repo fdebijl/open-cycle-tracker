@@ -1,13 +1,17 @@
 import Route from '@ember/routing/route';
+import RouterService from '@ember/routing/router-service';
+import { service } from '@ember/service';
+import DS from 'ember-data';
 
-export default class TrackingDateRoute extends Route.extend({
-  // anything which *must* be merged to prototype here
-}) {
+export default class TrackingDateRoute extends Route {
+  @service router: RouterService;
+  @service store: DS.Store;
+
   redirect(params: { date_id: string }) {
-    return this.store.queryRecord('day', {
+    const day = this.store.queryRecord('day', {
       date: params.date_id
     });
 
-    // Redirect to tracking.days with retrieved day
+    this.router.transitionTo('tracking.day', day);
   }
 }

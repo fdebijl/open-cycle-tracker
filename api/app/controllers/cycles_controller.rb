@@ -25,7 +25,6 @@ class CyclesController < ApplicationController
   def create
     @cycle = resource_class.new create_params
     authorize @cycle
-    @cycle.save!
 
     if @cycle.save
       render json: @cycle, status: :created, location: @cycle

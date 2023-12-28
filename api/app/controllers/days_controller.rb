@@ -23,11 +23,6 @@ class DaysController < ApplicationController
   def create
     @day = resource_class.new create_params
 
-    puts "Creating day with params"
-    puts create_params
-
-    puts @day.inspect
-
     if @day.save
       authorize @day
       render json: @day, status: :created, location: @day

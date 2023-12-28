@@ -8,7 +8,6 @@ gem "pg", "~> 1.1"
 gem "oj"
 gem 'active_model_serializers'
 gem "puma", "~> 5.0"
-gem "jbuilder"
 gem "redis", "~> 4.0"
 gem "bcrypt", "~> 3.1.7"
 gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]

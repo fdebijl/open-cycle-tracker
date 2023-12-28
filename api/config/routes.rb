@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :category_levels
   # Authentication
   devise_for :users, path: '', path_names: {
     sign_in: 'login',
@@ -11,7 +12,7 @@ Rails.application.routes.draw do
   }
 
   # Resources
-  [:cycles, :days].each do |resource|
+  [:cycles, :days, :categories, :factors].each do |resource|
     resources resource do
       get :filter, on: :collection, path: '', constraints: ->(request) { request.params.key? :filter }
     end

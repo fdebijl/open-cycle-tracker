@@ -26,6 +26,10 @@ class Day < ApplicationRecord
   belongs_to :user
   belongs_to :cycle
 
+  validates :day_type, inclusion: { in: %w[none period fertile ovulation pms] }
+
+  has_many :factors, dependent: :destroy
+
   def is_today?
     today = Date.today
     self.date.day == today.day &&

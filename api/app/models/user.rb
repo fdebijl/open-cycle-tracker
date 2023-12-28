@@ -3,6 +3,7 @@
 # Table name: users
 #
 #  id                     :uuid             not null, primary key
+#  admin                  :boolean          default(FALSE)
 #  email                  :string           default(""), not null
 #  encrypted_password     :string           default(""), not null
 #  info                   :json
@@ -29,7 +30,11 @@ class User < ApplicationRecord
   :jwt_authenticatable, jwt_revocation_strategy: self
 
   has_many :cycles, dependent: :destroy
+  has_many :categories, dependent: :destroy
 
-  # validates :email, presence: true, uniqueness: true
-  # validates :password, presence: true
+  validates :email, presence: true, uniqueness: true
+
+  def admin?
+    self.admin
+  end
 end

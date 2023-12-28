@@ -1,6 +1,6 @@
-class DayPolicy < ApplicationPolicy
+class CategoryLevelPolicy < ApplicationPolicy
   def permitted_attributes
-    super + [:order, :date, :cycle, :'day-type']
+    super + [:icon, :name]
   end
 
   def permitted_attributes_for_filter
