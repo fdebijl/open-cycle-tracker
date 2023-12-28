@@ -1,4 +1,5 @@
 import Model, { hasMany, type AsyncHasMany, belongsTo, type AsyncBelongsTo } from '@ember-data/model';
+
 import type Day from './day';
 import type User from './user';
 

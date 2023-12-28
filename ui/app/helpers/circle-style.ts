@@ -1,7 +1,7 @@
 import { helper } from '@ember/component/helper';
 import { htmlSafe } from '@ember/template';
 
-import Day from 'open-cycle-tracker/models/day';
+import type Day from 'open-cycle-tracker/models/day';
 
 export function circleStyle([ day, dayCount, radius = 200 ]: [ day: Day, dayCount: number, radius: number ]) {
   const angle = ((2 * Math.PI) / dayCount) * (day.order + 2) - 90

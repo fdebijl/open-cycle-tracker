@@ -53,7 +53,7 @@ class ApplicationPolicy
   end
 
   def permitted_attributes
-    [:id]
+    []
   end
 
   def permitted_attributes_for_filter

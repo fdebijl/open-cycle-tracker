@@ -10,10 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_12_27_004136) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_28_001016) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
+
+  create_table "categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.string "icon"
+    t.string "color"
+    t.boolean "global", default: false
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_categories_on_user_id"
+  end
+
+  create_table "category_levels", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.string "icon"
+    t.uuid "category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_category_levels_on_category_id"
+  end
 
   create_table "cycles", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
@@ -35,6 +55,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_27_004136) do
     t.index ["user_id"], name: "index_days_on_user_id"
   end
 
+  create_table "factors", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "notes"
+    t.uuid "day_id", null: false
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "category_level_id", null: false
+    t.index ["category_level_id"], name: "index_factors_on_category_level_id"
+    t.index ["day_id"], name: "index_factors_on_day_id"
+    t.index ["user_id"], name: "index_factors_on_user_id"
+  end
+
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.json "info"
@@ -47,12 +79,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_27_004136) do
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
     t.string "jti", null: false
+    t.boolean "admin", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "categories", "users"
+  add_foreign_key "category_levels", "categories"
   add_foreign_key "cycles", "users"
   add_foreign_key "days", "cycles"
   add_foreign_key "days", "users"
+  add_foreign_key "factors", "category_levels"
+  add_foreign_key "factors", "days"
+  add_foreign_key "factors", "users"
 end

@@ -8,7 +8,9 @@ user = User.create!(
   },
   settings: {
     # TBD
-  }
+  },
+  email: 'test@example.com',
+  password: 'password'
 )
 
 # Cycle
@@ -29,9 +31,18 @@ days = (1..28).map do |i|
   end
 
   Day.create!(
+    user: user,
     date: Date.today - (28 - i).days,
     day_type: day_type,
     order: i,
     cycle: cycle
   )
 end
+
+# Categories
+categories = [
+  Category.create!(name: 'Bleeding', color: '#ff0000', global: true, user: user),
+  Category.create!(name: 'Pain', color: '#ff0000', global: true, user: user),
+  Category.create!(name: 'Mood', color: '#ff0000', global: true, user: user),
+  Category.create!(name: 'Energy', color: '#ff0000', global: true, user: user),
+]

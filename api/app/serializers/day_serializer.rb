@@ -26,4 +26,6 @@ class DaySerializer < ActiveModel::Serializer
   attributes :id, :date, :day_type, :order
 
   belongs_to :cycle
+
+  has_many :factors
 end

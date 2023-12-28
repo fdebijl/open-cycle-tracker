@@ -1,5 +1,6 @@
-import Model, { attr, belongsTo, type AsyncBelongsTo } from '@ember-data/model';
+import Model, { attr, belongsTo, type AsyncBelongsTo, hasMany, type AsyncHasMany } from '@ember-data/model';
 import type Cycle from './cycle';
+import type Factor from './factor';
 
 type CycleDayType = 'none' | 'period' | 'fertile' | 'ovulation' | 'pms';
 
@@ -16,7 +17,8 @@ export default class Day extends Model {
   @belongsTo('cycle')
   cycle: AsyncBelongsTo<Cycle>;
 
-  // TODO: Factors
+  @hasMany('factor')
+  factors: AsyncHasMany<Factor>;
 
   get isToday() {
     const today = new Date()
@@ -25,7 +27,6 @@ export default class Day extends Model {
            this.date.getFullYear() == today.getFullYear()
   }
 }
-
 
 declare module 'ember-data/types/registries/model' {
   export default interface ModelRegistry {
