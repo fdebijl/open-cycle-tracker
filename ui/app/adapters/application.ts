@@ -18,7 +18,7 @@ export default class ApplicationAdapter extends JSONAPIAdapter {
 
   get headers() {
     const headers: Record<string, unknown> = {};
-    const token = this.session.authToken;
+    const token = this.session.data.authenticated.token;
 
     if (token) {
       headers['Authorization'] = token;
@@ -29,7 +29,7 @@ export default class ApplicationAdapter extends JSONAPIAdapter {
 
   handleResponse(status: number, headers: Headers, payload: {}, requestData: {}) {
     if (status === 401) {
-      this.session.logout();
+      this.session.invalidate();
     }
 
     return super.handleResponse(status, headers, payload, requestData);
