@@ -4,6 +4,7 @@ import { service } from '@ember/service';
 import type RouterService from '@ember/routing/router-service';
 import type SessionService from 'open-cycle-tracker/services/session';
 
+// TODO: Rewrite for ember-simple-auth
 export default class AuthRegister extends Controller {
   @service session: SessionService;
   @service router: RouterService;

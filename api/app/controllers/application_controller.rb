@@ -20,10 +20,10 @@ class ApplicationController < ActionController::API
     policy = policy_class ? policy_class.new(current_user, record) : policy(record)
 
     method_name = if policy.respond_to?("permitted_attributes_for_#{action}")
-      "permitted_attributes_for_#{action}"
-    else
-      'permitted_attributes'
-    end
+                    "permitted_attributes_for_#{action}"
+                  else
+                    'permitted_attributes'
+                  end
 
     if action.to_sym == :filter
       transform(params.require(:filter).permit(*policy.public_send(method_name)))

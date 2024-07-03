@@ -7,15 +7,14 @@ export default class User extends Model {
   name: string;
 
   @attr()
-  info: Record<string, unknown>
+  info: Record<string, unknown>;
 
   @attr()
-  settings: Record<string, unknown>
+  settings: Record<string, unknown>;
 
   @hasMany('cycle')
   cycles: AsyncHasMany<Cycle>
 }
-
 
 declare module 'ember-data/types/registries/model' {
   export default interface ModelRegistry {

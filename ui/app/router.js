@@ -15,18 +15,22 @@ Router.map(function () {
   });
 
   // Authenticated Routes
-  this.route('cycle', function() {
-    this.route('current');
-    this.route('show', { path: '/:cycle_id' });
-  });
-  this.route('info');
-  this.route('settings');
-  this.route('calendar');
+  this.route('authenticated', { path: '' }, function() {
+    this.route('index', { path: '/', resetNamespace: true });
+    this.route('cycle', { resetNamespace: true}, function() {
+      this.route('current');
+      this.route('show', { path: '/:cycle_id' });
+    });
+    this.route('info', { resetNamespace: true});
+    this.route('settings', { resetNamespace: true});
+    this.route('calendar', { resetNamespace: true});
 
-  this.route('tracking', function() {
-    this.route('day', { path: '/days/:day_id' });
-    this.route('date', { path: '/dates/:date_id' });
+    this.route('tracking', { resetNamespace: true}, function() {
+      this.route('day', { path: '/days/:day_id' });
+      this.route('date', { path: '/dates/:date_id' });
+    });
   });
 
+  // TODO: Add templates for this route
   this.route('not-found', { path: '/*' });
 });

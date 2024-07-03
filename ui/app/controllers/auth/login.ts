@@ -4,7 +4,6 @@ import { service } from '@ember/service';
 import type SessionService from 'open-cycle-tracker/services/session';
 import type RouterService from '@ember/routing/router-service';
 
-
 export default class AuthLogin extends Controller {
   @service session: SessionService;
   @service router: RouterService;
@@ -26,9 +25,10 @@ export default class AuthLogin extends Controller {
     }
 
     try {
-      await this.session.login(this.username, this.password);
+      await this.session.authenticate(this.username, this.password);
       this.router.transitionTo('cycle.current');
     } catch (e) {
+      // TODO: Show a more user-friendly error message and handle bad credentials
       alert(e);
     }
   }
