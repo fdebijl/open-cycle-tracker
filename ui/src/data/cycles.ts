@@ -22,6 +22,13 @@ export function cycleDayNumber(date: Date, onset: Date): number {
   return differenceInCalendarDays(date, onset) + 1;
 }
 
+/** Pair each cycle with its derived onset (from the days that belong to it). The
+ * bridge from `useCycles()` + `useDays()` to the onset list that `cycleForDate`
+ * and the prediction math consume. */
+export function cycleOnsets(cycles: { id: string }[], days: Day[]): { id: string; onset: Date | null }[] {
+  return cycles.map((c) => ({ id: c.id, onset: cycleOnset(days.filter((d) => d.cycleId === c.id)) }));
+}
+
 /**
  * Which cycle a (possibly new) day on `date` belongs to: the latest cycle whose
  * onset is on or before that date. Falls back to the current cycle for dates

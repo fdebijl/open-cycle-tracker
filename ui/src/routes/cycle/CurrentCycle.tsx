@@ -5,7 +5,8 @@ import { CycleCircle } from '@/components/cycle/CycleCircle';
 import { CycleSetupForm } from '@/components/cycle/CycleSetupForm';
 import type { CycleSetupValues } from '@/components/cycle/CycleSetupForm';
 import { useCycles, useDays, useLogDay, useStartCycle, useUpdateSettings, useUserSettings } from '@/data/hooks';
-import { cycleOnset } from '@/data/cycles';
+import { cycleOnset, cycleOnsets } from '@/data/cycles';
+import { cycleStats, predictFertileWindow } from '@/data/prediction';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import styles from './CurrentCycle.module.scss';
 
@@ -63,8 +64,17 @@ export function CurrentCycle() {
     );
   }
 
-  const days = (daysQuery.data ?? []).filter((d) => d.cycleId === current.id);
+  const allDays = daysQuery.data ?? [];
+  const days = allDays.filter((d) => d.cycleId === current.id);
   const cycleStart = cycleOnset(days);
+
+  // Learn the average across every cycle's onset, then forecast off the current
+  // onset. Falls back to the configured average until enough history exists.
+  const onsets = cycleOnsets(cyclesQuery.data ?? [], allDays)
+    .map((c) => c.onset)
+    .filter((o): o is Date => o != null);
+  const stats = cycleStats(onsets, averageCycleLength);
+  const fertile = predictFertileWindow(cycleStart, stats);
 
   const onLogDate = async (date: Date) => {
     const day = await logDay.mutateAsync({ date, cycleId: current.id });
@@ -81,7 +91,8 @@ export function CurrentCycle() {
       <CycleCircle
         days={days}
         cycleStart={cycleStart}
-        averageCycleLength={averageCycleLength}
+        stats={stats}
+        fertile={fertile}
         includeFuture
         onSelectDay={(day) => navigate(`/days/${day.id}`)}
         onLogDate={onLogDate}

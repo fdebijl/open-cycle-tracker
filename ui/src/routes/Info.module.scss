@@ -34,6 +34,16 @@
   color: var(--oct-muted);
 }
 
+.forecast {
+  margin: 0 0 20px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--oct-text);
+  background: rgba(119, 140, 250, 0.12);
+  border: 1px solid #778cfa;
+  border-radius: var(--oct-radius);
+}
+
 .subhead {
   font-size: 15px;
   margin: 0 0 8px;

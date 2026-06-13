@@ -70,6 +70,25 @@
   outline-offset: -2px;
 }
 
+/* Predicted (not logged) cells: a dashed, translucent tint in the matching
+ * color so a forecast reads differently from a recorded day. */
+.forecast {
+  border-style: dashed;
+
+  &[data-forecast='period'] {
+    border-color: #e76666;
+    background: rgba(231, 102, 102, 0.16);
+  }
+  &[data-forecast='fertile'] {
+    border-color: #778cfa;
+    background: rgba(119, 140, 250, 0.16);
+  }
+  &[data-forecast='ovulation'] {
+    border-color: #4f63d8;
+    background: rgba(79, 99, 216, 0.22);
+  }
+}
+
 .tracked {
   cursor: pointer;
   color: #fff;

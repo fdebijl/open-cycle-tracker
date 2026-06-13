@@ -5,18 +5,22 @@ import styles from './DayMarker.module.scss';
 
 /** A single slot dot positioned around the cycle circle. A logged `day` is
  * colored by its type; an unlogged slot renders empty (tappable to log that
- * date). An in-place ring marks today. The day number fades in when the marker
- * is scaled up by the proximity scaler. */
+ * date). An unlogged future slot may carry a `forecast` (predicted fertile /
+ * ovulation), shown as a faint hint distinct from a logged day. An in-place ring
+ * marks today. The day number fades in when the marker is scaled up by the
+ * proximity scaler. */
 export function DayMarker({
   day,
   date,
   dayNumber,
+  forecast,
   style,
   onSelect,
 }: {
   day?: Day;
   date: Date;
   dayNumber: number;
+  forecast?: 'fertile' | 'ovulation';
   style?: CSSProperties;
   onSelect?: () => void;
 }) {
@@ -25,6 +29,7 @@ export function DayMarker({
     <div
       data-day-marker
       data-daytype={day?.dayType ?? 'none'}
+      data-forecast={!day && forecast ? forecast : undefined}
       data-today={today ? '1' : undefined}
       data-empty={day ? undefined : '1'}
       data-scaled="0"

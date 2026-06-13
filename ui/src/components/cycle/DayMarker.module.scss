@@ -20,6 +20,19 @@
     opacity: 0.45;
   }
 
+  /* Predicted (not logged) fertile/ovulation slots: tint with the matching
+   * color but keep a dashed outline so they read as a forecast, not a record. */
+  &[data-forecast='fertile'] {
+    background: #778cfa;
+    border: 2px dashed #fff;
+    opacity: 0.6;
+  }
+  &[data-forecast='ovulation'] {
+    background: #4f63d8;
+    border: 2px dashed #fff;
+    opacity: 0.7;
+  }
+
   /* dayType → background, plus a darker ring when it's today. */
   &[data-daytype='none'] {
     background: #d4ceec;

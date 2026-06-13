@@ -6,15 +6,19 @@ import {
   endOfMonth,
   endOfWeek,
   format,
+  isAfter,
   isSameMonth,
   isToday,
+  isWithinInterval,
   startOfMonth,
   startOfWeek,
   subMonths,
 } from 'date-fns';
 import { Spinner } from '@/components/Spinner';
-import { useCycles, useDays, useLogDay } from '@/data/hooks';
-import { cycleForDate, cycleOnset } from '@/data/cycles';
+import { useCycles, useDays, useLogDay, useUserSettings } from '@/data/hooks';
+import { cycleForDate, cycleOnsets } from '@/data/cycles';
+import { cycleStats, forecastDayType, predictFertileWindow, predictNextPeriod } from '@/data/prediction';
+import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import styles from './Calendar.module.scss';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -24,6 +28,7 @@ const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 export function Calendar() {
   const daysQuery = useDays();
   const cyclesQuery = useCycles();
+  const settingsQuery = useUserSettings();
   const logDay = useLogDay();
   const navigate = useNavigate();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
@@ -39,10 +44,28 @@ export function Calendar() {
 
   // Onset per cycle (derived from its days), so a newly logged date lands in the
   // cycle whose span contains it rather than always the current one.
-  const cyclesWithOnsets = cycles.map((c) => ({
-    id: c.id,
-    onset: cycleOnset(allDays.filter((d) => d.cycleId === c.id)),
-  }));
+  const cyclesWithOnsets = cycleOnsets(cycles, allDays);
+
+  // Forecast (non-persisted overlay) off the current cycle's onset.
+  const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
+  const stats = cycleStats(
+    cyclesWithOnsets.map((c) => c.onset).filter((o): o is Date => o != null),
+    averageCycleLength,
+  );
+  const currentOnset = cyclesWithOnsets.find((c) => c.id === currentCycleId)?.onset ?? null;
+  const fertile = predictFertileWindow(currentOnset, stats);
+  const nextPeriod = predictNextPeriod(currentOnset, stats);
+
+  // Predicted label for an empty future cell: period window takes precedence,
+  // then ovulation/fertile. `null` for past/today/logged cells.
+  const today = new Date();
+  const forecastFor = (date: Date): 'period' | 'fertile' | 'ovulation' | null => {
+    if (!isAfter(date, today)) return null;
+    if (nextPeriod.windowStart && nextPeriod.windowEnd && isWithinInterval(date, { start: nextPeriod.windowStart, end: nextPeriod.windowEnd })) {
+      return 'period';
+    }
+    return forecastDayType(date, fertile);
+  };
 
   const onPick = async (date: Date) => {
     const existing = byDate.get(format(date, 'yyyy-MM-dd'));
@@ -84,11 +107,13 @@ export function Calendar() {
         {cells.map((date) => {
           const key = format(date, 'yyyy-MM-dd');
           const day = byDate.get(key);
+          const forecast = day ? null : forecastFor(date);
           const classes = [
             styles.cell,
             isSameMonth(date, month) ? '' : styles.outside,
             isToday(date) ? styles.today : '',
             day ? styles.tracked : '',
+            forecast ? styles.forecast : '',
           ].join(' ');
           return (
             <button
@@ -96,6 +121,7 @@ export function Calendar() {
               type="button"
               className={classes}
               data-daytype={day?.dayType}
+              data-forecast={forecast ?? undefined}
               disabled={logDay.isPending}
               onClick={() => onPick(date)}
             >

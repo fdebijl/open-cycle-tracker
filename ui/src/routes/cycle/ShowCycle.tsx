@@ -1,8 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Spinner } from '@/components/Spinner';
 import { CycleCircle } from '@/components/cycle/CycleCircle';
-import { useDays, useLogDay, useUserSettings } from '@/data/hooks';
-import { cycleOnset } from '@/data/cycles';
+import { useCycles, useDays, useLogDay, useUserSettings } from '@/data/hooks';
+import { cycleOnset, cycleOnsets } from '@/data/cycles';
+import { cycleStats } from '@/data/prediction';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 
 /** View a specific (past) cycle's circle. Doesn't extend to today, but empty
@@ -10,6 +11,7 @@ import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 export function ShowCycle() {
   const { id } = useParams();
   const daysQuery = useDays();
+  const cyclesQuery = useCycles();
   const settingsQuery = useUserSettings();
   const logDay = useLogDay();
   const navigate = useNavigate();
@@ -17,8 +19,15 @@ export function ShowCycle() {
   if (daysQuery.isLoading) return <Spinner label="Loading cycle…" />;
   if (daysQuery.error) return <p className="oct-error">Could not load this cycle.</p>;
 
-  const days = (daysQuery.data ?? []).filter((d) => d.cycleId === id);
+  const allDays = daysQuery.data ?? [];
+  const days = allDays.filter((d) => d.cycleId === id);
   if (days.length === 0) return <p>No days recorded for this cycle.</p>;
+
+  const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
+  const onsets = cycleOnsets(cyclesQuery.data ?? [], allDays)
+    .map((c) => c.onset)
+    .filter((o): o is Date => o != null);
+  const stats = cycleStats(onsets, averageCycleLength);
 
   const onLogDate = async (date: Date) => {
     if (!id) return;
@@ -30,7 +39,7 @@ export function ShowCycle() {
     <CycleCircle
       days={days}
       cycleStart={cycleOnset(days)}
-      averageCycleLength={settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH}
+      stats={stats}
       onSelectDay={(day) => navigate(`/days/${day.id}`)}
       onLogDate={onLogDate}
     />
