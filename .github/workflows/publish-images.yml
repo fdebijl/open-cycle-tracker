@@ -1,0 +1,134 @@
+name: Publish images
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dockerhub:
+    name: dockerhub (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: api
+            dockerfile: api.dockerfile
+          - image: ui
+            dockerfile: ui.dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.DOCKERHUB_IMAGE || 'fdebijl/open-cycle-tracker' }}
+          # Every tag is suffixed with the component (e.g. latest-api, sha-abc123-ui).
+          flavor: |
+            latest=false
+            suffix=-${{ matrix.image }},onlatest=true
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+
+      - name: Build and push (SLSA provenance attestation)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ matrix.image == 'ui' && format('VITE_API_URL={0}', vars.VITE_API_URL || 'http://localhost:3000') || '' }}
+          provenance: mode=max
+          cache-from: type=gha,scope=${{ matrix.image }}-dockerhub
+          cache-to: type=gha,scope=${{ matrix.image }}-dockerhub,mode=max
+
+  ghcr:
+    name: ghcr (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # push to GHCR
+      id-token: write # OIDC, so attest-build-provenance can sign via Sigstore
+      attestations: write # record the artifact attestation
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: api
+            dockerfile: api.dockerfile
+          - image: ui
+            dockerfile: ui.dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute image name
+        id: name
+        # GHCR requires a lowercase namespace; ${VAR,,} lowercases it.
+        run: echo "ghcr=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/open-cycle-tracker" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.name.outputs.ghcr }}
+          flavor: |
+            latest=false
+            suffix=-${{ matrix.image }},onlatest=true
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ matrix.image == 'ui' && format('VITE_API_URL={0}', vars.VITE_API_URL || 'http://localhost:3000') || '' }}
+          # No BuildKit provenance here; the artifact attestation below covers GHCR
+          # and provenance:false keeps a plain manifest for it to reference.
+          provenance: false
+          cache-from: type=gha,scope=${{ matrix.image }}-ghcr
+          cache-to: type=gha,scope=${{ matrix.image }}-ghcr,mode=max
+
+      - name: Attest build provenance (artifact attestation)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ steps.name.outputs.ghcr }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true

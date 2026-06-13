@@ -2,6 +2,9 @@
 
 Open Cycle Tracker (OCT) is a self-hosted open source period tracking app, designed to be as secure as possible.
 
+> [!CAUTION]
+> Open Cycle Tracker is currently in an alpha state and should not be installed or used in a production environment.
+
 # Installation
 Placeholder
 
