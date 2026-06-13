@@ -70,11 +70,19 @@ export const users = pgTable(
 
     // Server-side verifier: argon2id of the client's authHash (double hashing).
     authHash: text('auth_hash').notNull(),
+    // Server-side verifier for the recovery code, derived the same way as
+    // authHash but from the recovery code (not the password). Gates the
+    // forgotten-password flow so only someone holding the recovery code can
+    // overwrite the account's key material.
+    recoveryAuthHash: text('recovery_auth_hash').notNull(),
 
     // Public KDF inputs (not secret) returned to the client.
     saltAuth: text('salt_auth').notNull(),
     saltKek: text('salt_kek').notNull(),
     saltRecovery: text('salt_recovery').notNull(),
+    // Independent salt for the recovery auth verifier (kept distinct from
+    // saltRecovery so the verifier is not equal to the recovery KEK).
+    saltRecoveryAuth: text('salt_recovery_auth').notNull(),
     kdfParams: jsonb('kdf_params').$type<KdfParams>().notNull(),
 
     // Envelope: DEK wrapped under the password KEK and under the recovery KEK.

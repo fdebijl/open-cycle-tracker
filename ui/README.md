@@ -1,49 +1,75 @@
-# Open Cycle Tracker UI
+# Open Cycle Tracker — UI (React)
 
-This README outlines the details of collaborating on this Ember application.
-A short introduction of this app could easily go here.
+The Open Cycle Tracker web client. A full React rewrite that replaced the
+original Ember app. Its defining feature is **client-side end-to-end
+encryption**: the server stores only opaque ciphertext and never holds a key.
+See `for_claude/encryption.md` for the full contract.
 
-## Prerequisites
+## Stack
 
-You will need the following things properly installed on your computer.
+- Vite + React + TypeScript (SPA — deliberately no SSR, so keys/plaintext never
+  touch a server)
+- React Router, TanStack Query, Zustand
+- `libsodium-wrappers-sumo` (Argon2id + XChaCha20-Poly1305), run in a Web Worker
+- `@scure/bip39` (recovery mnemonic)
+- CSS Modules (`.module.scss`)
 
-* [Git](https://git-scm.com/)
-* [Node.js](https://nodejs.org/) (with npm)
-* [Ember CLI](https://cli.emberjs.com/release/)
-* [Google Chrome](https://google.com/chrome/)
+## Develop
 
-## Installation
+```bash
+pnpm install
+pnpm dev        # http://localhost:5173 (the API's CORS_ORIGINS default)
+pnpm test       # Vitest — crypto round-trip + no-plaintext + mapper tests
+pnpm build      # tsc -b + vite build
+```
 
-* `git clone <repository-url>` this repository
-* `cd open-cycle-tracker`
-* `npm install`
+The API (`../api`) must be running at `VITE_API_URL` (default
+`http://localhost:3000`) with this origin in its `CORS_ORIGINS`.
 
-## Running / Development
+## Crypto architecture (`src/crypto/`)
 
-* `ember serve`
-* Visit your app at [http://localhost:4200](http://localhost:4200).
-* Visit your tests at [http://localhost:4200/tests](http://localhost:4200/tests).
+- `sodium.ts` — initializes the libsodium **sumo** build (the standard build
+  omits `crypto_pwhash`/Argon2id).
+- `primitives.ts` — pure `deriveKeyRaw` (Argon2id), `aeadEncrypt/Decrypt`
+  (XChaCha20-Poly1305, blob = `nonce(24) || ct+tag`), RNG, KDF param presets.
+- `worker.ts` + `kdf.ts` — the slow KDF runs in a Web Worker; `kdf.deriveKey`
+  is the wrapper everything calls (falls back to inline in Node/tests).
+- `envelope.ts` — signup envelope, login DEK unwrap, recovery, password re-wrap,
+  recovery verifier.
+- `fields.ts` — field-level encrypt/decrypt for the data layer.
+- `codec.ts` — base64 + BIP39 mnemonic encode/decode.
 
-### Code Generators
+### Recovery code encoding
 
-Make use of the many generators for code, try `ember help generate` for more details
+The recovery secret is 32 random bytes. The user is shown a **BIP39 mnemonic**
+of those bytes, but the KDF input (for the recovery KEK and the recovery
+verifier) is the **base64 string** of the same bytes — matching the API's
+reference `crypto-client`, so the two implementations are interoperable.
 
-### Running Tests
+### Key hygiene
 
-* `ember test`
-* `ember test --server`
+The DEK lives **only in memory** (`src/stores/vault.ts`) — never
+localStorage/IndexedDB. A full reload wipes it (re-login each launch); an
+auto-lock (inactivity timer + tab-hidden) wipes just the DEK so the user can
+re-unlock with their password alone.
 
-### Linting
+## Layout
 
-* `npm run lint`
-* `npm run lint:fix`
+- `src/crypto/` — the E2EE implementation (above).
+- `src/api/` — typed fetch client + resource/auth endpoints + DTOs.
+- `src/data/` — the decrypt/encrypt mapper boundary + TanStack Query hooks.
+- `src/auth/session.ts` — login / signup / unlock / recover / change-password.
+- `src/stores/vault.ts` — in-memory key vault + auto-lock.
+- `src/routes/`, `src/components/` — screens and UI.
 
-### Building
+## Status — rewrite complete
 
-* `ember build` (development)
-* `ember build --environment production` (production)
+- **Auth + crypto:** register (one-time recovery phrase), login, unlock, logout,
+  **password change**, **account recovery** (all wired to the API).
+- **Tracker:** cycle circle (proximity-scaled day markers), current/show cycle,
+  day editor (phase + factor toggling).
+- **Phase 3:** calendar (month grid), info (stats), settings (account, password
+  change, hold-to-delete account).
 
-### Deploying
-
-Specify what it takes to deploy your app.
-
+Tests: crypto envelope round-trip + no-plaintext assertions, and DTO↔domain
+mapper tests.

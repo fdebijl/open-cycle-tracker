@@ -1,0 +1,58 @@
+.marker {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  /* Proximity scaler mutates width/height/z-index inline; animate the change. */
+  transition: width 0.08s linear, height 0.08s linear;
+
+  /* dayType → background, plus a darker ring when it's today. */
+  &[data-daytype='none'] {
+    background: #d4ceec;
+    &[data-today] {
+      border: 4px solid #8a7ebe;
+    }
+  }
+  &[data-daytype='pms'] {
+    background: #fbc87b;
+    &[data-today] {
+      border: 4px solid #b88b48;
+    }
+  }
+  &[data-daytype='period'] {
+    background: #e76666;
+    &[data-today] {
+      border: 4px solid #d14a4a;
+    }
+  }
+  &[data-daytype='fertile'] {
+    background: #778cfa;
+    &[data-today] {
+      border: 4px solid #435bd4;
+    }
+  }
+  /* The Ember styles had no `ovulation` color; use the blue family. */
+  &[data-daytype='ovulation'] {
+    background: #4f63d8;
+    &[data-today] {
+      border: 4px solid #2c3aa0;
+    }
+  }
+}
+
+.order {
+  opacity: 0;
+  font-size: 0.4em;
+  transition: opacity 0.2s ease-in-out;
+
+  .marker[data-scaled='1'] & {
+    opacity: 1;
+  }
+}

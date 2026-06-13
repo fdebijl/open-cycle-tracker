@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { app, closeDb, crypto, registerUser, request, resetDb } from './helpers.js';
+import { app, auth, closeDb, crypto, registerUser, request, resetDb } from './helpers.js';
 
 beforeAll(async () => {
   await crypto.ready();
@@ -108,5 +108,92 @@ describe('auth', () => {
   it('rejects requests with no/invalid bearer token', async () => {
     await request(app).get('/cycles').expect(401);
     await request(app).get('/cycles').set({ Authorization: 'Bearer garbage' }).expect(401);
+  });
+});
+
+describe('password change', () => {
+  it('lets an authenticated user set a new password; old password stops working', async () => {
+    const user = await registerUser({ identifier: 'pat', password: 'old password here' });
+    const next = crypto.rewrapForNewPassword(user.dek, 'a brand new password');
+
+    await request(app).post('/auth/password').set(auth(user.token)).send(next).expect(204);
+
+    // New password logs in and unwraps the SAME DEK.
+    const pre = await request(app).post('/auth/prelogin').send({ identifier: 'pat' }).expect(200);
+    const newHash = crypto.deriveAuthHash('a brand new password', pre.body.saltAuth, pre.body.kdfParams);
+    const ok = await request(app).post('/auth/login').send({ identifier: 'pat', authHash: newHash }).expect(200);
+    const dek = crypto.unwrapDek('a brand new password', ok.body.saltKek, ok.body.wrappedDek, ok.body.kdfParams);
+    expect(Buffer.from(dek)).toEqual(Buffer.from(user.dek));
+
+    // Old password no longer logs in.
+    const oldHash = crypto.deriveAuthHash('old password here', pre.body.saltAuth, pre.body.kdfParams);
+    await request(app).post('/auth/login').send({ identifier: 'pat', authHash: oldHash }).expect(401);
+  });
+
+  it('requires authentication', async () => {
+    const user = await registerUser({ identifier: 'pat2' });
+    const next = crypto.rewrapForNewPassword(user.dek, 'whatever');
+    await request(app).post('/auth/password').send(next).expect(401);
+  });
+});
+
+describe('recovery', () => {
+  it('recovers the DEK with the recovery code and resets the password', async () => {
+    const user = await registerUser({ identifier: 'rita', password: 'forgotten password' });
+
+    // Step 1: fetch recovery material.
+    const init = await request(app).post('/auth/recover/init').send({ identifier: 'rita' }).expect(200);
+
+    // The recovery code unwraps the original DEK.
+    const dek = crypto.unwrapDekWithRecovery(
+      user.recoveryCode,
+      init.body.saltRecovery,
+      init.body.wrappedDekRecovery,
+      init.body.kdfParams,
+    );
+    expect(Buffer.from(dek)).toEqual(Buffer.from(user.dek));
+
+    // Step 2: prove the recovery code + set a new password.
+    const recoveryAuthHash = crypto.deriveRecoveryAuthHash(
+      user.recoveryCode,
+      init.body.saltRecoveryAuth,
+      init.body.kdfParams,
+    );
+    const next = crypto.rewrapForNewPassword(dek, 'a fresh password');
+    const res = await request(app)
+      .post('/auth/recover')
+      .send({ identifier: 'rita', recoveryAuthHash, ...next })
+      .expect(200);
+    expect(res.body.token).toBeTypeOf('string');
+
+    // The new password now logs in.
+    const pre = await request(app).post('/auth/prelogin').send({ identifier: 'rita' }).expect(200);
+    const newHash = crypto.deriveAuthHash('a fresh password', pre.body.saltAuth, pre.body.kdfParams);
+    await request(app).post('/auth/login').send({ identifier: 'rita', authHash: newHash }).expect(200);
+  });
+
+  it('rejects a wrong recovery code', async () => {
+    await registerUser({ identifier: 'rhea', password: 'pw' });
+    const init = await request(app).post('/auth/recover/init').send({ identifier: 'rhea' }).expect(200);
+    const wrong = crypto.deriveRecoveryAuthHash(
+      crypto._internal.b64(crypto.randomBytes(32)),
+      init.body.saltRecoveryAuth,
+      init.body.kdfParams,
+    );
+    const next = crypto.rewrapForNewPassword(crypto.randomBytes(32), 'pw2');
+    await request(app)
+      .post('/auth/recover')
+      .send({ identifier: 'rhea', recoveryAuthHash: wrong, ...next })
+      .expect(401);
+  });
+
+  it('returns stable, plausible pseudo-material for unknown identifiers (anti-enumeration)', async () => {
+    const a = await request(app).post('/auth/recover/init').send({ identifier: 'phantom' }).expect(200);
+    const b = await request(app).post('/auth/recover/init').send({ identifier: 'phantom' }).expect(200);
+    expect(a.body.saltRecovery).toBe(b.body.saltRecovery);
+    expect(a.body.wrappedDekRecovery).toBe(b.body.wrappedDekRecovery);
+    expect(Buffer.from(a.body.saltRecovery, 'base64')).toHaveLength(16);
+    expect(Buffer.from(a.body.saltRecoveryAuth, 'base64')).toHaveLength(16);
+    expect(a.body.kdfParams.algorithm).toBe('argon2id');
   });
 });

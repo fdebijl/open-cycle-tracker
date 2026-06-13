@@ -108,9 +108,11 @@ export type SignupEnvelope = {
   /** Payload to POST to /auth/signup (all base64 where binary). */
   payload: {
     authHash: string;
+    recoveryAuthHash: string;
     saltAuth: string;
     saltKek: string;
     saltRecovery: string;
+    saltRecoveryAuth: string;
     kdfParams: KdfParams;
     wrappedDek: string;
     wrappedDekRecovery: string;
@@ -130,24 +132,57 @@ export function buildSignupEnvelope(
   const saltAuth = randomSalt();
   const saltKek = randomSalt();
   const saltRecovery = randomSalt();
+  const saltRecoveryAuth = randomSalt();
   const recoveryCodeBytes = randomBytes(32);
+  const recoveryCode = b64(recoveryCodeBytes);
 
   const kek = deriveKey(password, saltKek, params);
-  const recoveryKek = deriveKey(b64(recoveryCodeBytes), saltRecovery, params);
+  const recoveryKek = deriveKey(recoveryCode, saltRecovery, params);
   const authHash = deriveKey(password, saltAuth, params);
+  // Recovery verifier: same construction as authHash, keyed by the recovery
+  // code and its own salt. Lets the server gate the recovery flow.
+  const recoveryAuthHash = deriveKey(recoveryCode, saltRecoveryAuth, params);
 
   return {
     payload: {
       authHash: b64(authHash),
+      recoveryAuthHash: b64(recoveryAuthHash),
       saltAuth: b64(saltAuth),
       saltKek: b64(saltKek),
       saltRecovery: b64(saltRecovery),
+      saltRecoveryAuth: b64(saltRecoveryAuth),
       kdfParams: params,
       wrappedDek: b64(seal(dek, kek)),
       wrappedDekRecovery: b64(seal(dek, recoveryKek)),
     },
     dek,
-    recoveryCode: b64(recoveryCodeBytes),
+    recoveryCode,
+  };
+}
+
+/** Derive the recovery auth verifier (base64) sent to /auth/recover. */
+export function deriveRecoveryAuthHash(
+  recoveryCode: string,
+  saltRecoveryAuthB64: string,
+  params: KdfParams,
+): string {
+  return b64(deriveKey(recoveryCode, unb64(saltRecoveryAuthB64), params));
+}
+
+/**
+ * Re-wrap an existing DEK under a new password, producing fresh auth + KEK
+ * material. Used by both the password-change and recovery flows. The DEK and
+ * the recovery wrapping are untouched.
+ */
+export function rewrapForNewPassword(dek: Uint8Array, password: string, params = interactiveParams()) {
+  const saltAuth = randomSalt();
+  const saltKek = randomSalt();
+  return {
+    authHash: b64(deriveKey(password, saltAuth, params)),
+    saltAuth: b64(saltAuth),
+    saltKek: b64(saltKek),
+    wrappedDek: b64(seal(dek, deriveKey(password, saltKek, params))),
+    kdfParams: params,
   };
 }
 

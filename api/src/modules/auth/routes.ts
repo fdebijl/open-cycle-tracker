@@ -3,8 +3,15 @@ import { asyncHandler } from '../../lib/http.js';
 import { parse } from '../../lib/parse.js';
 import { requireAuth, requireAuthCtx } from '../../middleware/requireAuth.js';
 import { authLimiter } from '../../middleware/rateLimit.js';
-import { loginSchema, preloginSchema, signupSchema } from './schema.js';
-import { login, logout, prelogin, signup } from './service.js';
+import {
+  loginSchema,
+  passwordChangeSchema,
+  preloginSchema,
+  recoverInitSchema,
+  recoverSchema,
+  signupSchema,
+} from './schema.js';
+import { changePassword, login, logout, prelogin, recover, recoverInit, signup } from './service.js';
 
 export const authRouter = Router();
 
@@ -44,5 +51,38 @@ authRouter.delete(
     const { jti, tokenExpiresAt } = requireAuthCtx(req);
     await logout(jti, tokenExpiresAt);
     res.status(204).end();
+  }),
+);
+
+// Change password (authenticated): the client re-wrapped its DEK under a new
+// password and sends fresh auth/KEK material.
+authRouter.post(
+  '/password',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { userId } = requireAuthCtx(req);
+    const input = parse(passwordChangeSchema, req.body);
+    await changePassword(userId, input);
+    res.status(204).end();
+  }),
+);
+
+// Step 1 of recovery: fetch the recovery wrapping material (anti-enumeration).
+authRouter.post(
+  '/recover/init',
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    const input = parse(recoverInitSchema, req.body);
+    res.json(await recoverInit(input));
+  }),
+);
+
+// Step 2 of recovery: prove the recovery code and set a new password.
+authRouter.post(
+  '/recover',
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    const input = parse(recoverSchema, req.body);
+    res.json(await recover(input));
   }),
 );

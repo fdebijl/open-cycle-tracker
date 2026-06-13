@@ -1,0 +1,69 @@
+.screen {
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--oct-bg);
+  border: 1px solid var(--oct-border);
+  border-radius: var(--oct-radius);
+  box-shadow: var(--oct-shadow);
+  padding: 28px 24px;
+}
+
+.brand {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--oct-red);
+  margin: 0 0 4px;
+}
+
+.title {
+  font-size: 20px;
+  margin: 0 0 20px;
+}
+
+:global(.oct-form-actions) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+:global(.oct-error) {
+  color: var(--oct-danger);
+  font-size: 13px;
+  margin: 4px 0 12px;
+}
+
+:global(.oct-muted-links) {
+  margin-top: 16px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+}
+
+:global(button.oct-primary) {
+  padding: 11px 16px;
+  border: none;
+  border-radius: var(--oct-radius);
+  background: var(--oct-red);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--oct-red-strong);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}

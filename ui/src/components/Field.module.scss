@@ -1,0 +1,24 @@
+.field {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 4px;
+  margin-bottom: 14px;
+
+  label {
+    font-size: 13px;
+    color: var(--oct-muted);
+  }
+
+  input {
+    padding: 10px 12px;
+    border: 1px solid var(--oct-border);
+    border-radius: var(--oct-radius);
+    font: inherit;
+    background: var(--oct-bg);
+
+    &:focus {
+      outline: none;
+      border-color: var(--oct-blue);
+    }
+  }
+}
