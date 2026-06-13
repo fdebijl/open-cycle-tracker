@@ -159,7 +159,7 @@ rather than modelled as skipped/late periods (#12).
     the DEK is a UX win, but a real tradeoff against the threat model and needs a
     deliberate decision.
 
-# User-provided insights (Claude, do not edit this section)
+# User-provided features (Claude, do not edit this section)
 
 14. Duress password
     Add two new passwords to the user: one that destroys all data when entered and one
@@ -173,6 +173,18 @@ rather than modelled as skipped/late periods (#12).
 
 17. Predict further out
     In the calendar view, show the predicted fertile window and period for the next 3 cycles, not just the next one. This would give users a longer-term forecast to plan around.
+
+18. Installation (basic)
+    Provide Dockerfiles, images, compose files, install steps and recommended security measures
+
+19. Installation (provenance)
+    Ensure provenance is provided for dockerfiles and any binaries we ship
+
+20. Canary
+    Add a warrant canary to the readme
+
+21. Menopause/perimenopause mode
+    Do some discovery on what's desirable for these modes
 
 ## Bottom line
 
