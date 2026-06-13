@@ -36,3 +36,10 @@
 /node_modules
 *.log
 .env
+.env.*
+!.env.example
+
+# Node / TypeScript build output
+/dist
+*.tsbuildinfo
+.vitest
