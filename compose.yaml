@@ -1,0 +1,92 @@
+# Open Cycle Tracker — suggested self-hosting stack.
+#
+#   1. Copy the secrets below into a `.env` next to this file (or export them):
+#        POSTGRES_PASSWORD=$(openssl rand -base64 24)
+#        JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))")
+#        SERVER_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))")
+#   2. `docker compose up -d`  (pulls the published images and runs migrations first)
+#
+# Build locally instead of pulling:  `docker compose build`
+#
+# The browser talks to the API cross-origin, so PUBLIC_API_URL (baked into the
+# UI bundle) and PUBLIC_UI_URL (the API's CORS allowlist) must match the origins
+# you actually reach in the browser. Defaults assume localhost on the ports below.
+#
+# v1 hardening: pin the images by digest instead of a moving `latest-*` tag, e.g.
+#   image: fdebijl/open-cycle-tracker@sha256:<digest>
+# to defend against a compromised/retagged upstream image (supply-chain).
+
+x-public-api-url: &public-api-url ${PUBLIC_API_URL:-http://localhost:3000}
+x-public-ui-url: &public-ui-url ${PUBLIC_UI_URL:-http://localhost:8080}
+
+services:
+  postgres:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-oct}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in your .env}
+      POSTGRES_DB: ${POSTGRES_DB:-oct}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oct} -d ${POSTGRES_DB:-oct}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # One-shot: apply pending migrations, then seed the global categories. Runs to
+  # completion before the API starts; re-runs are idempotent.
+  migrate:
+    image: fdebijl/open-cycle-tracker:latest-api
+    build:
+      context: .
+      dockerfile: api.dockerfile
+    command: ["sh", "-c", "node dist/migrate.js && node dist/seed.js"]
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-oct}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-oct}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in your .env}
+      SERVER_SECRET: ${SERVER_SECRET:?set SERVER_SECRET in your .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    image: fdebijl/open-cycle-tracker:latest-api
+    build:
+      context: .
+      dockerfile: api.dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-oct}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-oct}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in your .env}
+      SERVER_SECRET: ${SERVER_SECRET:?set SERVER_SECRET in your .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1209600}
+      CORS_ORIGINS: *public-ui-url
+    ports:
+      - "${API_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  ui:
+    image: fdebijl/open-cycle-tracker:latest-ui
+    build:
+      context: .
+      dockerfile: ui.dockerfile
+      args:
+        VITE_API_URL: *public-api-url
+    restart: unless-stopped
+    ports:
+      - "${UI_PORT:-8080}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

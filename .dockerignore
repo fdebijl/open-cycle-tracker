@@ -1,0 +1,21 @@
+# Keep the build context small and secrets out of images.
+**/node_modules
+**/dist
+**/.vitest
+**/*.tsbuildinfo
+
+# Never ship local env/secrets (the .env.example files are fine and kept).
+**/.env
+**/.env.*
+!**/.env.example
+
+.git
+.gitignore
+**/*.log
+.ruby-lsp
+.vscode
+docs
+
+# The Dockerfiles/compose themselves don't belong in the context.
+*.dockerfile
+compose.yaml
