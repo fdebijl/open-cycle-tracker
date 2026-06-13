@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "daily"
+    rebase-strategy: "auto"
+    cooldown:
+      default-days: 14
+      semver-major-days: 28
