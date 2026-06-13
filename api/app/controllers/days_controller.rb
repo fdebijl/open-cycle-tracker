@@ -14,6 +14,13 @@ class DaysController < ApplicationController
   end
 
   def filter
+    if params[:filter].key?(:today)
+      @day = @days.find_by('DATE(date) = ?', Date.today)
+
+      authorize @day
+      return render json: @day
+    end
+
     @days = @days.where(id: permitted_attributes(resource_class)[:id]) if params[:filter].key?(:id)
 
     authorize @days

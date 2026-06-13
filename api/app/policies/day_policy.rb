@@ -1,9 +1,9 @@
 class DayPolicy < ApplicationPolicy
   def permitted_attributes
-    super + [:order, :date, :cycle, :'day-type']
+    super + %i[order date cycle day-type]
   end
 
   def permitted_attributes_for_filter
-    super
+    super + %i[today id]
   end
 end

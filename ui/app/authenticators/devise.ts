@@ -16,13 +16,13 @@ export default class DeviseAuthenticator extends BaseDeviseAuthenticator {
       const headers = response.headers;
       const body = await response.json();
       const json = {
-        [identificationAttributeName]: body.user.attributes[identificationAttributeName],
+        id: body.user.id,
+        ...body.user.attributes,
         [tokenAttributeName]: headers.get('Authorization')
       }
 
       if (this._validate(json)) {
-        const _json = json[resourceName] ? json[resourceName] : json;
-        return _json;
+        return json;
       } else {
         throw new Error(`Check that server response includes ${tokenAttributeName} and ${identificationAttributeName}`);
       }

@@ -1,0 +1,10 @@
+{{!-- TODO: Display icon, display category levels and if the user has a factor on this category for today, the selected level --}}
+<div class="oct-category-row">
+  <Category::Icon @category={{@category}} />
+  
+  <ul class="oct-category-row__levels">
+    {{#each @category.levels as |level|}}
+      <li>{{level.name}}</li>
+    {{/each}}
+  </ul>
+</div>
