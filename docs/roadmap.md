@@ -186,6 +186,9 @@ rather than modelled as skipped/late periods (#12).
 21. Menopause/perimenopause mode
     Do some discovery on what's desirable for these modes
 
+22. GHA
+    Add a GHA for running tests and test-building images on PR's. 
+
 ## Bottom line
 
 Milestone 1 turned the app from a manual logbook into a real onset-driven
