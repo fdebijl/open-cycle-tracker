@@ -13,6 +13,13 @@
   /* Proximity scaler mutates width/height/z-index inline; animate the change. */
   transition: width 0.08s linear, height 0.08s linear;
 
+  cursor: pointer;
+
+  /* Unlogged slots read as faint placeholders until the user logs that date. */
+  &[data-empty] {
+    opacity: 0.45;
+  }
+
   /* dayType → background, plus a darker ring when it's today. */
   &[data-daytype='none'] {
     background: #d4ceec;

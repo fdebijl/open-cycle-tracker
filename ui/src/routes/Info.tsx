@@ -1,6 +1,7 @@
-import { differenceInCalendarDays } from 'date-fns';
 import { Spinner } from '@/components/Spinner';
-import { useCycles, useDays } from '@/data/hooks';
+import { useCycles, useDays, useUserSettings } from '@/data/hooks';
+import { cycleOnset, nextPeriodEstimate } from '@/data/cycles';
+import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import type { Day, DayType } from '@/data/types';
 import styles from './Info.module.scss';
 
@@ -23,16 +24,18 @@ function countByType(days: Day[]): Record<DayType, number> {
 export function Info() {
   const cyclesQuery = useCycles();
   const daysQuery = useDays();
+  const settingsQuery = useUserSettings();
 
-  if (cyclesQuery.isLoading || daysQuery.isLoading) return <Spinner label="Loading stats…" />;
+  if (cyclesQuery.isLoading || daysQuery.isLoading || settingsQuery.isLoading) {
+    return <Spinner label="Loading stats…" />;
+  }
 
   const current = cyclesQuery.data?.[0];
   const days = (daysQuery.data ?? []).filter((d) => d.cycleId === current?.id);
   const counts = countByType(days);
 
-  const dated = days.filter((d) => d.date).sort((a, b) => (a.date as Date).getTime() - (b.date as Date).getTime());
-  const last = dated[dated.length - 1]?.date ?? null;
-  const untilNext = last ? differenceInCalendarDays(last, new Date()) : null;
+  const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
+  const { daysUntil: untilNext } = nextPeriodEstimate(cycleOnset(days), averageCycleLength);
 
   return (
     <section className={styles.page}>

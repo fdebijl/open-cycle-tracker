@@ -2,8 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { format } from 'date-fns';
 import { randomBytes } from '@/crypto/primitives';
 import { encryptString } from '@/crypto';
-import { decryptCategory, decryptCategoryLevel, decryptDay, decryptFactor, encryptDayFields } from './mappers';
-import type { CategoryDto, CategoryLevelDto, DayDto, FactorDto } from '@/api/types';
+import {
+  decryptCategory,
+  decryptCategoryLevel,
+  decryptDay,
+  decryptFactor,
+  decryptSettings,
+  encryptDayFields,
+  encryptSettings,
+} from './mappers';
+import type { CategoryDto, CategoryLevelDto, DayDto, FactorDto, UserDto } from '@/api/types';
 
 const dek = await randomBytes(32);
 
@@ -57,6 +65,34 @@ describe('factor mapper', () => {
     const factor = await decryptFactor(dto, dek);
     expect(factor.notes).toBe('felt tired');
     expect(factor.categoryLevelId).toBe('cl1');
+  });
+});
+
+function baseUser(overrides: Partial<UserDto>): UserDto {
+  return {
+    id: 'u1',
+    identifier: 'alice',
+    email: null,
+    isAdmin: false,
+    encName: null,
+    encInfo: null,
+    encSettings: null,
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
+
+describe('settings mapper', () => {
+  it('round-trips settings through encrypt/decrypt', async () => {
+    const enc = await encryptSettings({ averageCycleLength: 30 }, dek);
+    const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
+    expect(settings.averageCycleLength).toBe(30);
+  });
+
+  it('defaults to a 28-day average when settings are absent', async () => {
+    const settings = await decryptSettings(baseUser({ encSettings: null }), dek);
+    expect(settings.averageCycleLength).toBe(28);
   });
 });
 

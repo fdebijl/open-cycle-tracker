@@ -5,7 +5,6 @@ import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { registerAccount } from '@/auth/session';
-import { RecoveryReveal } from './RecoveryReveal';
 
 export function Register() {
   const [identifier, setIdentifier] = useState('');
@@ -14,7 +13,6 @@ export function Register() {
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mnemonic, setMnemonic] = useState<string | null>(null);
   const navigate = useNavigate();
 
   async function onSubmit(event: FormEvent) {
@@ -31,21 +29,14 @@ export function Register() {
         password,
         email: email.trim() || undefined,
       });
-      // Account is created and unlocked; show the recovery phrase before entering.
-      setMnemonic(recoveryMnemonic);
+      // Account is created and unlocked; hand off to onboarding (recovery phrase
+      // + cycle setup) before entering the app. The mnemonic rides in router
+      // state — it's never persisted.
+      navigate('/onboarding', { replace: true, state: { mnemonic: recoveryMnemonic } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
-    } finally {
       setBusy(false);
     }
-  }
-
-  if (mnemonic) {
-    return (
-      <AuthCard title="Save your recovery phrase">
-        <RecoveryReveal mnemonic={mnemonic} onConfirm={() => navigate('/', { replace: true })} />
-      </AuthCard>
-    );
   }
 
   return (

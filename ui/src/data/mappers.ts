@@ -1,8 +1,8 @@
 import { format, parseISO } from 'date-fns';
-import { decryptString, encryptString } from '@/crypto';
-import type { CategoryDto, CategoryLevelDto, DayDto, FactorDto } from '@/api/types';
-import { DAY_TYPES } from './types';
-import type { Category, CategoryLevel, Day, DayType, Factor } from './types';
+import { decryptJson, decryptString, encryptJson, encryptString } from '@/crypto';
+import type { CategoryDto, CategoryLevelDto, DayDto, FactorDto, UserDto } from '@/api/types';
+import { DAY_TYPES, DEFAULT_USER_SETTINGS } from './types';
+import type { Category, CategoryLevel, Day, DayType, Factor, UserSettings } from './types';
 
 /**
  * The decryption boundary. API DTOs carry opaque base64 ciphertext; these
@@ -57,6 +57,22 @@ export async function decryptCategoryLevel(dto: CategoryLevelDto, dek: Uint8Arra
     name: dto.encName ? await decryptString(dto.encName, dek) : (dto.name ?? ''),
     icon: dto.encIcon ? await decryptString(dto.encIcon, dek) : (dto.icon ?? ''),
   };
+}
+
+/** Decrypt the user's settings blob, falling back to defaults when unset or
+ * unparseable (a fresh account has no `encSettings` until onboarding writes it). */
+export async function decryptSettings(dto: UserDto, dek: Uint8Array): Promise<UserSettings> {
+  if (!dto.encSettings) return { ...DEFAULT_USER_SETTINGS };
+  try {
+    const parsed = await decryptJson<Partial<UserSettings>>(dto.encSettings, dek);
+    return { ...DEFAULT_USER_SETTINGS, ...parsed };
+  } catch {
+    return { ...DEFAULT_USER_SETTINGS };
+  }
+}
+
+export function encryptSettings(settings: UserSettings, dek: Uint8Array): Promise<string> {
+  return encryptJson(settings, dek);
 }
 
 /** Decrypt an array, preserving order. */

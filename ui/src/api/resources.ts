@@ -1,8 +1,16 @@
 import { api } from './client';
 import type { CategoryDto, CategoryLevelDto, CycleDto, DayDto, FactorDto, UserDto } from './types';
 
+export interface UserWritePayload {
+  email?: string | null;
+  encName?: string | null;
+  encInfo?: string | null;
+  encSettings?: string | null;
+}
+
 export const usersApi = {
   get: (id: string) => api.get<UserDto>(`/users/${id}`),
+  update: (id: string, body: UserWritePayload) => api.patch<UserDto>(`/users/${id}`, body),
   remove: (id: string) => api.del<void>(`/users/${id}`),
 };
 

@@ -5,6 +5,7 @@ import { installAutoLock, useVault } from '@/stores/vault';
 import { AppLayout } from '@/components/AppLayout';
 import { Login } from './auth/Login';
 import { Register } from './auth/Register';
+import { Onboarding } from './auth/Onboarding';
 import { Recover } from './auth/Recover';
 import { Unlock } from './Unlock';
 import { CurrentCycle } from './cycle/CurrentCycle';
@@ -50,6 +51,9 @@ export function AppRoutes() {
       <Route path="/register" element={<PublicOnly><Register /></PublicOnly>} />
       <Route path="/recover" element={<PublicOnly><Recover /></PublicOnly>} />
       <Route path="/unlock" element={<RequireSession><Unlock /></RequireSession>} />
+      {/* Reached right after registration (session + DEK already set); guards
+          itself on the in-memory mnemonic, so it sits outside PublicOnly. */}
+      <Route path="/onboarding" element={<Onboarding />} />
 
       <Route element={<RequireUnlocked><AppLayout /></RequireUnlocked>}>
         <Route path="/" element={<CurrentCycle />} />

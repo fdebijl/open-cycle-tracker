@@ -1,17 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { addDays, startOfToday } from 'date-fns';
 import { useVault } from '@/stores/vault';
-import { categoriesApi, categoryLevelsApi, cyclesApi, daysApi, factorsApi } from '@/api/resources';
+import { categoriesApi, categoryLevelsApi, cyclesApi, daysApi, factorsApi, usersApi } from '@/api/resources';
 import {
   decryptAll,
   decryptCategory,
   decryptCategoryLevel,
   decryptDay,
   decryptFactor,
+  decryptSettings,
   encryptDayFields,
+  encryptSettings,
 } from './mappers';
 import { encryptString } from '@/crypto';
-import type { Cycle, Day, DayType } from './types';
+import type { Cycle, Day, DayType, UserSettings } from './types';
 
 /**
  * Server state via TanStack Query. Each query fetches DTOs then decrypts them
@@ -26,8 +27,6 @@ function useDek(): Uint8Array | null {
 function useUserId(): string | undefined {
   return useVault((s) => s.session?.user.id);
 }
-
-const DEFAULT_CYCLE_LENGTH = 28;
 
 // ---- Queries -------------------------------------------------------------
 
@@ -94,29 +93,76 @@ export function useCategoryLevels() {
   });
 }
 
+/** The user's decrypted preferences (e.g. average cycle length). */
+export function useUserSettings() {
+  const dek = useDek();
+  const userId = useUserId();
+  return useQuery({
+    queryKey: ['settings', userId],
+    enabled: !!dek && !!userId,
+    queryFn: async (): Promise<UserSettings> => decryptSettings(await usersApi.get(userId!), dek!),
+  });
+}
+
 // ---- Mutations -----------------------------------------------------------
 
-/** Create a fresh cycle and populate it with N days starting today (the React
- * equivalent of the Ember `cycle.populateDays`). */
-export function useCreateCycleWithDays() {
+/** Persist the user's preferences (encrypted). */
+export function useUpdateSettings() {
+  const dek = useDek();
+  const userId = useUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (settings: UserSettings): Promise<UserSettings> => {
+      if (!dek || !userId) throw new Error('Vault is locked');
+      const encSettings = await encryptSettings(settings, dek);
+      await usersApi.update(userId, { encSettings });
+      return settings;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', userId] });
+    },
+  });
+}
+
+/**
+ * Start a new cycle anchored at a period onset: create the cycle, then create
+ * its first day (the onset) as a `period` day on that date. Used at onboarding,
+ * by the no-cycle fallback, and by "start a new period". Cycle length derives
+ * client-side from onset-to-onset, so nothing else is pre-populated.
+ */
+export function useStartCycle() {
   const dek = useDek();
   const queryClient = useQueryClient();
   const userId = useUserId();
   return useMutation({
-    mutationFn: async (): Promise<Cycle> => {
+    mutationFn: async (input: { onset: Date }) => {
       if (!dek) throw new Error('Vault is locked');
       const cycle = await cyclesApi.create();
-      const start = startOfToday();
-      await Promise.all(
-        Array.from({ length: DEFAULT_CYCLE_LENGTH }, async (_unused, i) => {
-          const enc = await encryptDayFields({ date: addDays(start, i), dayType: 'none' }, dek);
-          return daysApi.create({ cycleId: cycle.id, encDate: enc.encDate, encDayType: enc.encDayType, order: i + 1 });
-        }),
-      );
-      return cycle;
+      const enc = await encryptDayFields({ date: input.onset, dayType: 'period' }, dek);
+      const day = await daysApi.create({ cycleId: cycle.id, encDate: enc.encDate, encDayType: enc.encDayType });
+      return { cycle, day };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cycles', userId] });
+      queryClient.invalidateQueries({ queryKey: ['days', userId] });
+    },
+  });
+}
+
+/** Log a day on an arbitrary date (on-demand, e.g. tapping a blank calendar
+ * cell or an empty slot on the circle). Returns the created day so the caller
+ * can navigate to its tracker. */
+export function useLogDay() {
+  const dek = useDek();
+  const queryClient = useQueryClient();
+  const userId = useUserId();
+  return useMutation({
+    mutationFn: async (input: { date: Date; cycleId: string; dayType?: DayType }) => {
+      if (!dek) throw new Error('Vault is locked');
+      const enc = await encryptDayFields({ date: input.date, dayType: input.dayType ?? 'none' }, dek);
+      return daysApi.create({ cycleId: input.cycleId, encDate: enc.encDate, encDayType: enc.encDayType });
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['days', userId] });
     },
   });

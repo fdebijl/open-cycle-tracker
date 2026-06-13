@@ -49,6 +49,16 @@
   background: var(--oct-bg);
   font: inherit;
   color: var(--oct-text);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--oct-blue);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
 }
 
 .outside {

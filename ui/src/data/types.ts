@@ -41,3 +41,18 @@ export interface CategoryLevel {
   name: string;
   icon: string;
 }
+
+/** Per-user preferences, stored end-to-end encrypted in `users.encSettings`. */
+export interface UserSettings {
+  /** Typical cycle length in days; seeds the next-period estimate and the cycle
+   * circle's slot count until real history accumulates. */
+  averageCycleLength: number;
+}
+
+/** The default cycle length offered at onboarding and assumed when a user has
+ * no stored settings yet. */
+export const DEFAULT_AVERAGE_CYCLE_LENGTH = 28;
+
+export const DEFAULT_USER_SETTINGS: UserSettings = {
+  averageCycleLength: DEFAULT_AVERAGE_CYCLE_LENGTH,
+};

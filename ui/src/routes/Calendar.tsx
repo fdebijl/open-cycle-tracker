@@ -13,7 +13,8 @@ import {
   subMonths,
 } from 'date-fns';
 import { Spinner } from '@/components/Spinner';
-import { useDays } from '@/data/hooks';
+import { useCycles, useDays, useLogDay } from '@/data/hooks';
+import { cycleForDate, cycleOnset } from '@/data/cycles';
 import styles from './Calendar.module.scss';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -22,15 +23,41 @@ const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
  * its editor. Replaces the Ember ember-power-calendar view. */
 export function Calendar() {
   const daysQuery = useDays();
+  const cyclesQuery = useCycles();
+  const logDay = useLogDay();
   const navigate = useNavigate();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
 
-  if (daysQuery.isLoading) return <Spinner label="Loading calendar…" />;
+  if (daysQuery.isLoading || cyclesQuery.isLoading) return <Spinner label="Loading calendar…" />;
+
+  const allDays = daysQuery.data ?? [];
+  const cycles = cyclesQuery.data ?? [];
+  const currentCycleId = cycles[0]?.id;
 
   // Index tracked days by calendar date for O(1) cell lookup.
-  const byDate = new Map(
-    (daysQuery.data ?? []).filter((d) => d.date).map((d) => [format(d.date as Date, 'yyyy-MM-dd'), d]),
-  );
+  const byDate = new Map(allDays.filter((d) => d.date).map((d) => [format(d.date as Date, 'yyyy-MM-dd'), d]));
+
+  // Onset per cycle (derived from its days), so a newly logged date lands in the
+  // cycle whose span contains it rather than always the current one.
+  const cyclesWithOnsets = cycles.map((c) => ({
+    id: c.id,
+    onset: cycleOnset(allDays.filter((d) => d.cycleId === c.id)),
+  }));
+
+  const onPick = async (date: Date) => {
+    const existing = byDate.get(format(date, 'yyyy-MM-dd'));
+    if (existing) {
+      navigate(`/days/${existing.id}`);
+      return;
+    }
+    // No cycle yet → send the user to set one up first.
+    if (!currentCycleId) {
+      navigate('/');
+      return;
+    }
+    const day = await logDay.mutateAsync({ date, cycleId: cycleForDate(date, cyclesWithOnsets, currentCycleId) });
+    navigate(`/days/${day.id}`);
+  };
 
   const gridStart = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
   const gridEnd = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
@@ -69,8 +96,8 @@ export function Calendar() {
               type="button"
               className={classes}
               data-daytype={day?.dayType}
-              disabled={!day}
-              onClick={() => day && navigate(`/days/${day.id}`)}
+              disabled={logDay.isPending}
+              onClick={() => onPick(date)}
             >
               {format(date, 'd')}
             </button>
