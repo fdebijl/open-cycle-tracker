@@ -19,5 +19,7 @@
 #
 class CategoryLevel < ApplicationRecord
   belongs_to :category
-  belongs_to :user
+
+  delegate :user, to: :category
+  delegate :global, to: :category
 end

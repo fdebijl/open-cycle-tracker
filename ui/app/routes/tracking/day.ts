@@ -8,7 +8,8 @@ export default class TrackingDayRoute extends Route {
   async model(params: { day_id: string }) {
     return {
       day: await this.store.findRecord('day', params.day_id),
-      categories: await this.store.findAll('category')
+      categories: await this.store.findAll('category'),
+      levels: await this.store.findAll('category-level')
     }
   }
 }

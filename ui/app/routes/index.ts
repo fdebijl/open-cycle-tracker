@@ -1,7 +1,12 @@
 import Route from '@ember/routing/route';
+import { inject as service } from '@ember/service';
+
+import type RouterService from '@ember/routing/router-service';
 
 export default class IndexRoute extends Route {
+  @service router: RouterService;
+
   redirect() {
-    this.transitionTo('cycle.current');
+    this.router.transitionTo('cycle.current');
   }
 }

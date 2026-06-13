@@ -1,4 +1,4 @@
-class CategoryPolicy < ApplicationPolicy
+class CategoryLevelPolicy < ApplicationPolicy
   def writeable?
     if record.respond_to?(:each)
       record.all? { |rec| rec.user == user || (user.admin? && rec.global) }
@@ -15,12 +15,8 @@ class CategoryPolicy < ApplicationPolicy
     end
   end
 
-  def index?
-    readable?
-  end
-
   def permitted_attributes
-    super + [:icon, :name, :color, :global]
+    super + [:icon, :name]
   end
 
   def permitted_attributes_for_filter
@@ -29,14 +25,14 @@ class CategoryPolicy < ApplicationPolicy
 
   class Scope
     def initialize(user, scope)
-      raise Pundit::NotAuthorizedError, "must be logged in" unless user
+      raise Pundit::NotAuthorizedError, 'must be logged in' unless user
 
       @user = user
       @scope = scope
     end
 
     def resolve
-      scope.where(user: user).or(scope.where(global: true))
+      scope.joins(:category).where('categories.user_id = ? OR categories.global = ?', user.id, true)
     end
 
     private

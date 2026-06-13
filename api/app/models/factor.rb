@@ -24,6 +24,9 @@
 #
 class Factor < ApplicationRecord
   # Factors describe the user experience of a day, as they relate to a category.
+  # Currently users can only pick from pre-set levels in a category, but in the future
+  # users can define their own categories and levels, as well as add numerical values (for weight, basal body temp)
+  # and notes to describe their experience.
 
   belongs_to :day
   belongs_to :category_level
