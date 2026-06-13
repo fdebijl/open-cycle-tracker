@@ -1,0 +1,50 @@
+/* Design tokens — extracted from the Ember app's hardcoded colors. Exposed as
+ * CSS custom properties so components (and CSS Modules) can reference them. */
+:root {
+  --oct-red: #e76666;
+  --oct-red-strong: #e33434;
+  --oct-purple: #d4ceec;
+  --oct-blue: #778cfa;
+  --oct-yellow: #fbc87b;
+
+  --oct-text: #222;
+  --oct-muted: #6b6b6b;
+  --oct-border: rgba(0, 0, 0, 0.08);
+  --oct-bg: #fff;
+  --oct-bg-soft: #faf9fc;
+  --oct-danger: #e33434;
+
+  --oct-radius: 8px;
+  --oct-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  /* No external font requests — a privacy-sensitive app should not phone home to
+   * a font CDN. Use the platform's own UI font. */
+  --oct-font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--oct-font);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--oct-text);
+  background: var(--oct-bg-soft);
+}
+
+a {
+  color: var(--oct-blue);
+}
+
+.text--heavy {
+  font-weight: 600;
+}

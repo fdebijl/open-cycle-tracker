@@ -1,0 +1,58 @@
+.nav {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 8px;
+  background: var(--oct-bg);
+  border-top: 1px solid var(--oct-border);
+}
+
+.item {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  color: #8a7ebe;
+  font-size: 11px;
+}
+
+.iconWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--oct-purple);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+}
+
+.priority .iconWrap {
+  width: 58px;
+  height: 58px;
+}
+
+.active .iconWrap {
+  background: #fff;
+}
+
+.label {
+  color: var(--oct-muted);
+}
+
+/* Desktop: left sidebar, vertical, with the priority (Cycle) item on top. */
+.desktop {
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  gap: 14px;
+  height: 100%;
+  border-top: none;
+  border-right: 1px solid var(--oct-border);
+  box-shadow: 4px 0 8px rgba(0, 0, 0, 0.06);
+  padding: 16px 10px;
+
+  .priority {
+    order: -1;
+  }
+}

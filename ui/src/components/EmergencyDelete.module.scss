@@ -1,0 +1,33 @@
+.button {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 18px;
+  border: 1px solid var(--oct-danger);
+  border-radius: var(--oct-radius);
+  background: var(--oct-bg);
+  color: var(--oct-danger);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--oct-danger);
+}
+
+.label {
+  position: relative;
+  mix-blend-mode: difference;
+  color: #fff;
+}

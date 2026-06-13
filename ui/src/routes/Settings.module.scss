@@ -1,0 +1,50 @@
+.page {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--oct-bg);
+  border: 1px solid var(--oct-border);
+  border-radius: var(--oct-radius);
+  padding: 18px;
+  margin-bottom: 16px;
+
+  h2 {
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+}
+
+.account {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 6px 12px;
+  margin: 0;
+
+  dt {
+    color: var(--oct-muted);
+  }
+  dd {
+    margin: 0;
+  }
+}
+
+.muted {
+  color: var(--oct-muted);
+}
+
+.danger {
+  border-color: rgba(227, 52, 52, 0.4);
+}
+
+.ok {
+  color: #2e7d32;
+  font-size: 13px;
+}
+
+.err {
+  color: var(--oct-danger);
+  font-size: 13px;
+}

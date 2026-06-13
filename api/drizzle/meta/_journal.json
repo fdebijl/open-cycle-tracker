@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1781362449243,
+      "tag": "0000_sharp_ultron",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781362886767,
+      "tag": "0001_mighty_doctor_faustus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781366903460,
+      "tag": "0002_panoramic_stature",
+      "breakpoints": true
+    }
+  ]
+}
