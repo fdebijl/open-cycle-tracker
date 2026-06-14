@@ -6,7 +6,7 @@ import { NavBar } from './NavBar';
 import styles from './AppLayout.module.scss';
 
 /** Authenticated app shell: a slim top bar (identity + lock/logout), the routed
- * content, and the NavBar — a bottom bar on mobile, a left sidebar on desktop. */
+ * content, and the NavBar - a bottom bar on mobile, a left sidebar on desktop. */
 export function AppLayout() {
   const identifier = useVault((s) => s.session?.user.identifier);
   const { isDesktop } = useResponsive();

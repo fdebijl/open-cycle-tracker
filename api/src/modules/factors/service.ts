@@ -13,6 +13,7 @@ export function serializeFactor(f: Factor) {
     userId: f.userId,
     categoryLevelId: f.categoryLevelId,
     encNotes: encOut(f.encNotes),
+    encValue: encOut(f.encValue),
     createdAt: f.createdAt,
     updatedAt: f.updatedAt,
   };
@@ -63,6 +64,7 @@ export async function createFactor(ctx: AuthContext, input: CreateFactorInput) {
       userId: ctx.userId,
       categoryLevelId: input.categoryLevelId,
       encNotes: input.encNotes ?? null,
+      encValue: input.encValue ?? null,
     })
     .returning();
   if (!row) throw new Error('Failed to create factor');
@@ -72,6 +74,7 @@ export async function createFactor(ctx: AuthContext, input: CreateFactorInput) {
 export async function updateFactor(id: string, ctx: AuthContext, input: UpdateFactorInput) {
   const patch: Partial<typeof factors.$inferInsert> = {};
   if ('encNotes' in input) patch.encNotes = input.encNotes ?? null;
+  if ('encValue' in input) patch.encValue = input.encValue ?? null;
 
   const [row] = await db
     .update(factors)

@@ -35,14 +35,14 @@ describe('cycles / days / factors CRUD with E2EE payloads', () => {
       .send({
         cycleId,
         encDate: enc('2026-06-13', u.dek),
-        encDayType: enc('period', u.dek),
+        encNotes: enc('cramps all day', u.dek),
         order: 1,
       })
       .expect(201);
 
     // Server returns ciphertext; only the client (with the DEK) can read it.
     expect(dec(day.body.encDate, u.dek)).toBe('2026-06-13');
-    expect(dec(day.body.encDayType, u.dek)).toBe('period');
+    expect(dec(day.body.encNotes, u.dek)).toBe('cramps all day');
 
     // Attach a factor referencing a global category level.
     const levels = await request(app).get('/category_levels').set(auth(u.token)).expect(200);
@@ -70,17 +70,17 @@ describe('cycles / days / factors CRUD with E2EE payloads', () => {
       .send({
         cycleId: cycle.body.id,
         encDate: enc('2026-01-02', u.dek),
-        encDayType: enc('ovulation', u.dek),
+        encNotes: enc('tender breasts', u.dek),
       })
       .expect(201);
 
     // Read the raw column straight from Postgres and assert no plaintext.
-    const rows = await db.select({ encDate: days.encDate, encDayType: days.encDayType }).from(days);
+    const rows = await db.select({ encDate: days.encDate, encNotes: days.encNotes }).from(days);
     expect(rows).toHaveLength(1);
-    const blob = Buffer.concat([rows[0]!.encDate, rows[0]!.encDayType]);
+    const blob = Buffer.concat([rows[0]!.encDate, rows[0]!.encNotes!]);
     expect(blob).toBeInstanceOf(Buffer);
     expect(blob.toString('utf8')).not.toContain('2026-01-02');
-    expect(blob.toString('utf8')).not.toContain('ovulation');
+    expect(blob.toString('utf8')).not.toContain('tender breasts');
   });
 
   it('updates and deletes a day', async () => {
@@ -89,15 +89,15 @@ describe('cycles / days / factors CRUD with E2EE payloads', () => {
     const day = await request(app)
       .post('/days')
       .set(auth(u.token))
-      .send({ cycleId: cycle.body.id, encDate: enc('a', u.dek), encDayType: enc('none', u.dek) })
+      .send({ cycleId: cycle.body.id, encDate: enc('a', u.dek) })
       .expect(201);
 
     const updated = await request(app)
       .patch(`/days/${day.body.id}`)
       .set(auth(u.token))
-      .send({ encDayType: enc('pms', u.dek), order: 5 })
+      .send({ encNotes: enc('updated note', u.dek), order: 5 })
       .expect(200);
-    expect(dec(updated.body.encDayType, u.dek)).toBe('pms');
+    expect(dec(updated.body.encNotes, u.dek)).toBe('updated note');
     expect(updated.body.order).toBe(5);
 
     await request(app).delete(`/days/${day.body.id}`).set(auth(u.token)).expect(204);
@@ -139,7 +139,6 @@ describe('authorization', () => {
       .send({
         cycleId: cycle.body.id,
         encDate: enc('x', bob.dek),
-        encDayType: enc('none', bob.dek),
       })
       .expect(404);
   });
@@ -187,7 +186,6 @@ describe('authorization', () => {
       .send({
         cycleId: cycle.body.id,
         encDate: enc('a', u.dek),
-        encDayType: enc('none', u.dek),
         userId: 'sneaky',
       })
       .expect(400);

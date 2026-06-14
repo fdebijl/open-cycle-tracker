@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Open Cycle Tracker — API image (Node + Express + Drizzle, the ciphertext store).
+# Open Cycle Tracker - API image (Node + Express + Drizzle, the ciphertext store).
 # Build context is the repo root: `docker build -f api.dockerfile .`
 
 # ---- builder: install all deps and compile to dist/ -------------------------
@@ -39,7 +39,7 @@ RUN pnpm install --prod --frozen-lockfile && pnpm store prune
 COPY --from=builder /app/dist ./dist
 COPY api/drizzle ./drizzle
 
-# Drop privileges — the `node` user ships with the base image.
+# Drop privileges - the `node` user ships with the base image.
 USER node
 
 EXPOSE 3000

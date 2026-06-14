@@ -1,4 +1,4 @@
-# Open Cycle Tracker — suggested self-hosting stack.
+# Open Cycle Tracker - suggested self-hosting stack.
 #
 #   1. Copy the secrets below into a `.env` next to this file (or export them):
 #        POSTGRES_PASSWORD=$(openssl rand -base64 24)

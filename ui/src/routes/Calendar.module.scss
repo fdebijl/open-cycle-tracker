@@ -97,16 +97,7 @@
     background: #d4ceec;
     color: var(--oct-text);
   }
-  &[data-daytype='pms'] {
-    background: #fbc87b;
-  }
   &[data-daytype='period'] {
     background: #e76666;
-  }
-  &[data-daytype='fertile'] {
-    background: #778cfa;
-  }
-  &[data-daytype='ovulation'] {
-    background: #4f63d8;
   }
 }

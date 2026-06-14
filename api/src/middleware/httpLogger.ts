@@ -2,7 +2,7 @@ import { pinoHttp } from 'pino-http';
 import { logger } from '../lib/logger.js';
 
 /**
- * Request logging that deliberately records only method, path, and status —
+ * Request logging that deliberately records only method, path, and status -
  * NOT client IP, headers, query, or body. For this threat model, request
  * metadata that ties an identity to activity is itself sensitive, so we keep
  * the absolute minimum needed to operate the service.

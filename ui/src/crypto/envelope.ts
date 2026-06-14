@@ -28,9 +28,9 @@ export interface SignupPayload {
 
 export interface SignupResult {
   payload: SignupPayload;
-  /** The raw DEK — held in memory after signup, never persisted. */
+  /** The raw DEK - held in memory after signup, never persisted. */
   dek: Uint8Array;
-  /** The recovery mnemonic — shown to the user exactly once. */
+  /** The recovery mnemonic - shown to the user exactly once. */
   recoveryMnemonic: string;
 }
 
@@ -49,7 +49,7 @@ export async function createSignup(
   const saltRecovery = await randomBytes(SALT_BYTES);
   const saltRecoveryAuth = await randomBytes(SALT_BYTES);
   const recoverySecret = await randomBytes(RECOVERY_BYTES);
-  // The recovery code is the base64 of the secret — this string is the KDF
+  // The recovery code is the base64 of the secret - this string is the KDF
   // input (matching the API's reference client), while the user sees the BIP39
   // mnemonic of the same bytes. The two encode the identical secret.
   const recoveryCode = await toBase64(recoverySecret);

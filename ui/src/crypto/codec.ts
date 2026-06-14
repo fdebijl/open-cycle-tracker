@@ -27,7 +27,7 @@ export function utf8Decode(bytes: Uint8Array): string {
 /**
  * Encode the 32-byte recovery secret as a 24-word BIP39 mnemonic for the user
  * to write down. The mnemonic is purely a reversible display encoding of the
- * raw secret — the secret bytes, not the words, are what feed the recovery KDF.
+ * raw secret - the secret bytes, not the words, are what feed the recovery KDF.
  */
 export function secretToMnemonic(secret: Uint8Array): string {
   return entropyToMnemonic(secret, wordlist);

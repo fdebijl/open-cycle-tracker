@@ -2,29 +2,17 @@ import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Spinner } from '@/components/Spinner';
+import { BbtField } from '@/components/category/BbtField';
 import { CategoryRow } from '@/components/category/CategoryRow';
-import {
-  useCategories,
-  useCategoryLevels,
-  useCreateFactor,
-  useDay,
-  useDeleteFactor,
-  useUpdateDay,
-} from '@/data/hooks';
-import { DAY_TYPES } from '@/data/types';
-import type { CategoryLevel, DayType } from '@/data/types';
+import { useCategories, useCategoryLevels, useCreateFactor, useDay, useDeleteFactor } from '@/data/hooks';
+import { BBT_SLUG, FLOW_SLUG } from '@/data/cycles';
+import type { CategoryLevel } from '@/data/types';
+import { DayNote } from './DayNote';
 import styles from './DayTracker.module.scss';
 
-const DAY_TYPE_LABELS: Record<DayType, string> = {
-  none: 'None',
-  period: 'Period',
-  fertile: 'Fertile',
-  ovulation: 'Ovulation',
-  pms: 'PMS',
-};
-
-/** Edit a single day: set its phase (day type) and toggle the factors tracked
- * against each category level. Ports the Ember `tracking/day` route. */
+/** Edit a single day: record flow (the period signal), a BBT reading, symptom
+ * factors, and a free-text note. Fertile/ovulation are not tracked here - they're
+ * a computed forecast shown in the cycle overview, not user-reported. */
 export function DayTracker() {
   const { id } = useParams();
   const dayQuery = useDay(id);
@@ -33,8 +21,9 @@ export function DayTracker() {
 
   const createFactor = useCreateFactor();
   const deleteFactor = useDeleteFactor(id ?? '');
-  const updateDay = useUpdateDay();
 
+  // Group levels under their category, ordered by their ordinal `order` so
+  // scales like Flow read spotting → heavy.
   const levelsByCategory = useMemo(() => {
     const map = new Map<string, CategoryLevel[]>();
     for (const level of levelsQuery.data ?? []) {
@@ -42,6 +31,7 @@ export function DayTracker() {
       list.push(level);
       map.set(level.categoryId, list);
     }
+    for (const list of map.values()) list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return map;
   }, [levelsQuery.data]);
 
@@ -57,10 +47,26 @@ export function DayTracker() {
   const factorByLevel = new Map(day.factors.map((f) => [f.categoryLevelId, f]));
   const mutating = createFactor.isPending || deleteFactor.isPending;
 
+  // Toggle a discrete factor on/off (multi-select categories).
   function toggleLevel(levelId: string) {
     const existing = factorByLevel.get(levelId);
     if (existing) deleteFactor.mutate(existing.id);
     else if (id) createFactor.mutate({ dayId: id, categoryLevelId: levelId });
+  }
+
+  // Single-select for an ordinal category (Flow): picking a level replaces any
+  // other selected level in the same category; picking the active one clears it.
+  function selectSingle(levelId: string, categoryId: string) {
+    const existing = factorByLevel.get(levelId);
+    if (existing) {
+      deleteFactor.mutate(existing.id);
+      return;
+    }
+    for (const level of levelsByCategory.get(categoryId) ?? []) {
+      const other = factorByLevel.get(level.id);
+      if (other) deleteFactor.mutate(other.id);
+    }
+    if (id) createFactor.mutate({ dayId: id, categoryLevelId: levelId });
   }
 
   return (
@@ -69,34 +75,40 @@ export function DayTracker() {
         <h1 className={styles.date}>
           {day.date ? format(day.date, 'EEEE, d MMMM yyyy') : `Day ${day.order ?? ''}`}
         </h1>
-        <div className={styles.dayTypes}>
-          {DAY_TYPES.map((dt) => (
-            <button
-              key={dt}
-              type="button"
-              className={dt === day.dayType ? `${styles.dayType} ${styles.activeType}` : styles.dayType}
-              aria-pressed={dt === day.dayType}
-              disabled={updateDay.isPending}
-              onClick={() => id && updateDay.mutate({ id, dayType: dt })}
-            >
-              {DAY_TYPE_LABELS[dt]}
-            </button>
-          ))}
-        </div>
       </header>
 
       <div className={styles.categories}>
-        {(categoriesQuery.data ?? []).map((category) => (
-          <CategoryRow
-            key={category.id}
-            category={category}
-            levels={levelsByCategory.get(category.id) ?? []}
-            selectedLevelIds={selectedLevelIds}
-            busy={mutating}
-            onToggleLevel={toggleLevel}
-          />
-        ))}
+        {(categoriesQuery.data ?? []).map((category) => {
+          const levels = levelsByCategory.get(category.id) ?? [];
+          // BBT is a numeric reading rather than discrete levels.
+          if (category.slug === BBT_SLUG) {
+            const level = levels[0];
+            return (
+              <BbtField
+                key={category.id}
+                dayId={id ?? ''}
+                category={category}
+                level={level}
+                factor={level ? factorByLevel.get(level.id) : undefined}
+              />
+            );
+          }
+          // Flow is an ordinal scale - single-select.
+          const single = category.slug === FLOW_SLUG;
+          return (
+            <CategoryRow
+              key={category.id}
+              category={category}
+              levels={levels}
+              selectedLevelIds={selectedLevelIds}
+              busy={mutating}
+              onToggleLevel={single ? (levelId) => selectSingle(levelId, category.id) : toggleLevel}
+            />
+          );
+        })}
       </div>
+
+      {id && <DayNote dayId={id} notes={day.notes} />}
     </section>
   );
 }

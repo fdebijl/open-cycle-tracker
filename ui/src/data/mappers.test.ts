@@ -21,7 +21,7 @@ function baseDay(overrides: Partial<DayDto>): DayDto {
     cycleId: 'c1',
     userId: 'u1',
     encDate: null,
-    encDayType: null,
+    encNotes: null,
     order: 1,
     createdAt: '2026-06-13T00:00:00Z',
     updatedAt: '2026-06-13T00:00:00Z',
@@ -30,41 +30,62 @@ function baseDay(overrides: Partial<DayDto>): DayDto {
 }
 
 describe('day mapper', () => {
-  it('round-trips date and dayType through encrypt/decrypt', async () => {
+  it('round-trips the date through encrypt/decrypt', async () => {
     const date = new Date(2026, 5, 13); // 2026-06-13 local
-    const enc = await encryptDayFields({ date, dayType: 'period' }, dek);
-    const day = await decryptDay(baseDay({ encDate: enc.encDate, encDayType: enc.encDayType }), dek);
+    const enc = await encryptDayFields({ date }, dek);
+    const day = await decryptDay(baseDay({ encDate: enc.encDate }), dek);
 
-    expect(day.dayType).toBe('period');
     expect(format(day.date!, 'yyyy-MM-dd')).toBe('2026-06-13');
   });
 
-  it('defaults to dayType "none" when encDayType is absent', async () => {
+  it('defaults date and notes to null when absent', async () => {
     const day = await decryptDay(baseDay({}), dek);
-    expect(day.dayType).toBe('none');
     expect(day.date).toBeNull();
+    expect(day.notes).toBeNull();
   });
 
-  it('coerces an unknown day type to "none"', async () => {
-    const day = await decryptDay(baseDay({ encDayType: await encryptString('garbage', dek) }), dek);
-    expect(day.dayType).toBe('none');
+  it('round-trips an optional free-text note', async () => {
+    const enc = await encryptDayFields({ notes: 'slept badly, cramps' }, dek);
+    const day = await decryptDay(baseDay({ encNotes: enc.encNotes }), dek);
+    expect(day.notes).toBe('slept badly, cramps');
+  });
+
+  it('clears the note when given null or empty', async () => {
+    expect((await encryptDayFields({ notes: null }, dek)).encNotes).toBeNull();
+    expect((await encryptDayFields({ notes: '' }, dek)).encNotes).toBeNull();
   });
 });
 
+function baseFactor(overrides: Partial<FactorDto>): FactorDto {
+  return {
+    id: 'f1',
+    dayId: 'd1',
+    userId: 'u1',
+    categoryLevelId: 'cl1',
+    encNotes: null,
+    encValue: null,
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
+
 describe('factor mapper', () => {
   it('decrypts notes when present', async () => {
-    const dto: FactorDto = {
-      id: 'f1',
-      dayId: 'd1',
-      userId: 'u1',
-      categoryLevelId: 'cl1',
-      encNotes: await encryptString('felt tired', dek),
-      createdAt: '',
-      updatedAt: '',
-    };
-    const factor = await decryptFactor(dto, dek);
+    const factor = await decryptFactor(baseFactor({ encNotes: await encryptString('felt tired', dek) }), dek);
     expect(factor.notes).toBe('felt tired');
     expect(factor.categoryLevelId).toBe('cl1');
+    expect(factor.value).toBeNull();
+  });
+
+  it('decrypts an optional numeric reading (e.g. BBT)', async () => {
+    const factor = await decryptFactor(baseFactor({ encValue: await encryptString('36.65', dek) }), dek);
+    expect(factor.value).toBe(36.65);
+  });
+
+  it('falls back to null when the value is not a finite number', async () => {
+    const factor = await decryptFactor(baseFactor({ encValue: await encryptString('not-a-number', dek) }), dek);
+    expect(factor.value).toBeNull();
   });
 });
 
@@ -102,9 +123,10 @@ describe('category mapper (two-tier)', () => {
       id: 'cat1',
       userId: null,
       global: true,
-      name: 'Bleeding',
+      slug: 'flow',
+      name: 'Flow',
       icon: 'water',
-      color: '#ff0000',
+      color: '#e76666',
       encName: null,
       encIcon: null,
       encColor: null,
@@ -112,7 +134,7 @@ describe('category mapper (two-tier)', () => {
       updatedAt: '',
     };
     const cat = await decryptCategory(dto, dek);
-    expect(cat).toMatchObject({ global: true, name: 'Bleeding', icon: 'water', color: '#ff0000' });
+    expect(cat).toMatchObject({ global: true, slug: 'flow', name: 'Flow', icon: 'water', color: '#e76666' });
   });
 
   it('decrypts encrypted fields for user categories', async () => {
@@ -120,6 +142,7 @@ describe('category mapper (two-tier)', () => {
       id: 'cat2',
       userId: 'u1',
       global: false,
+      slug: null,
       name: null,
       icon: null,
       color: null,
@@ -139,6 +162,7 @@ describe('category level mapper', () => {
     const userLevel: CategoryLevelDto = {
       id: 'l1',
       categoryId: 'cat2',
+      order: null,
       name: null,
       icon: null,
       encName: await encryptString('Strong', dek),
@@ -149,6 +173,7 @@ describe('category level mapper', () => {
     const globalLevel: CategoryLevelDto = {
       id: 'l2',
       categoryId: 'cat1',
+      order: 3,
       name: 'Heavy',
       icon: 'water',
       encName: null,
@@ -157,6 +182,8 @@ describe('category level mapper', () => {
       updatedAt: '',
     };
     expect((await decryptCategoryLevel(userLevel, dek)).name).toBe('Strong');
-    expect((await decryptCategoryLevel(globalLevel, dek)).name).toBe('Heavy');
+    const heavy = await decryptCategoryLevel(globalLevel, dek);
+    expect(heavy.name).toBe('Heavy');
+    expect(heavy.order).toBe(3);
   });
 });

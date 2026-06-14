@@ -12,7 +12,7 @@ import type { NextPeriodEstimate } from './cycles';
  * for display, never persisted and never written onto `Day` records (so they
  * can't clobber the user's manual `fertile`/`ovulation` labels).
  *
- * The fertile/ovulation forecast uses the calendar (rhythm) method — a fixed
+ * The fertile/ovulation forecast uses the calendar (rhythm) method - a fixed
  * luteal phase counted back from the predicted onset. Inputs like BBT and
  * cervical mucus that would sharpen it are a separate milestone (roadmap #6).
  */
@@ -24,7 +24,7 @@ export const MIN_CYCLES_TO_LEARN = 3;
  * estimate tracks recent rhythm rather than ancient history. */
 export const ROLLING_WINDOW = 6;
 /** Onset gaps outside this range are treated as outliers and dropped (a skipped
- * or very late period, or a retroactively inserted onset — roadmap #12). */
+ * or very late period, or a retroactively inserted onset - roadmap #12). */
 export const MIN_PLAUSIBLE_LENGTH = 15;
 export const MAX_PLAUSIBLE_LENGTH = 90;
 /** Luteal phase length: days from ovulation to the next period onset. Fairly

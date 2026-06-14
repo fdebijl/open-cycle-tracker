@@ -16,6 +16,7 @@ export function serializeCategory(c: Category) {
     id: c.id,
     userId: c.userId,
     global: c.global,
+    slug: c.slug,
     name: c.name,
     icon: c.icon,
     color: c.color,

@@ -1,0 +1,1 @@
+ALTER TABLE "days" DROP COLUMN "enc_day_type";

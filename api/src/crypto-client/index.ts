@@ -3,7 +3,7 @@
  *
  * This is the canonical implementation of the encryption contract in
  * docs/encryption.md. It runs on the CLIENT (browser/native), NOT on the
- * server — the API never imports it at runtime. It lives in this repo so that:
+ * server - the API never imports it at runtime. It lives in this repo so that:
  *   1. it is the single source of truth a web/native client can copy or share,
  *   2. the test suite can prove the envelope round-trips and that the payload
  *      sent to the server contains no plaintext.

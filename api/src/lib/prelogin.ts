@@ -3,7 +3,7 @@ import { env } from '../config/env.js';
 
 /**
  * Anti-enumeration pseudo-salt. When /auth/prelogin is asked for an identifier
- * that does not exist, we must still return a plausible, STABLE 16-byte salt —
+ * that does not exist, we must still return a plausible, STABLE 16-byte salt -
  * otherwise an attacker learns which identifiers are registered by observing
  * whether a real salt comes back. We derive it deterministically from the
  * identifier and a server secret so the same unknown identifier always yields

@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 /**
  * Zod-validated environment. Fail fast at boot if anything required is missing
- * or malformed. No secrets live in source — everything comes from the
+ * or malformed. No secrets live in source - everything comes from the
  * environment (see .env.example).
  */
 const envSchema = z.object({

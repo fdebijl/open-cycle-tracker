@@ -1,4 +1,4 @@
-/* Design tokens — extracted from the Ember app's hardcoded colors. Exposed as
+/* Design tokens - extracted from the Ember app's hardcoded colors. Exposed as
  * CSS custom properties so components (and CSS Modules) can reference them. */
 :root {
   --oct-red: #e76666;
@@ -17,7 +17,7 @@
   --oct-radius: 8px;
   --oct-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 
-  /* No external font requests — a privacy-sensitive app should not phone home to
+  /* No external font requests - a privacy-sensitive app should not phone home to
    * a font CDN. Use the platform's own UI font. */
   --oct-font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
