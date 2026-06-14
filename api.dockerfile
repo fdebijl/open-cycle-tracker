@@ -4,7 +4,7 @@
 # Build context is the repo root: `docker build -f api.dockerfile .`
 
 # ---- builder: install all deps and compile to dist/ -------------------------
-FROM node:20-bookworm-slim AS builder
+FROM node:24-bookworm-slim AS builder
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -22,7 +22,7 @@ RUN pnpm exec tsup src/index.ts src/db/migrate.ts src/db/seed.ts \
       --format esm --target node20 --clean
 
 # ---- runtime: prod deps + compiled output only ------------------------------
-FROM node:20-bookworm-slim AS runtime
+FROM node:24-bookworm-slim AS runtime
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 ENV NODE_ENV=production

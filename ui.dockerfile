@@ -8,8 +8,7 @@
 # with `--build-arg VITE_API_URL=https://api.example.com` rather than setting an
 # env var at `docker run` time.
 
-# ---- builder: produce the static bundle in dist/ ----------------------------
-FROM node:20-bookworm-slim AS builder
+FROM node:24-bookworm-slim AS builder
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -23,7 +22,6 @@ ENV VITE_API_URL=$VITE_API_URL
 COPY ui/ ./
 RUN pnpm build
 
-# ---- runtime: nginx serving the SPA -----------------------------------------
 FROM nginx:1.27-alpine AS runtime
 
 # SPA routing: every unknown path falls back to index.html so React Router can

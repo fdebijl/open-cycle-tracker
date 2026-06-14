@@ -4,7 +4,7 @@
   "description": "Self-hosted, end-to-end-encrypted menstrual cycle tracker API",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
