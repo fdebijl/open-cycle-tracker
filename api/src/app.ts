@@ -16,6 +16,12 @@ import { usersRouter } from './modules/users/routes.js';
 export function createApp(): Express {
   const app = express();
 
+  // Express 5 changed the default query parser from 'extended' (qs) to 'simple'
+  // (Node's querystring), which no longer parses bracket notation like
+  // `?filter[id]=...` into nested objects. idFilter() depends on that nesting,
+  // so opt back into the extended parser.
+  app.set('query parser', 'extended');
+
   // Security headers. This is a JSON API, so disable the (HTML-oriented) CSP.
   app.use(helmet({ contentSecurityPolicy: false }));
 
