@@ -11,7 +11,7 @@
 FROM node:24-bookworm-slim AS builder
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable
 WORKDIR /app
 
 COPY ui/package.json ui/pnpm-lock.yaml ui/pnpm-workspace.yaml ./

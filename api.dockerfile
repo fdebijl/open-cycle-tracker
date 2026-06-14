@@ -7,7 +7,7 @@
 FROM node:24-bookworm-slim AS builder
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable
 WORKDIR /app
 
 # Install with a frozen lockfile first (cached unless the manifest changes).
@@ -26,7 +26,7 @@ FROM node:24-bookworm-slim AS runtime
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 ENV NODE_ENV=production
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable
 WORKDIR /app
 
 # Production dependencies only. The platform-specific @node-rs/argon2 binary is
