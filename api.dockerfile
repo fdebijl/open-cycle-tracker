@@ -11,7 +11,7 @@ RUN corepack enable
 WORKDIR /app
 
 # Install with a frozen lockfile first (cached unless the manifest changes).
-COPY api/package.json api/pnpm-lock.yaml ./
+COPY api/package.json api/pnpm-lock.yaml api/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Compile the server plus the migrate/seed entrypoints. tsup leaves runtime
@@ -31,7 +31,7 @@ WORKDIR /app
 
 # Production dependencies only. The platform-specific @node-rs/argon2 binary is
 # pulled here, so it matches this image's glibc (hence bookworm, not alpine).
-COPY api/package.json api/pnpm-lock.yaml ./
+COPY api/package.json api/pnpm-lock.yaml api/pnpm-workspace.yaml ./
 RUN pnpm install --prod --frozen-lockfile && pnpm store prune
 
 # Compiled JS and the SQL migrations the migrator reads at runtime (./drizzle,

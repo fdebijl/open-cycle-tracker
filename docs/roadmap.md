@@ -227,6 +227,9 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
 22. GHA
     Add a GHA for running tests and test-building images on PR's. 
 
+23. DHI
+    Use Docker's Hardened Images for the base images of UI and API
+
 ## Bottom line-
 
 Milestone 1 turned the app from a manual logbook into a real onset-driven
