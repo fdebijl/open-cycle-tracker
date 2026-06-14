@@ -1,29 +1,64 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, subDays } from 'date-fns';
-import { cycleDayNumber, cycleForDate, cycleOnset, nextPeriodEstimate } from './cycles';
-import type { Day } from './types';
+import {
+  computePeriodDayIds,
+  cycleDayNumber,
+  cycleForDate,
+  cycleOnset,
+  flowPeriodLevelIds,
+  nextPeriodEstimate,
+} from './cycles';
+import type { Category, CategoryLevel, Day } from './types';
 
 function day(overrides: Partial<Day>): Day {
-  return { id: 'd', cycleId: 'c', order: null, date: null, dayType: 'none', ...overrides };
+  return { id: 'd', cycleId: 'c', order: null, date: null, notes: null, ...overrides };
 }
 
 describe('cycleOnset', () => {
-  it('is the earliest period day when any are tracked', () => {
+  it('is the earliest period day (by id) when period day ids are supplied', () => {
     const days = [
-      day({ date: new Date(2026, 0, 3), dayType: 'period' }),
-      day({ date: new Date(2026, 0, 1), dayType: 'period' }),
-      day({ date: new Date(2025, 11, 28), dayType: 'none' }),
+      day({ id: 'd3', date: new Date(2026, 0, 3) }),
+      day({ id: 'd1', date: new Date(2026, 0, 1) }),
+      day({ id: 'd0', date: new Date(2025, 11, 28) }),
     ];
-    expect(cycleOnset(days)).toEqual(new Date(2026, 0, 1));
+    // d1 and d3 are period (flow ≥ Light); d0 (the earliest dated) is not.
+    expect(cycleOnset(days, new Set(['d1', 'd3']))).toEqual(new Date(2026, 0, 1));
   });
 
-  it('falls back to the earliest dated day when no period is tracked', () => {
-    const days = [day({ date: new Date(2026, 0, 5) }), day({ date: new Date(2026, 0, 2), dayType: 'pms' })];
+  it('falls back to the earliest dated day when no period day ids are supplied', () => {
+    const days = [day({ date: new Date(2026, 0, 5) }), day({ date: new Date(2026, 0, 2) })];
     expect(cycleOnset(days)).toEqual(new Date(2026, 0, 2));
+    expect(cycleOnset(days, new Set())).toEqual(new Date(2026, 0, 2));
   });
 
   it('is null when the cycle has no dated days', () => {
     expect(cycleOnset([day({}), day({})])).toBeNull();
+  });
+});
+
+describe('flow period detection', () => {
+  const categories: Category[] = [
+    { id: 'flow', userId: null, global: true, slug: 'flow', name: 'Flow', icon: '', color: '' },
+    { id: 'pain', userId: null, global: true, slug: 'pain', name: 'Pain', icon: '', color: '' },
+  ];
+  const levels: CategoryLevel[] = [
+    { id: 'spotting', categoryId: 'flow', order: 0, name: 'Spotting', icon: '' },
+    { id: 'light', categoryId: 'flow', order: 1, name: 'Light', icon: '' },
+    { id: 'heavy', categoryId: 'flow', order: 3, name: 'Heavy', icon: '' },
+    { id: 'cramps', categoryId: 'pain', order: 0, name: 'Cramps', icon: '' },
+  ];
+
+  it('flowPeriodLevelIds returns flow levels at intensity ≥ Light (excludes spotting)', () => {
+    expect(flowPeriodLevelIds(categories, levels)).toEqual(new Set(['light', 'heavy']));
+  });
+
+  it('computePeriodDayIds marks days carrying a period-level flow factor', () => {
+    const factors = [
+      { dayId: 'd1', categoryLevelId: 'light' }, // period
+      { dayId: 'd2', categoryLevelId: 'spotting' }, // spotting only - not a period day
+      { dayId: 'd3', categoryLevelId: 'cramps' }, // unrelated factor
+    ];
+    expect(computePeriodDayIds(factors, flowPeriodLevelIds(categories, levels))).toEqual(new Set(['d1']));
   });
 });
 

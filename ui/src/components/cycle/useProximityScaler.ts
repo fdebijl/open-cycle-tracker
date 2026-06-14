@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { RefObject } from 'react';
 
 /**
- * Scales day markers up as the pointer approaches them — the React port of the
+ * Scales day markers up as the pointer approaches them - the React port of the
  * Ember `child-proximity-scaler` modifier. Mutates child DOM nodes directly
  * (selected by `[data-day-marker]`) rather than through React state, so moving
  * the pointer doesn't re-render 28 markers per frame.

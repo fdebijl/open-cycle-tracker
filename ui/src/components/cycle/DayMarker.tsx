@@ -11,6 +11,7 @@ import styles from './DayMarker.module.scss';
  * proximity scaler. */
 export function DayMarker({
   day,
+  isPeriod = false,
   date,
   dayNumber,
   forecast,
@@ -18,6 +19,9 @@ export function DayMarker({
   onSelect,
 }: {
   day?: Day;
+  /** Whether this logged day carries a period-level Flow factor (color it as a
+   * period day, taking precedence over its manual phase tag). */
+  isPeriod?: boolean;
   date: Date;
   dayNumber: number;
   forecast?: 'fertile' | 'ovulation';
@@ -25,10 +29,11 @@ export function DayMarker({
   onSelect?: () => void;
 }) {
   const today = isToday(date);
+  const dayType = day && isPeriod ? 'period' : 'none';
   return (
     <div
       data-day-marker
-      data-daytype={day?.dayType ?? 'none'}
+      data-daytype={dayType}
       data-forecast={!day && forecast ? forecast : undefined}
       data-today={today ? '1' : undefined}
       data-empty={day ? undefined : '1'}

@@ -15,7 +15,7 @@ import {
   subMonths,
 } from 'date-fns';
 import { Spinner } from '@/components/Spinner';
-import { useCycles, useDays, useLogDay, useUserSettings } from '@/data/hooks';
+import { useCycles, useDays, useLogDay, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleForDate, cycleOnsets } from '@/data/cycles';
 import { cycleStats, forecastDayType, predictFertileWindow, predictNextPeriod } from '@/data/prediction';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
@@ -29,6 +29,7 @@ export function Calendar() {
   const daysQuery = useDays();
   const cyclesQuery = useCycles();
   const settingsQuery = useUserSettings();
+  const periodDayIds = usePeriodDayIds();
   const logDay = useLogDay();
   const navigate = useNavigate();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
@@ -44,7 +45,7 @@ export function Calendar() {
 
   // Onset per cycle (derived from its days), so a newly logged date lands in the
   // cycle whose span contains it rather than always the current one.
-  const cyclesWithOnsets = cycleOnsets(cycles, allDays);
+  const cyclesWithOnsets = cycleOnsets(cycles, allDays, periodDayIds);
 
   // Forecast (non-persisted overlay) off the current cycle's onset.
   const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
@@ -108,6 +109,9 @@ export function Calendar() {
           const key = format(date, 'yyyy-MM-dd');
           const day = byDate.get(key);
           const forecast = day ? null : forecastFor(date);
+          // A logged day is colored as a period day when it carries a Flow factor,
+          // otherwise neutral ('none'); empty cells get no day-type tint.
+          const dayType = day ? (periodDayIds.has(day.id) ? 'period' : 'none') : undefined;
           const classes = [
             styles.cell,
             isSameMonth(date, month) ? '' : styles.outside,
@@ -120,7 +124,7 @@ export function Calendar() {
               key={key}
               type="button"
               className={classes}
-              data-daytype={day?.dayType}
+              data-daytype={dayType}
               data-forecast={forecast ?? undefined}
               disabled={logDay.isPending}
               onClick={() => onPick(date)}

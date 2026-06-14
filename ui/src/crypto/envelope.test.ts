@@ -41,7 +41,7 @@ describe('signup envelope', () => {
     ).rejects.toThrow();
   });
 
-  it('contains NO plaintext password or DEK material — only opaque base64 blobs', async () => {
+  it('contains NO plaintext password or DEK material - only opaque base64 blobs', async () => {
     const password = 'super-secret-password-1234';
     const { payload, dek } = await createSignup('alice', password, 'alice@example.com', params);
 

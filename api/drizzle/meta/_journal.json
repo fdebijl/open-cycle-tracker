@@ -22,6 +22,20 @@
       "when": 1781366903460,
       "tag": "0002_panoramic_stature",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781467815450,
+      "tag": "0003_good_anita_blake",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781469526300,
+      "tag": "0004_known_jackal",
+      "breakpoints": true
     }
   ]
 }

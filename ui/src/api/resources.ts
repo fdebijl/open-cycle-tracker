@@ -29,7 +29,7 @@ export const cyclesApi = {
 export interface DayWritePayload {
   cycleId?: string;
   encDate?: string;
-  encDayType?: string;
+  encNotes?: string | null;
   order?: number | null;
 }
 
@@ -45,6 +45,7 @@ export interface FactorWritePayload {
   dayId?: string;
   categoryLevelId?: string;
   encNotes?: string | null;
+  encValue?: string | null;
 }
 
 export const factorsApi = {

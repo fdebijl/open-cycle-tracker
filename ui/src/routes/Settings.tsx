@@ -96,7 +96,7 @@ export function Settings() {
       <div className={`${styles.card} ${styles.danger}`}>
         <h2>Danger zone</h2>
         <p className={styles.muted}>
-          Deleting your account permanently destroys all your encrypted data. This cannot be undone — and because the
+          Deleting your account permanently destroys all your encrypted data. This cannot be undone - and because the
           server cannot read your data, it cannot be recovered.
         </p>
         <EmergencyDelete label="Hold to delete account" onConfirm={onDelete} />

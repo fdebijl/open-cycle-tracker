@@ -4,7 +4,15 @@ import { Spinner } from '@/components/Spinner';
 import { CycleCircle } from '@/components/cycle/CycleCircle';
 import { CycleSetupForm } from '@/components/cycle/CycleSetupForm';
 import type { CycleSetupValues } from '@/components/cycle/CycleSetupForm';
-import { useCycles, useDays, useLogDay, useStartCycle, useUpdateSettings, useUserSettings } from '@/data/hooks';
+import {
+  useCycles,
+  useDays,
+  useLogDay,
+  usePeriodDayIds,
+  useStartCycle,
+  useUpdateSettings,
+  useUserSettings,
+} from '@/data/hooks';
 import { cycleOnset, cycleOnsets } from '@/data/cycles';
 import { cycleStats, predictFertileWindow } from '@/data/prediction';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
@@ -12,14 +20,15 @@ import styles from './CurrentCycle.module.scss';
 
 /**
  * The landing screen. Shows the current (newest) cycle as a circle anchored at
- * its period onset. A user with no cycle yet — refreshed mid-onboarding, or a
- * pre-existing account — gets the cycle-setup prompt instead (no recovery
+ * its period onset. A user with no cycle yet - refreshed mid-onboarding, or a
+ * pre-existing account - gets the cycle-setup prompt instead (no recovery
  * phrase; that's one-time). "Start a new period" opens a fresh cycle.
  */
 export function CurrentCycle() {
   const cyclesQuery = useCycles();
   const daysQuery = useDays();
   const settingsQuery = useUserSettings();
+  const periodDayIds = usePeriodDayIds();
   const startCycle = useStartCycle();
   const updateSettings = useUpdateSettings();
   const logDay = useLogDay();
@@ -66,11 +75,11 @@ export function CurrentCycle() {
 
   const allDays = daysQuery.data ?? [];
   const days = allDays.filter((d) => d.cycleId === current.id);
-  const cycleStart = cycleOnset(days);
+  const cycleStart = cycleOnset(days, periodDayIds);
 
   // Learn the average across every cycle's onset, then forecast off the current
   // onset. Falls back to the configured average until enough history exists.
-  const onsets = cycleOnsets(cyclesQuery.data ?? [], allDays)
+  const onsets = cycleOnsets(cyclesQuery.data ?? [], allDays, periodDayIds)
     .map((c) => c.onset)
     .filter((o): o is Date => o != null);
   const stats = cycleStats(onsets, averageCycleLength);
@@ -93,6 +102,7 @@ export function CurrentCycle() {
         cycleStart={cycleStart}
         stats={stats}
         fertile={fertile}
+        periodDayIds={periodDayIds}
         includeFuture
         onSelectDay={(day) => navigate(`/days/${day.id}`)}
         onLogDate={onLogDate}

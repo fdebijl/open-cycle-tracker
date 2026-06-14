@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Open Cycle Tracker — UI image (Vite/React SPA served as static files by nginx).
+# Open Cycle Tracker - UI image (Vite/React SPA served as static files by nginx).
 # Build context is the repo root: `docker build -f ui.dockerfile .`
 #
 # NOTE: Vite inlines VITE_API_URL at *build* time, so the API URL is baked into

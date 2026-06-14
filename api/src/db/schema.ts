@@ -48,11 +48,11 @@ const timestamps = {
 
 /**
  * Pseudonymous accounts. `identifier` is a username (email is optional and
- * left null by default — it ties a real identity to "uses a cycle tracker").
+ * left null by default - it ties a real identity to "uses a cycle tracker").
  *
  * The server stores only what it needs to (a) authenticate and (b) hand the
  * client back the material it needs to derive keys. It can decrypt NOTHING:
- *  - authHash      : argon2id(client-derived authHash) — proves knowledge of
+ *  - authHash      : argon2id(client-derived authHash) - proves knowledge of
  *                    the password without being a key
  *  - salts + kdfParams: public KDF inputs returned to the client so it can
  *                    re-derive the KEK / recovery KEK
@@ -92,7 +92,7 @@ export const users = pgTable(
     isAdmin: boolean('is_admin').notNull().default(false),
 
     // Encrypted user profile (parity with the Rails name/info/settings columns).
-    // Optional — clients set them after signup. Server cannot read them.
+    // Optional - clients set them after signup. Server cannot read them.
     encName: cipher('enc_name'),
     encInfo: cipher('enc_info'),
     encSettings: cipher('enc_settings'),
@@ -123,7 +123,7 @@ export const revokedTokens = pgTable('revoked_tokens', {
 // Tracking domain
 // ---------------------------------------------------------------------------
 
-/** A cycle groups days. No sensitive fields — date range derives client-side. */
+/** A cycle groups days. No sensitive fields - date range derives client-side. */
 export const cycles = pgTable('cycles', {
   id: uuid('id')
     .primaryKey()
@@ -135,10 +135,12 @@ export const cycles = pgTable('cycles', {
 });
 
 /**
- * A day within a cycle. The actual calendar date and the day type are
- * encrypted (`encDate`, `encDayType`). `order` stays plaintext for stable
- * sorting. NOTE: the Rails app had a UNIQUE index on `date`; that's impossible
- * on non-deterministic ciphertext, so per-cycle date uniqueness is enforced
+ * A day within a cycle. The calendar date and an optional free-text note are
+ * encrypted (`encDate`, `encNotes`); `order` stays plaintext for stable sorting.
+ * There is no "day type" — the period signal is derived client-side from the
+ * ordinal Flow category's factors, and fertile/ovulation are a computed forecast.
+ * NOTE: the Rails app had a UNIQUE index on `date`; that's impossible on
+ * non-deterministic ciphertext, so per-cycle date uniqueness is enforced
  * client-side.
  */
 export const days = pgTable('days', {
@@ -152,7 +154,9 @@ export const days = pgTable('days', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   encDate: cipher('enc_date').notNull(),
-  encDayType: cipher('enc_day_type').notNull(),
+  // Optional free-text journal note for the day (encrypted). Distinct from a
+  // Factor's note: a day with no symptom factor still has somewhere to write.
+  encNotes: cipher('enc_notes'),
   order: integer('order'),
   ...timestamps,
 });
@@ -172,6 +176,12 @@ export const categories = pgTable('categories', {
     .default(sql`gen_random_uuid()`),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   global: boolean('global').notNull().default(false),
+
+  // Stable identifier for global categories that need special client handling
+  // (e.g. `flow` drives onset detection, `bbt` renders a numeric input).
+  // Plaintext on global categories only; null for user categories and matched
+  // structurally instead of by display name (which also survives i18n).
+  slug: text('slug'),
 
   // Plaintext, global categories only.
   name: text('name'),
@@ -194,6 +204,11 @@ export const categoryLevels = pgTable('category_levels', {
   categoryId: uuid('category_id')
     .notNull()
     .references(() => categories.id, { onDelete: 'cascade' }),
+
+  // Ordinal position within the category (0-based). Used for ordered scales
+  // like Flow (spotting < light < medium < heavy) and Sleep. Plaintext (it's
+  // structural metadata, not user content); null where order is meaningless.
+  order: integer('order'),
 
   name: text('name'),
   icon: text('icon'),
@@ -219,6 +234,9 @@ export const factors = pgTable('factors', {
     .notNull()
     .references(() => categoryLevels.id, { onDelete: 'cascade' }),
   encNotes: cipher('enc_notes'),
+  // Optional numeric reading (encrypted), e.g. BBT temperature. Stored as an
+  // encrypted string of the number so the server never sees the value.
+  encValue: cipher('enc_value'),
   ...timestamps,
 });
 

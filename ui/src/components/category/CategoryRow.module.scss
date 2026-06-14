@@ -71,3 +71,21 @@
   color: var(--oct-muted);
   list-style: none;
 }
+
+.numeric {
+  width: 96px;
+  padding: 6px 10px;
+  border: 1px solid var(--oct-border);
+  border-radius: var(--oct-radius);
+  background: var(--oct-bg);
+  font: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: var(--oct-blue);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}

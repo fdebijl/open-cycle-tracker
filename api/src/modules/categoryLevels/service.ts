@@ -15,6 +15,7 @@ export function serializeCategoryLevel(l: CategoryLevel) {
   return {
     id: l.id,
     categoryId: l.categoryId,
+    order: l.order,
     name: l.name,
     icon: l.icon,
     encName: encOut(l.encName),

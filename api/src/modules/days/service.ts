@@ -13,7 +13,7 @@ export function serializeDay(d: Day) {
     cycleId: d.cycleId,
     userId: d.userId,
     encDate: encOut(d.encDate),
-    encDayType: encOut(d.encDayType),
+    encNotes: encOut(d.encNotes),
     order: d.order,
     createdAt: d.createdAt,
     updatedAt: d.updatedAt,
@@ -55,7 +55,7 @@ export async function createDay(ctx: AuthContext, input: CreateDayInput) {
       cycleId: input.cycleId,
       userId: ctx.userId,
       encDate: input.encDate,
-      encDayType: input.encDayType,
+      encNotes: input.encNotes ?? null,
       order: input.order ?? null,
     })
     .returning();
@@ -66,7 +66,7 @@ export async function createDay(ctx: AuthContext, input: CreateDayInput) {
 export async function updateDay(id: string, ctx: AuthContext, input: UpdateDayInput) {
   const patch: Partial<typeof days.$inferInsert> = {};
   if ('encDate' in input && input.encDate) patch.encDate = input.encDate;
-  if ('encDayType' in input && input.encDayType) patch.encDayType = input.encDayType;
+  if ('encNotes' in input) patch.encNotes = input.encNotes ?? null;
   if ('order' in input) patch.order = input.order ?? null;
 
   const [row] = await db

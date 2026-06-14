@@ -7,7 +7,7 @@ import type { DeriveRequest, DeriveResponse } from './worker';
  * dedicated Web Worker so the slow, memory-hard KDF never janks the UI. In Node
  * / test environments (no `Worker`), it falls back to deriving inline.
  *
- * This is the function the rest of the app should call — never `deriveKeyRaw`
+ * This is the function the rest of the app should call - never `deriveKeyRaw`
  * directly, so derivations stay off the main thread.
  */
 

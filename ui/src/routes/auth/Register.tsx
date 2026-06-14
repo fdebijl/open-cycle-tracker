@@ -31,7 +31,7 @@ export function Register() {
       });
       // Account is created and unlocked; hand off to onboarding (recovery phrase
       // + cycle setup) before entering the app. The mnemonic rides in router
-      // state — it's never persisted.
+      // state - it's never persisted.
       navigate('/onboarding', { replace: true, state: { mnemonic: recoveryMnemonic } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');

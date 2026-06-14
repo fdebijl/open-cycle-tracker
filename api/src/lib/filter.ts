@@ -7,7 +7,7 @@ const idFilterSchema = z.array(z.string().uuid()).min(1).max(500);
 /**
  * Parse a `?filter[id]=uuid1,uuid2` query into a validated array of UUIDs, or
  * null when no id filter is present. This is the only server-side filter we
- * keep — content filters (today/current/date-range) moved client-side because
+ * keep - content filters (today/current/date-range) moved client-side because
  * the underlying fields are ciphertext. Mirrors the Rails CSV→array transform.
  */
 export function idFilter(req: Request): string[] | null {

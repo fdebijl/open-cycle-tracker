@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { base64String, base64Bytes, kdfParamsSchema, saltString } from '../../lib/validation.js';
 
-/** Identifier: a username. Pseudonymous by design — email is optional. */
+/** Identifier: a username. Pseudonymous by design - email is optional. */
 const identifier = z.string().trim().min(1).max(200);
 
 export const preloginSchema = z.object({
@@ -34,7 +34,7 @@ export const loginSchema = z.object({
 });
 
 /**
- * New auth material when changing the password (authenticated) — the client
+ * New auth material when changing the password (authenticated) - the client
  * re-wrapped its in-memory DEK under a new password and derived a fresh
  * authHash. The recovery wrapping is intentionally left untouched.
  */

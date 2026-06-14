@@ -6,7 +6,7 @@ interface FieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
   label?: string;
 }
 
-/** Labeled text input — the React port of the Ember `<Field>` component. */
+/** Labeled text input - the React port of the Ember `<Field>` component. */
 export function Field({ id, label, ...inputProps }: FieldProps) {
   return (
     <div className={styles.field}>

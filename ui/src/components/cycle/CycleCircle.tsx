@@ -39,6 +39,7 @@ export function CycleCircle({
   cycleStart,
   stats,
   fertile,
+  periodDayIds,
   includeFuture = false,
   onSelectDay,
   onLogDate,
@@ -47,6 +48,8 @@ export function CycleCircle({
   cycleStart: Date | null;
   stats: CycleStats;
   fertile?: FertilePrediction;
+  /** Day ids that carry a period-level Flow factor (drives period coloring). */
+  periodDayIds: Set<string>;
   includeFuture?: boolean;
   onSelectDay: (day: Day) => void;
   onLogDate: (date: Date) => void;
@@ -89,6 +92,7 @@ export function CycleCircle({
             <DayMarker
               key={slot.dayNumber}
               day={slot.day}
+              isPeriod={slot.day ? periodDayIds.has(slot.day.id) : false}
               date={slot.date}
               dayNumber={slot.dayNumber}
               forecast={forecast ?? undefined}

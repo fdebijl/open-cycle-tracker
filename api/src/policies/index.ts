@@ -13,7 +13,7 @@ import { categories } from '../db/schema.js';
  *     writable on global rows only by admins.
  *
  * Cross-user access to an owned resource returns 404 (not 403) so the API never
- * reveals whether someone else's record exists — important for this threat
+ * reveals whether someone else's record exists - important for this threat
  * model. Writing a visible-but-global row you don't own is a 403.
  */
 export type AuthContext = { userId: string; isAdmin: boolean };

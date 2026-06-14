@@ -53,6 +53,8 @@ export interface FactorDto {
   userId: string;
   categoryLevelId: string;
   encNotes: string | null;
+  /** Optional encrypted numeric reading (e.g. BBT). */
+  encValue: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -62,7 +64,7 @@ export interface DayDto {
   cycleId: string;
   userId: string;
   encDate: string | null;
-  encDayType: string | null;
+  encNotes: string | null;
   order: number | null;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +76,8 @@ export interface CategoryDto {
   id: string;
   userId: string | null;
   global: boolean;
+  /** Stable identifier on global categories (e.g. `flow`, `bbt`); null otherwise. */
+  slug: string | null;
   name: string | null;
   icon: string | null;
   color: string | null;
@@ -87,6 +91,8 @@ export interface CategoryDto {
 export interface CategoryLevelDto {
   id: string;
   categoryId: string;
+  /** Ordinal position within the category (0-based); null where unordered. */
+  order: number | null;
   name: string | null;
   icon: string | null;
   encName: string | null;

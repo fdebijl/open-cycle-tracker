@@ -23,7 +23,7 @@ layer).
   pseudonymous accounts (username; email optional)
 - **Authorization**: hand-rolled policy modules (ownership + global/admin
   categories)
-- **Crypto (client)**: libsodium — Argon2id KDF, XChaCha20-Poly1305 AEAD
+- **Crypto (client)**: libsodium - Argon2id KDF, XChaCha20-Poly1305 AEAD
 - **Validation**: Zod · **Tests**: Vitest + Supertest
 
 ## Setup

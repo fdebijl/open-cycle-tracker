@@ -2,7 +2,7 @@
 
 This document is the **client-agnostic specification** for Open Cycle Tracker's
 end-to-end encryption. Any client (the React web app now, a native app later)
-MUST implement it identically. The server implements **none** of it — it stores
+MUST implement it identically. The server implements **none** of it - it stores
 opaque ciphertext and the public key-derivation inputs, and can decrypt nothing.
 
 > Threat model (see `docs/REWRITE_PLAN.md`): an adversary may seize the server
@@ -55,7 +55,7 @@ Clients SHOULD use at least `MODERATE` limits in production. Test fixtures use
 - **Recovery KEK**: `Argon2id(recoveryCode, saltRecovery, kdfParams)`. Wraps a
   second copy of the DEK so the user can recover after a forgotten password.
 - **authHash**: `Argon2id(password, saltAuth, kdfParams)`. This is the ONLY
-  password-derived value sent to the server, and it is **not** a key — it's a
+  password-derived value sent to the server, and it is **not** a key - it's a
   login verifier. The server stores `argon2id(authHash)` (a second, server-side
   hashing) so a database leak does not even reveal the authHash.
 
@@ -113,7 +113,7 @@ Re-derive `kek` from the new password (new `saltKek`), re-wrap the existing
 
 User supplies the `recoveryCode`; client derives `recoveryKek`, opens
 `wrappedDekRecovery` to recover the `dek`, then sets a new password (as in
-password change). **The server cannot recover — by design — so it cannot be
+password change). **The server cannot recover - by design - so it cannot be
 compelled to.**
 
 ## What stays plaintext (accepted leakage)
@@ -124,7 +124,7 @@ done **client-side** after decryption; the server only supports filtering by id.
 
 ## Client key hygiene (web)
 
-The DEK lives in memory only — never `localStorage`/`IndexedDB`. Re-prompt for
+The DEK lives in memory only - never `localStorage`/`IndexedDB`. Re-prompt for
 the password on each app launch; auto-lock and wipe the key on
 background/timeout. A browser cannot securely wipe RAM nor fully control its own
 on-disk caches, so this protects a **powered-off / locked** seized device but

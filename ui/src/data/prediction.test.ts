@@ -37,7 +37,7 @@ describe('observedCycleLengths', () => {
   });
 
   it('drops implausible gaps (skipped/late period, retroactive insert)', () => {
-    // gaps: 28 (ok), 120 (skipped — too long), 10 (too short), 29 (ok)
+    // gaps: 28 (ok), 120 (skipped - too long), 10 (too short), 29 (ok)
     expect(observedCycleLengths(onsetsFromGaps(BASE, [28, 120, 10, 29]))).toEqual([28, 29]);
   });
 

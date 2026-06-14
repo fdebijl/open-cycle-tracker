@@ -4,7 +4,7 @@ import styles from './RecoveryReveal.module.scss';
 /**
  * Shows the one-time recovery mnemonic and forces the user to acknowledge they
  * have stored it. This phrase is the ONLY way to recover data after a forgotten
- * password — the server cannot help, by design.
+ * password - the server cannot help, by design.
  */
 export function RecoveryReveal({ mnemonic, onConfirm }: { mnemonic: string; onConfirm: () => void }) {
   const [acknowledged, setAcknowledged] = useState(false);

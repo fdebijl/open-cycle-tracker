@@ -15,6 +15,6 @@ export function encOut(value: Buffer | string | null | undefined): string | null
   if (typeof value === 'string' && value.startsWith('\\x')) {
     return Buffer.from(value.slice(2), 'hex').toString('base64');
   }
-  // Already base64 (or empty) — return as-is.
+  // Already base64 (or empty) - return as-is.
   return value;
 }

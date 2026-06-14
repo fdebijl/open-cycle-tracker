@@ -6,7 +6,7 @@ import { Spinner } from '@/components/Spinner';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 
 export interface CycleSetupValues {
-  /** When the user's most recent period started — anchors their first cycle. */
+  /** When the user's most recent period started - anchors their first cycle. */
   onset: Date;
   averageCycleLength: number;
 }
@@ -14,7 +14,7 @@ export interface CycleSetupValues {
 /**
  * Collects the two things needed to bootstrap tracking: when the last period
  * started (the onset that anchors the first cycle) and the typical cycle length
- * (default 28). Presentational — the parent runs the async writes and owns the
+ * (default 28). Presentational - the parent runs the async writes and owns the
  * busy/error state. Reused by onboarding and the no-cycle fallback.
  */
 export function CycleSetupForm({

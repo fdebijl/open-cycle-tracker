@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { cipherField, uuidString } from '../../lib/validation.js';
 
-/** Date and day-type are E2EE blobs; `order` is plaintext for stable sorting. */
+/** Date and note are E2EE blobs; `order` is plaintext for stable sorting. */
 export const createDaySchema = z
   .object({
     cycleId: uuidString,
     encDate: cipherField,
-    encDayType: cipherField,
+    encNotes: cipherField.optional(),
     order: z.number().int().optional(),
   })
   .strict();
@@ -14,7 +14,7 @@ export const createDaySchema = z
 export const updateDaySchema = z
   .object({
     encDate: cipherField.optional(),
-    encDayType: cipherField.optional(),
+    encNotes: cipherField.nullable().optional(),
     order: z.number().int().nullable().optional(),
   })
   .strict();

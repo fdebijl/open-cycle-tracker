@@ -13,33 +13,39 @@
   margin: 0 0 12px;
 }
 
-.dayTypes {
-  display: flex;
-  flex-flow: row wrap;
-  gap: 6px;
-}
-
-.dayType {
-  padding: 6px 12px;
-  border: 1px solid var(--oct-border);
-  border-radius: 999px;
-  background: var(--oct-bg);
-  font: inherit;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-}
-
-.activeType {
-  background: var(--oct-red);
-  border-color: var(--oct-red);
-  color: #fff;
-}
-
 .categories {
   display: flex;
   flex-flow: column nowrap;
+}
+
+.noteField {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.noteLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--oct-text);
+}
+
+.note {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--oct-border);
+  border-radius: var(--oct-radius);
+  background: var(--oct-bg);
+  font: inherit;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--oct-blue);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
 }

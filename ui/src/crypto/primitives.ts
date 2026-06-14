@@ -3,7 +3,7 @@ import { KEY_BYTES } from './types';
 import type { KdfParams } from './types';
 
 /**
- * Argon2id key derivation. The expensive part of the whole system — callers
+ * Argon2id key derivation. The expensive part of the whole system - callers
  * SHOULD go through the worker-backed `deriveKey` in `kdf.ts` rather than
  * calling this directly on the main thread. Accepts a string password (NFC
  * normalized for cross-platform stability) or raw bytes (e.g. the recovery
@@ -76,7 +76,7 @@ export async function moderateKdfParams(): Promise<KdfParams> {
   };
 }
 
-/** Lighter KDF params — used by tests for speed (the contract's INTERACTIVE). */
+/** Lighter KDF params - used by tests for speed (the contract's INTERACTIVE). */
 export async function interactiveKdfParams(): Promise<KdfParams> {
   const sodium = await getSodium();
   return {

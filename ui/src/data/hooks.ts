@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useVault } from '@/stores/vault';
 import { categoriesApi, categoryLevelsApi, cyclesApi, daysApi, factorsApi, usersApi } from '@/api/resources';
@@ -12,7 +13,10 @@ import {
   encryptSettings,
 } from './mappers';
 import { encryptString } from '@/crypto';
-import type { Cycle, Day, DayType, UserSettings } from './types';
+import type { FactorWritePayload } from '@/api/resources';
+import type { FactorDto } from '@/api/types';
+import { computePeriodDayIds, flowPeriodLevelIds, FLOW_PERIOD_MIN_ORDER, FLOW_SLUG } from './cycles';
+import type { Cycle, Day, UserSettings } from './types';
 
 /**
  * Server state via TanStack Query. Each query fetches DTOs then decrypts them
@@ -37,7 +41,7 @@ export function useCycles() {
     enabled: !!userId,
     queryFn: async (): Promise<Cycle[]> => {
       const dtos = await cyclesApi.list();
-      // Newest first — the latest cycle is treated as the current one.
+      // Newest first - the latest cycle is treated as the current one.
       return [...dtos].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
   });
@@ -71,6 +75,37 @@ export function useDay(id: string | undefined) {
       return { ...day, factors };
     },
   });
+}
+
+/**
+ * All of the user's factors as RAW DTOs. `categoryLevelId` is plaintext, so we
+ * deliberately don't decrypt: this query exists to derive cycle onset from
+ * logged Flow factors (see `computePeriodDayIds`), which needs only ids. It's
+ * therefore not gated on the DEK.
+ */
+export function useFactors() {
+  const userId = useUserId();
+  return useQuery({
+    queryKey: ['factors', userId],
+    enabled: !!userId,
+    queryFn: (): Promise<FactorDto[]> => factorsApi.list(),
+  });
+}
+
+/**
+ * The set of day ids that count as period (onset) days - those carrying a Flow
+ * factor of intensity ≥ Light. Joins the raw factors with the Flow category's
+ * levels client-side. Empty while loading, which makes onset degrade to the
+ * earliest dated day rather than break. Shared by the circle, calendar and info.
+ */
+export function usePeriodDayIds(): Set<string> {
+  const factors = useFactors();
+  const categories = useCategories();
+  const levels = useCategoryLevels();
+  return useMemo(() => {
+    const flowLevels = flowPeriodLevelIds(categories.data ?? [], levels.data ?? []);
+    return computePeriodDayIds(factors.data ?? [], flowLevels);
+  }, [factors.data, categories.data, levels.data]);
 }
 
 export function useCategories() {
@@ -125,10 +160,26 @@ export function useUpdateSettings() {
 }
 
 /**
- * Start a new cycle anchored at a period onset: create the cycle, then create
- * its first day (the onset) as a `period` day on that date. Used at onboarding,
- * by the no-cycle fallback, and by "start a new period". Cycle length derives
- * client-side from onset-to-onset, so nothing else is pre-populated.
+ * The default Flow level for a freshly-started period: the lowest intensity that
+ * still counts as a period day (Light). Resolved from the global Flow category;
+ * uses plaintext DTO fields (slug/order), so no decryption is needed. Returns
+ * `null` if Flow isn't seeded - onset then falls back to the earliest dated day.
+ */
+async function defaultFlowLevelId(): Promise<string | null> {
+  const flow = (await categoriesApi.list()).find((c) => c.slug === FLOW_SLUG);
+  if (!flow) return null;
+  const levels = (await categoryLevelsApi.list())
+    .filter((l) => l.categoryId === flow.id && (l.order ?? 0) >= FLOW_PERIOD_MIN_ORDER)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return levels[0]?.id ?? null;
+}
+
+/**
+ * Start a new cycle anchored at a period onset: create the cycle and its first
+ * day on that date, then mark the day with a default Flow factor (Light) so it
+ * counts as a period day - onset now derives from logged Flow, not a day type.
+ * Used at onboarding, by the no-cycle fallback, and by "start a new period".
+ * Cycle length derives client-side from onset-to-onset.
  */
 export function useStartCycle() {
   const dek = useDek();
@@ -138,13 +189,16 @@ export function useStartCycle() {
     mutationFn: async (input: { onset: Date }) => {
       if (!dek) throw new Error('Vault is locked');
       const cycle = await cyclesApi.create();
-      const enc = await encryptDayFields({ date: input.onset, dayType: 'period' }, dek);
-      const day = await daysApi.create({ cycleId: cycle.id, encDate: enc.encDate, encDayType: enc.encDayType });
+      const enc = await encryptDayFields({ date: input.onset }, dek);
+      const day = await daysApi.create({ cycleId: cycle.id, encDate: enc.encDate });
+      const levelId = await defaultFlowLevelId();
+      if (levelId) await factorsApi.create({ dayId: day.id, categoryLevelId: levelId });
       return { cycle, day };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cycles', userId] });
       queryClient.invalidateQueries({ queryKey: ['days', userId] });
+      queryClient.invalidateQueries({ queryKey: ['factors', userId] });
     },
   });
 }
@@ -157,10 +211,10 @@ export function useLogDay() {
   const queryClient = useQueryClient();
   const userId = useUserId();
   return useMutation({
-    mutationFn: async (input: { date: Date; cycleId: string; dayType?: DayType }) => {
+    mutationFn: async (input: { date: Date; cycleId: string }) => {
       if (!dek) throw new Error('Vault is locked');
-      const enc = await encryptDayFields({ date: input.date, dayType: input.dayType ?? 'none' }, dek);
-      return daysApi.create({ cycleId: input.cycleId, encDate: enc.encDate, encDayType: enc.encDayType });
+      const enc = await encryptDayFields({ date: input.date }, dek);
+      return daysApi.create({ cycleId: input.cycleId, encDate: enc.encDate });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['days', userId] });
@@ -173,9 +227,9 @@ export function useUpdateDay() {
   const queryClient = useQueryClient();
   const userId = useUserId();
   return useMutation({
-    mutationFn: async (input: { id: string; date?: Date; dayType?: DayType }) => {
+    mutationFn: async (input: { id: string; date?: Date; notes?: string | null }) => {
       if (!dek) throw new Error('Vault is locked');
-      const enc = await encryptDayFields({ date: input.date, dayType: input.dayType }, dek);
+      const enc = await encryptDayFields({ date: input.date, notes: input.notes }, dek);
       return daysApi.update(input.id, enc);
     },
     onSuccess: (_data, { id }) => {
@@ -190,12 +244,37 @@ export function useCreateFactor() {
   const queryClient = useQueryClient();
   const userId = useUserId();
   return useMutation({
-    mutationFn: async (input: { dayId: string; categoryLevelId: string; notes?: string }) => {
+    mutationFn: async (input: { dayId: string; categoryLevelId: string; notes?: string; value?: number | null }) => {
       const encNotes = input.notes && dek ? await encryptString(input.notes, dek) : undefined;
-      return factorsApi.create({ dayId: input.dayId, categoryLevelId: input.categoryLevelId, encNotes });
+      const encValue = input.value != null && dek ? await encryptString(String(input.value), dek) : undefined;
+      return factorsApi.create({ dayId: input.dayId, categoryLevelId: input.categoryLevelId, encNotes, encValue });
     },
     onSuccess: (_data, { dayId }) => {
       queryClient.invalidateQueries({ queryKey: ['day', userId, dayId] });
+      // Onset/circle/calendar derive from factors (Flow), so refresh that too.
+      queryClient.invalidateQueries({ queryKey: ['factors', userId] });
+    },
+  });
+}
+
+/** Edit an existing factor's note and/or numeric value (e.g. a BBT reading).
+ * Pass a field as `undefined` to leave it untouched; `null` to clear it. */
+export function useUpdateFactor(dayId: string) {
+  const dek = useDek();
+  const queryClient = useQueryClient();
+  const userId = useUserId();
+  return useMutation({
+    mutationFn: async (input: { id: string; notes?: string | null; value?: number | null }) => {
+      const body: FactorWritePayload = {};
+      if (input.notes !== undefined) body.encNotes = input.notes && dek ? await encryptString(input.notes, dek) : null;
+      if (input.value !== undefined) {
+        body.encValue = input.value != null && dek ? await encryptString(String(input.value), dek) : null;
+      }
+      return factorsApi.update(input.id, body);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['day', userId, dayId] });
+      queryClient.invalidateQueries({ queryKey: ['factors', userId] });
     },
   });
 }
@@ -207,6 +286,7 @@ export function useDeleteFactor(dayId: string) {
     mutationFn: (factorId: string) => factorsApi.remove(factorId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['day', userId, dayId] });
+      queryClient.invalidateQueries({ queryKey: ['factors', userId] });
     },
   });
 }

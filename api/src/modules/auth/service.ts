@@ -173,7 +173,7 @@ export async function recoverInit(input: RecoverInitInput): Promise<{
 /**
  * Step 2 of recovery: verify the recovery verifier, then set new password
  * material (as in a password change) and return a fresh session token. The
- * server cannot perform recovery itself — by design — so it cannot be compelled
+ * server cannot perform recovery itself - by design - so it cannot be compelled
  * to.
  */
 export async function recover(input: RecoverInput): Promise<AuthResult> {

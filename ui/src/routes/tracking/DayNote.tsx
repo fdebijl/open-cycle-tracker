@@ -1,0 +1,42 @@
+import { useState } from 'react';
+import { useUpdateDay } from '@/data/hooks';
+import styles from './DayTracker.module.scss';
+
+/**
+ * Free-text journal note for a day. Lives on the Day itself (not a Factor), so a
+ * day with no symptom still has somewhere to write. Commits on blur, only when
+ * the text actually changed; an empty note clears it.
+ */
+export function DayNote({ dayId, notes }: { dayId: string; notes: string | null }) {
+  const updateDay = useUpdateDay();
+  const [text, setText] = useState(notes ?? '');
+
+  // React idiom: when the persisted note changes (e.g. after a refetch), reset
+  // the editable text by tracking the previous prop and adjusting during render
+  // - no effect needed (see react.dev "You Might Not Need an Effect").
+  const [lastNotes, setLastNotes] = useState(notes);
+  if (notes !== lastNotes) {
+    setLastNotes(notes);
+    setText(notes ?? '');
+  }
+
+  function commit() {
+    const next = text.trim() || null;
+    if (next !== (notes ?? null)) updateDay.mutate({ id: dayId, notes: next });
+  }
+
+  return (
+    <label className={styles.noteField}>
+      <span className={styles.noteLabel}>Notes</span>
+      <textarea
+        className={styles.note}
+        rows={3}
+        placeholder="Anything worth remembering about today…"
+        value={text}
+        disabled={updateDay.isPending}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+      />
+    </label>
+  );
+}
