@@ -98,6 +98,8 @@ function baseUser(overrides: Partial<UserDto>): UserDto {
     encName: null,
     encInfo: null,
     encSettings: null,
+    duressConfigured: false,
+    destructConfigured: false,
     createdAt: '',
     updatedAt: '',
     ...overrides,

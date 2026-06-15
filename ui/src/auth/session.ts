@@ -1,4 +1,5 @@
 import {
+  createDecoyVault,
   createSignup,
   deriveAuthHash,
   deriveRecoveryAuthHash,
@@ -9,6 +10,7 @@ import {
 } from '@/crypto/envelope';
 import {
   changePassword as apiChangePassword,
+  configureDuress as apiConfigureDuress,
   login as apiLogin,
   logout as apiLogout,
   prelogin,
@@ -31,6 +33,7 @@ function sessionFromAuth(result: AuthResult): Session {
   return {
     token: result.token,
     user: result.user,
+    saltAuth: result.saltAuth,
     saltKek: result.saltKek,
     wrappedDek: result.wrappedDek,
     kdfParams: result.kdfParams,
@@ -97,7 +100,7 @@ export async function recoverAccount(input: RecoverInput): Promise<void> {
   const dek = await recoverDek(recoveryCode, init.saltRecovery, init.wrappedDekRecovery, init.kdfParams);
 
   const recoveryAuthHash = await deriveRecoveryAuthHash(recoveryCode, init.saltRecoveryAuth, init.kdfParams);
-  const envelope = await rewrapForPasswordChange(dek, input.newPassword);
+  const envelope = await rewrapForPasswordChange(dek, input.newPassword, init.saltAuth, init.kdfParams);
 
   const result = await apiRecover({ identifier: input.identifier, recoveryAuthHash, ...envelope });
   useVault.getState().setSession(sessionFromAuth(result), dek);
@@ -116,13 +119,47 @@ export async function changePassword(currentPassword: string, newPassword: strin
   // bystander silently changing it). Throws if the password is wrong.
   await unwrapDek(currentPassword, session.saltKek, session.wrappedDek, session.kdfParams);
 
-  const envelope = await rewrapForPasswordChange(dek, newPassword);
+  // Reuse the account's saltAuth + kdfParams so any duress/destruct verifiers
+  // (derived from the same saltAuth) keep matching after the change.
+  const envelope = await rewrapForPasswordChange(dek, newPassword, session.saltAuth, session.kdfParams);
   await apiChangePassword(envelope);
   useVault.getState().updateSessionKeyMaterial({
     saltKek: envelope.saltKek,
     wrappedDek: envelope.wrappedDek,
     kdfParams: envelope.kdfParams,
   });
+}
+
+/**
+ * Configure the duress (decoy-vault) password. Built from the unlocked real
+ * session: a fresh decoy vault + a verifier derived from the account's saltAuth.
+ * The decoy is reachable by logging in with `duressPassword` and is populated by
+ * using the app while in that session.
+ */
+export async function setDuressPassword(duressPassword: string): Promise<void> {
+  const { session } = useVault.getState();
+  if (!session) throw new Error('No active session');
+  const duress = await createDecoyVault(duressPassword, session.saltAuth, session.kdfParams);
+  await apiConfigureDuress({ duress });
+}
+
+/** Set (or replace) the destruction password verifier. Entering this password at
+ * login silently wipes the account. Stores only a verifier - no vault. */
+export async function setDestructPassword(destructPassword: string): Promise<void> {
+  const { session } = useVault.getState();
+  if (!session) throw new Error('No active session');
+  const destructAuthHash = await deriveAuthHash(destructPassword, session.saltAuth, session.kdfParams);
+  await apiConfigureDuress({ destructAuthHash });
+}
+
+/** Remove the duress (decoy) password and delete the decoy vault's data. */
+export async function clearDuressPassword(): Promise<void> {
+  await apiConfigureDuress({ duress: null });
+}
+
+/** Remove the destruction password. */
+export async function clearDestructPassword(): Promise<void> {
+  await apiConfigureDuress({ destructAuthHash: null });
 }
 
 /** Revoke the token server-side (best-effort), then wipe local state regardless. */

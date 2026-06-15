@@ -9,6 +9,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
 /**
@@ -88,6 +89,26 @@ export const users = pgTable(
     // Envelope: DEK wrapped under the password KEK and under the recovery KEK.
     wrappedDek: cipher('wrapped_dek').notNull(),
     wrappedDekRecovery: cipher('wrapped_dek_recovery').notNull(),
+
+    // --- Duress / decoy (roadmap #14) ----------------------------------------
+    // Optional extra login passwords, configured from an unlocked real session.
+    // All three are null on accounts that have not opted in.
+    //
+    // The decoy vault is a SEPARATE users row ("shadow") that owns its own
+    // cycles/days/factors; the existing per-user (`ctx.userId`) scoping isolates
+    // it for free. The primary points at it and holds the two extra verifiers.
+    //
+    // Both verifiers are derived client-side from the account's login `saltAuth`
+    // (so a single client authHash can match any of the three passwords) and
+    // double-hashed here exactly like `authHash`. `saltAuth` is therefore kept
+    // stable across password changes so these survive a password change.
+    duressUserId: uuid('duress_user_id').references((): AnyPgColumn => users.id, {
+      onDelete: 'set null',
+    }),
+    // Verifier for the duress password → unlocks the decoy (shadow) vault.
+    duressAuthHash: text('duress_auth_hash'),
+    // Verifier for the destruction password → silently wipes the account.
+    destructAuthHash: text('destruct_auth_hash'),
 
     isAdmin: boolean('is_admin').notNull().default(false),
 

@@ -4,6 +4,7 @@ import { parse } from '../../lib/parse.js';
 import { requireAuth, requireAuthCtx } from '../../middleware/requireAuth.js';
 import { authLimiter } from '../../middleware/rateLimit.js';
 import {
+  duressConfigSchema,
   loginSchema,
   passwordChangeSchema,
   preloginSchema,
@@ -11,7 +12,16 @@ import {
   recoverSchema,
   signupSchema,
 } from './schema.js';
-import { changePassword, login, logout, prelogin, recover, recoverInit, signup } from './service.js';
+import {
+  changePassword,
+  configureDuress,
+  login,
+  logout,
+  prelogin,
+  recover,
+  recoverInit,
+  signup,
+} from './service.js';
 
 export const authRouter = Router();
 
@@ -63,6 +73,18 @@ authRouter.post(
     const { userId } = requireAuthCtx(req);
     const input = parse(passwordChangeSchema, req.body);
     await changePassword(userId, input);
+    res.status(204).end();
+  }),
+);
+
+// Configure duress/decoy + destruction passwords (authenticated; roadmap #14).
+authRouter.post(
+  '/duress',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { userId } = requireAuthCtx(req);
+    const input = parse(duressConfigSchema, req.body);
+    await configureDuress(userId, input);
     res.status(204).end();
   }),
 );

@@ -17,6 +17,9 @@ export interface AuthUser {
 export interface AuthResult {
   token: string;
   user: AuthUser;
+  /** The account's login salt (stable across password changes); used to re-derive
+   * the authHash on a password change so duress/destruct verifiers survive. */
+  saltAuth: string;
   saltKek: string;
   wrappedDek: string;
   kdfParams: KdfParams;
@@ -36,6 +39,9 @@ export interface UserDto {
   encName: string | null;
   encInfo: string | null;
   encSettings: string | null;
+  /** Whether a duress (decoy) / destruction password is configured (roadmap #14). */
+  duressConfigured: boolean;
+  destructConfigured: boolean;
   createdAt: string;
   updatedAt: string;
 }
