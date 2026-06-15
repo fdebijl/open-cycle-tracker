@@ -11,7 +11,9 @@ export default defineConfig({
     // override already-set vars, so these win over .env during tests.
     env: {
       NODE_ENV: 'test',
-      DATABASE_URL: 'postgres://fdebijl@localhost/oct_test?host=/var/run/postgresql',
+      DATABASE_URL:
+        process.env.DATABASE_URL ??
+        'postgres://fdebijl@localhost/oct_test?host=/var/run/postgresql',
       JWT_SECRET: 'test-jwt-secret-value-not-for-production-use',
       SERVER_SECRET: 'test-server-secret-value-not-for-production-use',
       CORS_ORIGINS: 'http://localhost:5173',
