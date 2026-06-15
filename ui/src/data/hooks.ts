@@ -9,8 +9,10 @@ import {
   decryptDay,
   decryptFactor,
   decryptSettings,
+  decryptUserName,
   encryptDayFields,
   encryptSettings,
+  encryptUserName,
 } from './mappers';
 import { encryptString } from '@/crypto';
 import type { FactorWritePayload } from '@/api/resources';
@@ -139,7 +141,37 @@ export function useUserSettings() {
   });
 }
 
+/** The user's display name (encrypted), or '' when unset. Shown in the app shell
+ * in place of the raw identifier. */
+export function useDisplayName() {
+  const dek = useDek();
+  const userId = useUserId();
+  return useQuery({
+    queryKey: ['displayName', userId],
+    enabled: !!dek && !!userId,
+    queryFn: async (): Promise<string> => decryptUserName(await usersApi.get(userId!), dek!),
+  });
+}
+
 // ---- Mutations -----------------------------------------------------------
+
+/** Set (or clear) the user's display name. */
+export function useUpdateDisplayName() {
+  const dek = useDek();
+  const userId = useUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string): Promise<void> => {
+      if (!dek || !userId) throw new Error('Vault is locked');
+      const trimmed = name.trim();
+      const encName = trimmed ? await encryptUserName(trimmed, dek) : null;
+      await usersApi.update(userId, { encName });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['displayName', userId] });
+    },
+  });
+}
 
 /** Persist the user's preferences (encrypted). */
 export function useUpdateSettings() {

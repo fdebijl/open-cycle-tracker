@@ -81,6 +81,22 @@ export function encryptSettings(settings: UserSettings, dek: Uint8Array): Promis
   return encryptJson(settings, dek);
 }
 
+/** Decrypt the user's display name (encrypted), or '' when unset. Shown in the
+ * app shell instead of the raw identifier - which, for a decoy vault, is an
+ * opaque server-assigned id. */
+export async function decryptUserName(dto: UserDto, dek: Uint8Array): Promise<string> {
+  if (!dto.encName) return '';
+  try {
+    return await decryptString(dto.encName, dek);
+  } catch {
+    return '';
+  }
+}
+
+export function encryptUserName(name: string, dek: Uint8Array): Promise<string> {
+  return encryptString(name, dek);
+}
+
 /** Decrypt an array, preserving order. */
 export function decryptAll<D, T>(dtos: D[], dek: Uint8Array, fn: (dto: D, dek: Uint8Array) => Promise<T>): Promise<T[]> {
   return Promise.all(dtos.map((dto) => fn(dto, dek)));

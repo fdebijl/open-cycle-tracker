@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createDecoyVault,
   createSignup,
   deriveAuthHash,
   deriveRecoveryAuthHash,
@@ -92,7 +93,7 @@ describe('password change', () => {
   it('re-wraps the same DEK under a new password without touching the data', async () => {
     const { payload, dek } = await createSignup('alice', 'old password', undefined, params);
 
-    const changed = await rewrapForPasswordChange(dek, 'brand new password', params);
+    const changed = await rewrapForPasswordChange(dek, 'brand new password', payload.saltAuth, params);
 
     // Old password no longer unwraps the new envelope.
     await expect(
@@ -103,10 +104,47 @@ describe('password change', () => {
     const recovered = await unwrapDek('brand new password', changed.saltKek, changed.wrappedDek, changed.kdfParams);
     expect(recovered).toEqual(dek);
 
-    // Recovery wrapping from signup still works (DEK unchanged).
-    const { recoverDek: recover } = await import('./envelope');
-    void recover;
     expect(changed.authHash).not.toEqual(payload.authHash);
+  });
+
+  it('keeps saltAuth stable so duress/destruct verifiers survive the change', async () => {
+    const { payload, dek } = await createSignup('alice', 'old password', undefined, params);
+    const changed = await rewrapForPasswordChange(dek, 'brand new password', payload.saltAuth, params);
+
+    // saltAuth is reused verbatim, and the new login authHash derives from it.
+    expect(changed.saltAuth).toBe(payload.saltAuth);
+    const loginAuthHash = await deriveAuthHash('brand new password', changed.saltAuth, changed.kdfParams);
+    expect(loginAuthHash).toBe(changed.authHash);
+  });
+});
+
+describe('decoy vault (duress)', () => {
+  it('builds a decoy DEK that opens with the duress password but not the real one', async () => {
+    const { payload } = await createSignup('alice', 'real password', undefined, params);
+
+    const { shadow } = await createDecoyVault('duress password', payload.saltAuth, params);
+
+    // The duress password unwraps the decoy DEK from the shadow envelope.
+    const decoyDek = await unwrapDek('duress password', shadow.saltKek, shadow.wrappedDek, shadow.kdfParams);
+    expect(decoyDek).toHaveLength(32);
+
+    // The real password cannot open the decoy vault.
+    await expect(
+      unwrapDek('real password', shadow.saltKek, shadow.wrappedDek, shadow.kdfParams),
+    ).rejects.toThrow();
+  });
+
+  it('derives the duress verifier from the PRIMARY saltAuth so login can match it', async () => {
+    const { payload } = await createSignup('alice', 'real password', undefined, params);
+    const { duressAuthHash } = await createDecoyVault('duress password', payload.saltAuth, params);
+
+    // A duress login uses the primary's prelogin material; the authHash it derives
+    // must equal the stored verifier.
+    const loginAuthHash = await deriveAuthHash('duress password', payload.saltAuth, params);
+    expect(loginAuthHash).toBe(duressAuthHash);
+
+    // And it must NOT collide with the real password's verifier.
+    expect(duressAuthHash).not.toBe(payload.authHash);
   });
 });
 

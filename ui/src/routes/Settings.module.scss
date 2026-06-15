@@ -15,6 +15,29 @@
     font-size: 15px;
     margin: 0 0 12px;
   }
+
+  h3 {
+    font-size: 14px;
+    margin: 18px 0 6px;
+  }
+}
+
+/* Secondary, low-emphasis action (e.g. "remove decoy"). */
+.linkButton {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--oct-danger);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 .account {

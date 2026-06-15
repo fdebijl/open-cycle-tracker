@@ -1,4 +1,4 @@
-import type { PasswordChangeEnvelope, SignupPayload } from '@/crypto/envelope';
+import type { DecoyVaultPayload, PasswordChangeEnvelope, SignupPayload } from '@/crypto/envelope';
 import type { KdfParams } from '@/crypto/types';
 import { api } from './client';
 import type { AuthResult, PreloginResult } from './types';
@@ -29,6 +29,8 @@ export function changePassword(body: PasswordChangeEnvelope): Promise<void> {
 }
 
 export interface RecoverInitResult {
+  /** Account login salt, reused on recovery so duress/destruct verifiers survive. */
+  saltAuth: string;
   saltRecovery: string;
   saltRecoveryAuth: string;
   wrappedDekRecovery: string;
@@ -45,4 +47,17 @@ export type RecoverBody = PasswordChangeEnvelope & { identifier: string; recover
 /** Step 2 of recovery: prove the recovery code + set new password. */
 export function recover(body: RecoverBody): Promise<AuthResult> {
   return api.post<AuthResult>('/auth/recover', body);
+}
+
+/**
+ * Configure duress/decoy + destruction passwords (authenticated; roadmap #14).
+ * Each field is tri-state: omitted = leave unchanged, `null` = clear, value = set.
+ */
+export interface DuressConfigBody {
+  duress?: DecoyVaultPayload | null;
+  destructAuthHash?: string | null;
+}
+
+export function configureDuress(body: DuressConfigBody): Promise<void> {
+  return api.post<void>('/auth/duress', body);
 }

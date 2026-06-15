@@ -88,6 +88,51 @@ export async function deriveAuthHash(password: string, saltAuthB64: string, para
   return toBase64(await deriveKey(password, salt, params));
 }
 
+/**
+ * Decoy/duress setup (roadmap #14). Built from an unlocked real session.
+ *
+ * The decoy vault is a *separate* (shadow) account with its own DEK and salts;
+ * `shadow` is the full envelope the server stores on that row. `duressAuthHash`
+ * is the verifier stored on the PRIMARY row - derived from the PRIMARY's
+ * `saltAuth`/`kdfParams` so that the single authHash a client derives at login
+ * (which always uses the primary's prelogin material) can match it. At a duress
+ * login the server returns the shadow's `saltKek`/`wrappedDek`, and the
+ * unchanged login path unwraps the decoy DEK.
+ */
+export interface DecoyVaultPayload {
+  duressAuthHash: string;
+  /** Key/envelope material for the decoy's own users row (server assigns its identifier). */
+  shadow: Omit<SignupPayload, 'identifier' | 'email'>;
+}
+
+export async function createDecoyVault(
+  duressPassword: string,
+  primarySaltAuthB64: string,
+  primaryKdfParams: KdfParams,
+): Promise<DecoyVaultPayload> {
+  // A complete, valid vault for the decoy: its own DEK, salts and recovery
+  // wrapping. The decoy's own authHash/recovery are never exercised (login
+  // always resolves the PRIMARY by identifier), but every column must be set.
+  const { payload } = await createSignup('decoy', duressPassword, undefined, primaryKdfParams);
+
+  // The server assigns the shadow's identifier; drop the placeholder one (and the
+  // never-set email) so only key/envelope material is sent.
+  const shadow = {
+    authHash: payload.authHash,
+    recoveryAuthHash: payload.recoveryAuthHash,
+    saltAuth: payload.saltAuth,
+    saltKek: payload.saltKek,
+    saltRecovery: payload.saltRecovery,
+    saltRecoveryAuth: payload.saltRecoveryAuth,
+    kdfParams: payload.kdfParams,
+    wrappedDek: payload.wrappedDek,
+    wrappedDekRecovery: payload.wrappedDekRecovery,
+  };
+
+  const duressAuthHash = await deriveAuthHash(duressPassword, primarySaltAuthB64, primaryKdfParams);
+  return { duressAuthHash, shadow };
+}
+
 /** After a successful login, unwrap the DEK from the password-derived KEK. */
 export async function unwrapDek(
   password: string,
@@ -140,21 +185,24 @@ export interface PasswordChangeEnvelope {
 export async function rewrapForPasswordChange(
   dek: Uint8Array,
   newPassword: string,
-  kdfParams?: KdfParams,
+  saltAuthB64: string,
+  kdfParams: KdfParams,
 ): Promise<PasswordChangeEnvelope> {
-  const params = kdfParams ?? (await moderateKdfParams());
-  const saltAuth = await randomBytes(SALT_BYTES);
+  // Reuse the account's existing saltAuth + kdfParams so the derived authHash
+  // stays comparable against any configured duress/destruct verifiers (which
+  // are derived from the same saltAuth and cannot be re-derived here without
+  // the duress/destruct passwords). Only the KEK wrapping rotates.
   const saltKek = await randomBytes(SALT_BYTES);
 
-  const kek = await deriveKey(newPassword, saltKek, params);
+  const kek = await deriveKey(newPassword, saltKek, kdfParams);
   const wrappedDek = await aeadEncrypt(dek, kek);
-  const authHash = await deriveKey(newPassword, saltAuth, params);
+  const authHash = await deriveKey(newPassword, await fromBase64(saltAuthB64), kdfParams);
 
   return {
     authHash: await toBase64(authHash),
-    saltAuth: await toBase64(saltAuth),
+    saltAuth: saltAuthB64,
     saltKek: await toBase64(saltKek),
     wrappedDek: await toBase64(wrappedDek),
-    kdfParams: params,
+    kdfParams,
   };
 }

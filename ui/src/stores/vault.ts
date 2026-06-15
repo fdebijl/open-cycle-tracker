@@ -14,6 +14,9 @@ import type { AuthUser } from '@/api/types';
 export interface Session {
   token: string;
   user: AuthUser;
+  /** Account login salt (stable across password changes); needed to re-derive the
+   * authHash on a password change so duress/destruct verifiers keep matching. */
+  saltAuth: string;
   /** Non-secret material needed to re-derive the DEK on unlock (base64). */
   saltKek: string;
   wrappedDek: string;

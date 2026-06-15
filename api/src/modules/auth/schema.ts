@@ -66,9 +66,40 @@ export const recoverSchema = z.object({
   kdfParams: kdfParamsSchema,
 });
 
+/**
+ * Configure duress/decoy + destruction passwords (authenticated; roadmap #14).
+ * `shadow` is the full envelope for the decoy's own (separate) users row; the
+ * server assigns its identifier. Each top-level field is tri-state:
+ * absent = leave unchanged, `null` = clear, value = set.
+ */
+const decoyShadowSchema = z.object({
+  authHash: base64String,
+  recoveryAuthHash: base64String,
+  saltAuth: saltString,
+  saltKek: saltString,
+  saltRecovery: saltString,
+  saltRecoveryAuth: saltString,
+  kdfParams: kdfParamsSchema,
+  wrappedDek: base64Bytes({ maxLen: 1024 }),
+  wrappedDekRecovery: base64Bytes({ maxLen: 1024 }),
+});
+
+export const duressConfigSchema = z.object({
+  duress: z
+    .object({
+      // Verifier stored on the PRIMARY row (derived from the primary's saltAuth).
+      duressAuthHash: base64String,
+      shadow: decoyShadowSchema,
+    })
+    .nullable()
+    .optional(),
+  destructAuthHash: base64String.nullable().optional(),
+});
+
 export type PreloginInput = z.infer<typeof preloginSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type PasswordChangeInput = z.infer<typeof passwordChangeSchema>;
 export type RecoverInitInput = z.infer<typeof recoverInitSchema>;
 export type RecoverInput = z.infer<typeof recoverSchema>;
+export type DuressConfigInput = z.infer<typeof duressConfigSchema>;
