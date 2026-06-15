@@ -83,7 +83,7 @@ export function Recover() {
             className="oct-primary"
             disabled={busy || !identifier || !mnemonic || !newPassword}
           >
-            {busy ? <Spinner label="Recovering…" /> : 'Reset password'}
+            {busy ? <Spinner size="sm" label="Recovering…" /> : 'Reset password'}
           </button>
         </div>
       </form>

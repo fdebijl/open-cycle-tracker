@@ -52,7 +52,7 @@ export function Login() {
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
           <button type="submit" className="oct-primary" disabled={busy || !identifier || !password}>
-            {busy ? <Spinner label="Deriving key…" /> : 'Log in'}
+            {busy ? <Spinner size="sm" label="Deriving key…" /> : 'Log in'}
           </button>
         </div>
       </form>

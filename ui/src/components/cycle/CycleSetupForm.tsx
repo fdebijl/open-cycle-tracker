@@ -70,7 +70,7 @@ export function CycleSetupForm({
       {error && <p className="oct-error">{error}</p>}
       <div className="oct-form-actions">
         <button type="submit" className="oct-primary" disabled={busy || !onsetStr || !length}>
-          {busy ? <Spinner label="Setting up…" /> : submitLabel}
+          {busy ? <Spinner size="sm" label="Setting up…" /> : submitLabel}
         </button>
       </div>
     </form>

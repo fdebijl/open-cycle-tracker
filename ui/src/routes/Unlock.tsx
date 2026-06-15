@@ -52,7 +52,7 @@ export function Unlock() {
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
           <button type="submit" className="oct-primary" disabled={busy || !password}>
-            {busy ? <Spinner label="Deriving key…" /> : 'Unlock'}
+            {busy ? <Spinner size="sm" label="Deriving key…" /> : 'Unlock'}
           </button>
         </div>
       </form>
