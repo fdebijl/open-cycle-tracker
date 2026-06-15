@@ -92,7 +92,7 @@ export function Settings() {
             className="oct-primary"
             disabled={updateDisplayName.isPending || nameUnchanged}
           >
-            {updateDisplayName.isPending ? <Spinner label="Saving…" /> : 'Save display name'}
+            {updateDisplayName.isPending ? <Spinner size="sm" label="Saving…" /> : 'Save display name'}
           </button>
         </form>
       </div>
@@ -128,7 +128,7 @@ export function Settings() {
         />
         {msg && <p className={msg.kind === 'err' ? styles.err : styles.ok}>{msg.text}</p>}
         <button type="submit" className="oct-primary" disabled={busy || !current || !next || !confirm}>
-          {busy ? <Spinner label="Re-wrapping key…" /> : 'Change password'}
+          {busy ? <Spinner size="sm" label="Re-wrapping key…" /> : 'Change password'}
         </button>
       </form>
 
@@ -264,7 +264,7 @@ function DuressSection() {
           disabled={busy}
         />
         <button type="submit" className="oct-primary" disabled={busy || !duressPw || !duressConfirm}>
-          {busy ? <Spinner label="Saving…" /> : duressOn ? 'Replace decoy password' : 'Set decoy password'}
+          {busy ? <Spinner size="sm" label="Saving…" /> : duressOn ? 'Replace decoy password' : 'Set decoy password'}
         </button>
         {duressOn && (
           <button
@@ -309,7 +309,7 @@ function DuressSection() {
           disabled={busy}
         />
         <button type="submit" className="oct-primary" disabled={busy || !destructPw || !destructConfirm}>
-          {busy ? <Spinner label="Saving…" /> : destructOn ? 'Replace destruction password' : 'Set destruction password'}
+          {busy ? <Spinner size="sm" label="Saving…" /> : destructOn ? 'Replace destruction password' : 'Set destruction password'}
         </button>
         {destructOn && (
           <button

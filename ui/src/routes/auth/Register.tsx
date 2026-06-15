@@ -81,7 +81,7 @@ export function Register() {
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
           <button type="submit" className="oct-primary" disabled={busy || !identifier || !password || !confirm}>
-            {busy ? <Spinner label="Generating keys…" /> : 'Create account'}
+            {busy ? <Spinner size="sm" label="Generating keys…" /> : 'Create account'}
           </button>
         </div>
       </form>
