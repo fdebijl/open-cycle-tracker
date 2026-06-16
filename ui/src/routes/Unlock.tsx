@@ -7,6 +7,7 @@ import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { logoutAccount, unlockWithPassword } from '@/auth/session';
 import { useVault } from '@/stores/vault';
+import { Button } from '@/components/Button';
 
 /**
  * Shown after an auto-lock: the session (token) is still held, but the DEK was
@@ -55,9 +56,9 @@ export function Unlock() {
         />
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
-          <button type="submit" className="oct-primary" disabled={busy || !password}>
+          <Button type="submit" disabled={busy || !password}>
             {busy ? <Spinner size="sm" label={t('auth.unlock.deriving')} /> : t('auth.unlock.submit')}
-          </button>
+          </Button>
         </div>
       </form>
       <div className="oct-muted-links">
