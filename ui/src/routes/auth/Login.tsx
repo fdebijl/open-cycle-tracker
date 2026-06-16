@@ -6,6 +6,7 @@ import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { loginAccount } from '@/auth/session';
+import { Button } from '@/components/Button';
 
 export function Login() {
   // Controlled inputs: React holds the value in state and the input reflects it.
@@ -53,9 +54,9 @@ export function Login() {
         />
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
-          <button type="submit" className="oct-primary" disabled={busy || !identifier || !password}>
+          <Button type="submit" disabled={busy || !identifier || !password}>
             {busy ? <Spinner size="sm" label={t('auth.login.deriving')} /> : t('auth.login.submit')}
-          </button>
+          </Button>
         </div>
       </form>
       <div className="oct-muted-links">

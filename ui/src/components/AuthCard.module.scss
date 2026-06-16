@@ -3,7 +3,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px;
+  padding: var(--oct-lg);
 }
 
 .card {
@@ -13,13 +13,13 @@
   border: 1px solid var(--oct-border);
   border-radius: var(--oct-radius);
   box-shadow: var(--oct-shadow);
-  padding: 28px 24px;
+  padding: var(--oct-lg);
 }
 
 .brand {
   font-size: 16px;
   font-weight: 600;
-  color: var(--oct-red);
+  color: var(--oct-purple);
   margin: 0 0 4px;
 }
 
@@ -46,24 +46,4 @@
   font-size: 13px;
   display: flex;
   justify-content: space-between;
-}
-
-:global(button.oct-primary) {
-  padding: 11px 16px;
-  border: none;
-  border-radius: var(--oct-radius);
-  background: var(--oct-red);
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    background: var(--oct-red-strong);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
 }
