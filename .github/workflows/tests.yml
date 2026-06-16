@@ -5,6 +5,8 @@ on: [push]
 env:
   NODE_ENV: test
   NODE_VERSION: 24
+  JWT_SECRET: really-long-string-for-ci-environment_jwt
+  SERVER_SECRET: really-long-string-for-ci-environment_server
 
 jobs:
   api:
