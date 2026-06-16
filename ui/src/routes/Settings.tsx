@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { SUPPORTED_LOCALES } from '@/i18n/config';
+import { Button } from '@/components/Button';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { EmergencyDelete } from '@/components/EmergencyDelete';
@@ -90,13 +91,12 @@ export function Settings() {
             disabled={updateDisplayName.isPending}
           />
           <p className={styles.muted}>{t('settings.displayNameHint')}</p>
-          <button
+          <Button
             type="submit"
-            className="oct-primary"
             disabled={updateDisplayName.isPending || nameUnchanged}
           >
             {updateDisplayName.isPending ? <Spinner size="sm" label={t('settings.saving')} /> : t('settings.saveDisplayName')}
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -146,9 +146,9 @@ export function Settings() {
           disabled={busy}
         />
         {msg && <p className={msg.kind === 'err' ? styles.err : styles.ok}>{msg.text}</p>}
-        <button type="submit" className="oct-primary" disabled={busy || !current || !next || !confirm}>
+        <Button type="submit" disabled={busy || !current || !next || !confirm}>
           {busy ? <Spinner size="sm" label={t('settings.rewrapping')} /> : t('settings.changePassword')}
-        </button>
+        </Button>
       </form>
 
       <DuressSection />
@@ -162,20 +162,6 @@ export function Settings() {
   );
 }
 
-/**
- * Decoy & duress passwords (roadmap #14).
- *
- * - The duress password opens a SEPARATE, empty vault ("decoy"). You can log in
- *   with it at any time to fill it with believable, mundane entries; under
- *   coercion you hand over this password instead of your real one. Your real
- *   data cannot be decrypted with it.
- * - The destruction password silently and permanently wipes your account the
- *   moment it is entered at the login screen - it looks exactly like a wrong
- *   password to whoever typed it.
- *
- * Nothing here tells you which vault you're in after login (that would tip off
- * an onlooker); you know by which password you used.
- */
 function DuressSection() {
   const { t } = useTranslation();
   const [duressOn, setDuressOn] = useState(false);
@@ -282,7 +268,8 @@ function DuressSection() {
           onChange={(e) => setDuressConfirm(e.target.value)}
           disabled={busy}
         />
-        <button type="submit" className="oct-primary" disabled={busy || !duressPw || !duressConfirm}>
+        <div className="row">
+        <Button type="submit" disabled={busy || !duressPw || !duressConfirm}>
           {busy ? (
             <Spinner size="sm" label={t('settings.saving')} />
           ) : duressOn ? (
@@ -290,7 +277,7 @@ function DuressSection() {
           ) : (
             t('settings.duress.setDecoy')
           )}
-        </button>
+        </Button>
         {duressOn && (
           <button
             type="button"
@@ -306,6 +293,7 @@ function DuressSection() {
             {t('settings.duress.removeDecoy')}
           </button>
         )}
+        </div>
       </form>
 
       <form onSubmit={onSetDestruct}>
@@ -338,7 +326,7 @@ function DuressSection() {
           onChange={(e) => setDestructConfirm(e.target.value)}
           disabled={busy}
         />
-        <button type="submit" className="oct-primary" disabled={busy || !destructPw || !destructConfirm}>
+        <Button type="submit" disabled={busy || !destructPw || !destructConfirm}>
           {busy ? (
             <Spinner size="sm" label={t('settings.saving')} />
           ) : destructOn ? (
@@ -346,7 +334,7 @@ function DuressSection() {
           ) : (
             t('settings.duress.setDestruct')
           )}
-        </button>
+        </Button>
         {destructOn && (
           <button
             type="button"

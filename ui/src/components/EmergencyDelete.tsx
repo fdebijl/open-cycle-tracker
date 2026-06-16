@@ -1,11 +1,6 @@
 import { useRef, useState } from 'react';
 import styles from './EmergencyDelete.module.scss';
 
-/**
- * Hold-to-confirm destructive button. The fill animates while pressed; reaching
- * 100% fires `onConfirm`. Releasing early cancels. Ports the Ember
- * `emergency-delete` component.
- */
 export function EmergencyDelete({
   label = 'Hold to delete',
   holdMs = 1800,

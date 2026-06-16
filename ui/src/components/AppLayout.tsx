@@ -10,8 +10,6 @@ import styles from './AppLayout.module.scss';
 /** Authenticated app shell: a slim top bar (identity + lock/logout), the routed
  * content, and the NavBar - a bottom bar on mobile, a left sidebar on desktop. */
 export function AppLayout() {
-  // The user-set display name, not the login identifier: a decoy vault's
-  // identifier is an opaque server-assigned id we must never surface.
   const { data: displayName } = useDisplayName();
   const { isDesktop } = useResponsive();
   const navigate = useNavigate();
