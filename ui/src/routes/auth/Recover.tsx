@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
@@ -14,6 +15,7 @@ export function Recover() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -23,7 +25,7 @@ export function Recover() {
       await recoverAccount({ identifier, mnemonic, newPassword });
       setDone(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Recovery failed');
+      setError(err instanceof Error ? err.message : t('auth.recover.failed'));
     } finally {
       setBusy(false);
     }
@@ -31,11 +33,11 @@ export function Recover() {
 
   if (done) {
     return (
-      <AuthCard title="Password reset">
-        <p>Your password has been reset. You can now log in.</p>
+      <AuthCard title={t('auth.recover.resetTitle')}>
+        <p>{t('auth.recover.resetDone')}</p>
         <div className="oct-form-actions">
           <button type="button" className="oct-primary" onClick={() => navigate('/login', { replace: true })}>
-            Go to login
+            {t('auth.recover.goToLogin')}
           </button>
         </div>
       </AuthCard>
@@ -43,11 +45,11 @@ export function Recover() {
   }
 
   return (
-    <AuthCard title="Recover account">
+    <AuthCard title={t('auth.recover.title')}>
       <form onSubmit={onSubmit}>
         <Field
           id="identifier"
-          label="Username"
+          label={t('fields.username')}
           autoComplete="username"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
@@ -56,7 +58,7 @@ export function Recover() {
         />
         <div style={{ marginBottom: 14 }}>
           <label htmlFor="mnemonic" style={{ fontSize: 13, color: 'var(--oct-muted)' }}>
-            Recovery phrase (24 words)
+            {t('auth.recover.phraseLabel')}
           </label>
           <textarea
             id="mnemonic"
@@ -69,7 +71,7 @@ export function Recover() {
         </div>
         <Field
           id="newPassword"
-          label="New password"
+          label={t('auth.recover.newPassword')}
           type="password"
           autoComplete="new-password"
           value={newPassword}
@@ -83,12 +85,12 @@ export function Recover() {
             className="oct-primary"
             disabled={busy || !identifier || !mnemonic || !newPassword}
           >
-            {busy ? <Spinner size="sm" label="Recovering…" /> : 'Reset password'}
+            {busy ? <Spinner size="sm" label={t('auth.recover.recovering')} /> : t('auth.recover.submit')}
           </button>
         </div>
       </form>
       <div className="oct-muted-links">
-        <Link to="/login">Back to login</Link>
+        <Link to="/login">{t('auth.recover.backToLogin')}</Link>
       </div>
     </AuthCard>
   );

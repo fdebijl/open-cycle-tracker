@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MdiIcon } from '@/components/MdiIcon';
 import type { Category, CategoryLevel } from '@/data/types';
 import styles from './CategoryRow.module.scss';
@@ -20,6 +21,7 @@ export function CategoryRow({
   busy: boolean;
   onToggleLevel: (levelId: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className={styles.row}>
       <div className={styles.category}>
@@ -45,7 +47,7 @@ export function CategoryRow({
             </li>
           );
         })}
-        {levels.length === 0 && <li className={styles.empty}>No levels</li>}
+        {levels.length === 0 && <li className={styles.empty}>{t('tracking.noLevels')}</li>}
       </ul>
     </div>
   );

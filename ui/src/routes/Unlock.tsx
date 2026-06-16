@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
@@ -18,6 +19,7 @@ export function Unlock() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -27,21 +29,23 @@ export function Unlock() {
       await unlockWithPassword(password);
       navigate('/', { replace: true });
     } catch {
-      setError('Incorrect password');
+      setError(t('auth.unlock.incorrect'));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <AuthCard title="Locked">
+    <AuthCard title={t('auth.unlock.title')}>
       <p className="oct-error" style={{ color: 'var(--oct-muted)' }}>
-        Signed in as <strong>{identifier}</strong>. Enter your password to unlock.
+        <Trans i18nKey="auth.unlock.signedInAs" values={{ name: identifier }}>
+          Signed in as <strong>{identifier}</strong>. Enter your password to unlock.
+        </Trans>
       </p>
       <form onSubmit={onSubmit}>
         <Field
           id="password"
-          label="Password"
+          label={t('fields.password')}
           type="password"
           autoComplete="current-password"
           value={password}
@@ -52,7 +56,7 @@ export function Unlock() {
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
           <button type="submit" className="oct-primary" disabled={busy || !password}>
-            {busy ? <Spinner size="sm" label="Deriving key…" /> : 'Unlock'}
+            {busy ? <Spinner size="sm" label={t('auth.unlock.deriving')} /> : t('auth.unlock.submit')}
           </button>
         </div>
       </form>
@@ -65,7 +69,7 @@ export function Unlock() {
           }}
           style={{ background: 'none', border: 'none', color: 'var(--oct-blue)', cursor: 'pointer', padding: 0 }}
         >
-          Log out instead
+          {t('auth.unlock.logoutInstead')}
         </button>
       </div>
     </AuthCard>

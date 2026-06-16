@@ -1,11 +1,14 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MdiIcon } from './MdiIcon';
 import styles from './NavBar.module.scss';
 
 interface NavItem {
   to: string;
   icon: string;
-  label: string;
+  // i18next key for the label, resolved with t() inside the component (ITEMS is
+  // module-level, where the t() hook isn't available).
+  labelKey: string;
   size: number;
   priority?: boolean;
 }
@@ -13,14 +16,15 @@ interface NavItem {
 // Order and icons mirror the Ember nav-bar. "Cycle" is the priority item
 // (larger, and floated to the top on desktop).
 const ITEMS: NavItem[] = [
-  { to: '/today', icon: 'pencil-outline', label: 'Tracking', size: 1.2 },
-  { to: '/calendar', icon: 'calendar-month', label: 'Calendar', size: 1.2 },
-  { to: '/', icon: 'reload', label: 'Cycle', size: 1.5, priority: true },
-  { to: '/info', icon: 'account-outline', label: 'My Info', size: 1.2 },
-  { to: '/settings', icon: 'cog-outline', label: 'Settings', size: 1.2 },
+  { to: '/today', icon: 'pencil-outline', labelKey: 'nav.tracking', size: 1.2 },
+  { to: '/calendar', icon: 'calendar-month', labelKey: 'nav.calendar', size: 1.2 },
+  { to: '/', icon: 'reload', labelKey: 'nav.cycle', size: 1.5, priority: true },
+  { to: '/info', icon: 'account-outline', labelKey: 'nav.info', size: 1.2 },
+  { to: '/settings', icon: 'cog-outline', labelKey: 'nav.settings', size: 1.2 },
 ];
 
 export function NavBar({ desktop }: { desktop: boolean }) {
+  const { t } = useTranslation();
   return (
     <nav className={desktop ? `${styles.nav} ${styles.desktop}` : styles.nav}>
       {ITEMS.map((item) => (
@@ -35,7 +39,7 @@ export function NavBar({ desktop }: { desktop: boolean }) {
           <span className={styles.iconWrap}>
             <MdiIcon name={item.icon} size={item.size} />
           </span>
-          <span className={styles.label}>{item.label}</span>
+          <span className={styles.label}>{t(item.labelKey)}</span>
         </NavLink>
       ))}
     </nav>

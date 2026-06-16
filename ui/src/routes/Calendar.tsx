@@ -14,6 +14,8 @@ import {
   startOfWeek,
   subMonths,
 } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { useDateFnsLocale } from '@/i18n/format';
 import { Spinner } from '@/components/Spinner';
 import { useCycles, useDays, useLogDay, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleForDate, cycleOnsets } from '@/data/cycles';
@@ -21,11 +23,14 @@ import { cycleStats, forecastDayType, predictFertileWindow, predictNextPeriod } 
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import styles from './Calendar.module.scss';
 
-const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
-
 /** Month grid of tracked days, colored by day type; clicking a tracked day opens
  * its editor. Replaces the Ember ember-power-calendar view. */
 export function Calendar() {
+  const { t } = useTranslation();
+  const locale = useDateFnsLocale();
+  // Mon-first weekday headers; kept as a translated array so a future locale can
+  // reorder/relabel without touching the grid.
+  const weekdays = t('calendar.weekdays', { returnObjects: true }) as string[];
   const daysQuery = useDays();
   const cyclesQuery = useCycles();
   const settingsQuery = useUserSettings();
@@ -34,7 +39,7 @@ export function Calendar() {
   const navigate = useNavigate();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
 
-  if (daysQuery.isLoading || cyclesQuery.isLoading) return <Spinner label="Loading calendar…" />;
+  if (daysQuery.isLoading || cyclesQuery.isLoading) return <Spinner label={t('calendar.loading')} />;
 
   const allDays = daysQuery.data ?? [];
   const cycles = cyclesQuery.data ?? [];
@@ -90,17 +95,17 @@ export function Calendar() {
   return (
     <section className={styles.page}>
       <header className={styles.head}>
-        <button type="button" className={styles.nav} onClick={() => setMonth(subMonths(month, 1))} aria-label="Previous month">
+        <button type="button" className={styles.nav} onClick={() => setMonth(subMonths(month, 1))} aria-label={t('calendar.prevMonth')}>
           ‹
         </button>
-        <h1 className={styles.title}>{format(month, 'MMMM yyyy')}</h1>
-        <button type="button" className={styles.nav} onClick={() => setMonth(addMonths(month, 1))} aria-label="Next month">
+        <h1 className={styles.title}>{format(month, 'MMMM yyyy', { locale })}</h1>
+        <button type="button" className={styles.nav} onClick={() => setMonth(addMonths(month, 1))} aria-label={t('calendar.nextMonth')}>
           ›
         </button>
       </header>
 
       <div className={styles.grid}>
-        {WEEKDAYS.map((w) => (
+        {weekdays.map((w) => (
           <div key={w} className={styles.weekday}>
             {w}
           </div>
@@ -129,7 +134,7 @@ export function Calendar() {
               disabled={logDay.isPending}
               onClick={() => onPick(date)}
             >
-              {format(date, 'd')}
+              {format(date, 'd', { locale })}
             </button>
           );
         })}

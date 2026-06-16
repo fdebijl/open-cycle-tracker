@@ -1,5 +1,6 @@
 import { isToday } from 'date-fns';
 import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Day } from '@/data/types';
 import styles from './DayMarker.module.scss';
 
@@ -28,6 +29,7 @@ export function DayMarker({
   style?: CSSProperties;
   onSelect?: () => void;
 }) {
+  const { t } = useTranslation();
   const today = isToday(date);
   const dayType = day && isPeriod ? 'period' : 'none';
   return (
@@ -42,7 +44,7 @@ export function DayMarker({
       style={style}
       role="button"
       tabIndex={0}
-      aria-label={day ? `Day ${dayNumber}` : `Log day ${dayNumber}`}
+      aria-label={day ? t('tracking.dayAria', { n: dayNumber }) : t('tracking.logDayAria', { n: dayNumber })}
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {

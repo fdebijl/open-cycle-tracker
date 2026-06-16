@@ -1,5 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { addDays, isSameDay } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useResponsive } from '@/hooks/useResponsive';
 import { cycleDayNumber } from '@/data/cycles';
 import { forecastDayType, predictNextPeriod } from '@/data/prediction';
@@ -18,13 +20,13 @@ interface Slot {
 /** Human label for the countdown shown at the circle's center, derived from the
  * predicted next-period date. `margin` is the ± confidence band in days (from a
  * learned average's variability); 0 hides it. */
-function countdownLabel(daysUntil: number | null, margin: number): string {
+function countdownLabel(daysUntil: number | null, margin: number, t: TFunction): string {
   if (daysUntil === null) return '';
   const band = margin > 0 ? ` (±${margin})` : '';
-  if (daysUntil < 0) return `Your period is ${Math.abs(daysUntil)} days late`;
-  if (daysUntil === 0) return 'Your period may start today';
-  if (daysUntil === 1) return 'Your period may start tomorrow';
-  return `${daysUntil} days until next period${band}`;
+  if (daysUntil < 0) return t('cycle.countdown.late', { count: Math.abs(daysUntil) });
+  if (daysUntil === 0) return t('cycle.countdown.today');
+  if (daysUntil === 1) return t('cycle.countdown.tomorrow');
+  return t('cycle.countdown.daysUntil', { count: daysUntil, band });
 }
 
 /**
@@ -55,6 +57,7 @@ export function CycleCircle({
   onLogDate: (date: Date) => void;
 }) {
   const { width, height } = useResponsive();
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   useProximityScaler(containerRef);
 
@@ -101,7 +104,7 @@ export function CycleCircle({
             />
           );
         })}
-        <p className={styles.countdown}>{countdownLabel(daysUntil, margin)}</p>
+        <p className={styles.countdown}>{countdownLabel(daysUntil, margin, t)}</p>
       </div>
     </div>
   );

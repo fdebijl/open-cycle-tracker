@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Spinner } from '@/components/Spinner';
 import { CycleCircle } from '@/components/cycle/CycleCircle';
 import { useCycles, useDays, useLogDay, usePeriodDayIds, useUserSettings } from '@/data/hooks';
@@ -16,13 +17,14 @@ export function ShowCycle() {
   const periodDayIds = usePeriodDayIds();
   const logDay = useLogDay();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  if (daysQuery.isLoading) return <Spinner label="Loading cycle…" />;
-  if (daysQuery.error) return <p className="oct-error">Could not load this cycle.</p>;
+  if (daysQuery.isLoading) return <Spinner label={t('cycle.showLoading')} />;
+  if (daysQuery.error) return <p className="oct-error">{t('cycle.showLoadError')}</p>;
 
   const allDays = daysQuery.data ?? [];
   const days = allDays.filter((d) => d.cycleId === id);
-  if (days.length === 0) return <p>No days recorded for this cycle.</p>;
+  if (days.length === 0) return <p>{t('cycle.noDays')}</p>;
 
   const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
   const onsets = cycleOnsets(cyclesQuery.data ?? [], allDays, periodDayIds)

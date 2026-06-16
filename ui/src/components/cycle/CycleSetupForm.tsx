@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
@@ -21,7 +22,7 @@ export function CycleSetupForm({
   onSubmit,
   busy = false,
   error,
-  submitLabel = 'Start tracking',
+  submitLabel,
   defaultAverageLength = DEFAULT_AVERAGE_CYCLE_LENGTH,
 }: {
   onSubmit: (values: CycleSetupValues) => void;
@@ -30,6 +31,7 @@ export function CycleSetupForm({
   submitLabel?: string;
   defaultAverageLength?: number;
 }) {
+  const { t } = useTranslation();
   const today = format(new Date(), 'yyyy-MM-dd');
   const [onsetStr, setOnsetStr] = useState(today);
   const [length, setLength] = useState(String(defaultAverageLength));
@@ -47,7 +49,7 @@ export function CycleSetupForm({
     <form onSubmit={handleSubmit}>
       <Field
         id="onset"
-        label="When did your last period start?"
+        label={t('cycleSetup.onsetLabel')}
         type="date"
         max={today}
         value={onsetStr}
@@ -57,7 +59,7 @@ export function CycleSetupForm({
       />
       <Field
         id="averageCycleLength"
-        label="Average cycle length (days)"
+        label={t('cycleSetup.lengthLabel')}
         type="number"
         min={1}
         max={90}
@@ -70,7 +72,7 @@ export function CycleSetupForm({
       {error && <p className="oct-error">{error}</p>}
       <div className="oct-form-actions">
         <button type="submit" className="oct-primary" disabled={busy || !onsetStr || !length}>
-          {busy ? <Spinner size="sm" label="Setting up…" /> : submitLabel}
+          {busy ? <Spinner size="sm" label={t('cycleSetup.settingUp')} /> : (submitLabel ?? t('cycleSetup.startTracking'))}
         </button>
       </div>
     </form>

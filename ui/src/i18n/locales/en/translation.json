@@ -1,0 +1,175 @@
+{
+  "nav": {
+    "tracking": "Tracking",
+    "calendar": "Calendar",
+    "cycle": "Cycle",
+    "info": "My Info",
+    "settings": "Settings"
+  },
+  "layout": {
+    "lock": "Lock",
+    "logout": "Log out"
+  },
+  "fields": {
+    "username": "Username",
+    "password": "Password"
+  },
+  "auth": {
+    "login": {
+      "title": "Log in",
+      "submit": "Log in",
+      "deriving": "Deriving key…",
+      "failed": "Login failed",
+      "createAccount": "Create account",
+      "forgot": "Forgot password?"
+    },
+    "register": {
+      "title": "Create account",
+      "submit": "Create account",
+      "generating": "Generating keys…",
+      "passwordMismatch": "Passwords do not match",
+      "failed": "Registration failed",
+      "emailOptional": "Email (optional)",
+      "confirmPassword": "Confirm password",
+      "backToLogin": "Back to login"
+    },
+    "recover": {
+      "title": "Recover account",
+      "submit": "Reset password",
+      "recovering": "Recovering…",
+      "failed": "Recovery failed",
+      "phraseLabel": "Recovery phrase (24 words)",
+      "newPassword": "New password",
+      "backToLogin": "Back to login",
+      "resetTitle": "Password reset",
+      "resetDone": "Your password has been reset. You can now log in.",
+      "goToLogin": "Go to login"
+    },
+    "unlock": {
+      "title": "Locked",
+      "signedInAs": "Signed in as <1>{{name}}</1>. Enter your password to unlock.",
+      "submit": "Unlock",
+      "deriving": "Deriving key…",
+      "incorrect": "Incorrect password",
+      "logoutInstead": "Log out instead"
+    }
+  },
+  "recovery": {
+    "warning": "Write these 24 words down and keep them somewhere safe and offline. They are the <1>only</1> way to recover your data if you forget your password. We cannot recover them for you.",
+    "acknowledge": "I have written down my recovery phrase.",
+    "continue": "Continue"
+  },
+  "onboarding": {
+    "recoveryTitle": "Save your recovery phrase",
+    "cycleTitle": "Set up your cycle",
+    "intro": "This anchors your first cycle and seeds your next-period estimate. You can change it later.",
+    "setupFailed": "Could not finish setup. Please try again."
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "email": "Email",
+    "emailNone": "none",
+    "displayName": "Display name",
+    "displayNameHint": "Shown in the app. Stored encrypted - the server never sees it.",
+    "saving": "Saving…",
+    "saveDisplayName": "Save display name",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match",
+    "passwordChanged": "Password changed.",
+    "currentPasswordIncorrect": "Current password is incorrect.",
+    "rewrapping": "Re-wrapping key…",
+    "language": "Language",
+    "dangerZone": "Danger zone",
+    "dangerHint": "Deleting your account permanently destroys all your encrypted data. This cannot be undone - and because the server cannot read your data, it cannot be recovered.",
+    "deleteAccount": "Hold to delete account",
+    "duress": {
+      "title": "Decoy & duress",
+      "intro": "Optional extra passwords for situations where someone may force you to open the app. Both must be <1>different</1> from your main password.",
+      "genericError": "Something went wrong. Please try again.",
+      "configured": "· configured",
+      "decoyHeading": "Decoy password",
+      "decoyDesc": "Opens a separate, empty vault. Log in with this password whenever you like to add ordinary-looking entries so it appears used; hand it over under pressure. Your real data stays hidden and cannot be opened with it.",
+      "decoyMismatch": "Decoy passwords do not match.",
+      "decoyPassword": "Decoy password",
+      "newDecoyPassword": "New decoy password",
+      "confirmDecoyPassword": "Confirm decoy password",
+      "setDecoy": "Set decoy password",
+      "replaceDecoy": "Replace decoy password",
+      "decoySet": "Decoy password set. Log in with it any time to fill the decoy vault.",
+      "removeDecoy": "Remove decoy & delete its data",
+      "decoyRemoved": "Decoy password removed and decoy vault deleted.",
+      "destructHeading": "Destruction password",
+      "destructDesc": "<0>Irreversible.</0> Entering this password at the login screen permanently destroys your account and all data - it then shows the same error as a wrong password. There is no recovery. Make sure you have an export elsewhere before relying on it.",
+      "destructMismatch": "Destruction passwords do not match.",
+      "destructPassword": "Destruction password",
+      "newDestructPassword": "New destruction password",
+      "confirmDestructPassword": "Confirm destruction password",
+      "setDestruct": "Set destruction password",
+      "replaceDestruct": "Replace destruction password",
+      "destructSet": "Destruction password set.",
+      "removeDestruct": "Remove destruction password",
+      "destructRemoved": "Destruction password removed."
+    }
+  },
+  "cycle": {
+    "loading": "Loading your cycle…",
+    "loadError": "Could not load your cycle. Please try again.",
+    "setupTitle": "Let’s set up your cycle",
+    "setupIntro": "Tell us when your last period started and your typical cycle length. This anchors your first cycle and seeds your next-period estimate.",
+    "setupFailed": "Could not set up your cycle. Please try again.",
+    "startNewPeriod": "Start a new period",
+    "showLoading": "Loading cycle…",
+    "showLoadError": "Could not load this cycle.",
+    "noDays": "No days recorded for this cycle.",
+    "countdown": {
+      "late_one": "Your period is {{count}} day late",
+      "late_other": "Your period is {{count}} days late",
+      "today": "Your period may start today",
+      "tomorrow": "Your period may start tomorrow",
+      "daysUntil_one": "{{count}} day until next period{{band}}",
+      "daysUntil_other": "{{count}} days until next period{{band}}"
+    }
+  },
+  "cycleSetup": {
+    "onsetLabel": "When did your last period start?",
+    "lengthLabel": "Average cycle length (days)",
+    "settingUp": "Setting up…",
+    "startTracking": "Start tracking"
+  },
+  "tracking": {
+    "loading": "Loading day…",
+    "loadError": "Could not load this day.",
+    "dayFallback": "Day {{n}}",
+    "notes": "Notes",
+    "notePlaceholder": "Anything worth remembering about today…",
+    "bbtReading": "{{name}} reading",
+    "bbtPlaceholder": "°C",
+    "noLevels": "No levels",
+    "dayAria": "Day {{n}}",
+    "logDayAria": "Log day {{n}}",
+    "findingToday": "Finding today…"
+  },
+  "info": {
+    "title": "My Info",
+    "loading": "Loading stats…",
+    "avgCycleLength": "Avg cycle length ({{hint}})",
+    "learnedFromCycles_one": "learned from {{count}} cycle",
+    "learnedFromCycles_other": "learned from {{count}} cycles",
+    "fromSetup": "from setup",
+    "observedRange": "Observed range (days)",
+    "periodDays": "Period days",
+    "daysUntilNext": "Days until next period",
+    "fertileWindow": "Estimated fertile window: {{start}} – {{end}}",
+    "ovulation": " (ovulation ~{{date}})"
+  },
+  "calendar": {
+    "loading": "Loading calendar…",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+  }
+}

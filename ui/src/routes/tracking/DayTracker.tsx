@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { useDateFnsLocale } from '@/i18n/format';
 import { Spinner } from '@/components/Spinner';
 import { BbtField } from '@/components/category/BbtField';
 import { CategoryRow } from '@/components/category/CategoryRow';
@@ -15,6 +17,8 @@ import styles from './DayTracker.module.scss';
  * a computed forecast shown in the cycle overview, not user-reported. */
 export function DayTracker() {
   const { id } = useParams();
+  const { t } = useTranslation();
+  const locale = useDateFnsLocale();
   const dayQuery = useDay(id);
   const categoriesQuery = useCategories();
   const levelsQuery = useCategoryLevels();
@@ -36,10 +40,10 @@ export function DayTracker() {
   }, [levelsQuery.data]);
 
   if (dayQuery.isLoading || categoriesQuery.isLoading || levelsQuery.isLoading) {
-    return <Spinner label="Loading day…" />;
+    return <Spinner label={t('tracking.loading')} />;
   }
   if (dayQuery.error || !dayQuery.data) {
-    return <p className="oct-error">Could not load this day.</p>;
+    return <p className="oct-error">{t('tracking.loadError')}</p>;
   }
 
   const day = dayQuery.data;
@@ -73,7 +77,7 @@ export function DayTracker() {
     <section className={styles.page}>
       <header className={styles.head}>
         <h1 className={styles.date}>
-          {day.date ? format(day.date, 'EEEE, d MMMM yyyy') : `Day ${day.order ?? ''}`}
+          {day.date ? format(day.date, 'EEEE, d MMMM yyyy', { locale }) : t('tracking.dayFallback', { n: day.order ?? '' })}
         </h1>
       </header>
 
