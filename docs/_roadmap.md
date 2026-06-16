@@ -199,14 +199,14 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
 
 # User-provided features (Claude, do not edit this section)
 
-14. Duress password
+14. ✅ Duress password
     Add two new passwords to the user: one that destroys all data when entered and one
     that unlocks the app in a "duress mode" that looks normal but doesn't show any sensitive data.
 
 15. Configurable security settings
     Allow users to configure security settings such as auto-lock timeout, number of failed login attempts before data is wiped, and whether to allow biometric authentication.
 
-16. i18n / localization
+16. ✅ i18n / localization
     Support multiple languages and regional settings for date formats, units, and text. Start with just putting each string in a separate file for the English strings currently present, we'll do other langs later.
 
 17. Predict further out
@@ -229,6 +229,9 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
 
 23. DHI
     Use Docker's Hardened Images for the base images of UI and API
+
+24. Linting + SAST
+    Add eslint, csslint and security linters like zizmor and codeql
 
 ## Bottom line-
 
