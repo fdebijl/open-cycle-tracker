@@ -1,22 +1,22 @@
 :root {
-  --oct-red: rgb(231, 102, 102);
-  --oct-red-strong: rgb(227, 52, 52);
-  --oct-purple-light: rgb(192, 184, 224);
-  --oct-purple: rgb(129, 112, 194);
-  --oct-purple-strong: rgb(119, 97, 209);
-  --oct-blue: rgb(119, 140, 250);
-  --oct-yellow: rgb(251, 200, 123);
+  --oct-red: rgb(231 102 102);
+  --oct-red-strong: rgb(227 52 52);
+  --oct-purple-light: rgb(192 184 224);
+  --oct-purple: rgb(129 112 194);
+  --oct-purple-strong: rgb(119 97 209);
+  --oct-blue: rgb(119 140 250);
+  --oct-yellow: rgb(251 200 123);
 
-  --oct-text: rgb(34, 34, 34);
-  --oct-text-light: rgb(240, 240, 240);
-  --oct-muted: rgb(107, 107, 107);
-  --oct-border: rgba(0, 0, 0, 0.08);
-  --oct-bg: rgb(255, 255, 255);
-  --oct-bg-soft: rgb(250, 249, 252);
-  --oct-danger: rgb(227, 52, 52);
+  --oct-text: rgb(34 34 34);
+  --oct-text-light: rgb(240 240 240);
+  --oct-muted: rgb(107 107 107);
+  --oct-border: rgb(0 0 0 / 8%);
+  --oct-bg: rgb(255 255 255);
+  --oct-bg-soft: rgb(250 249 252);
+  --oct-danger: rgb(227 52 52);
 
   --oct-radius: 8px;
-  --oct-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --oct-shadow: 0 4px 16px rgb(0 0 0 / 8%);
 
   --oct-font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 

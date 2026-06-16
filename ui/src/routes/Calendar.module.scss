@@ -77,15 +77,17 @@
 
   &[data-forecast='period'] {
     border-color: #e76666;
-    background: rgba(231, 102, 102, 0.16);
+    background: rgb(231 102 102 / 16%);
   }
+
   &[data-forecast='fertile'] {
     border-color: #778cfa;
-    background: rgba(119, 140, 250, 0.16);
+    background: rgb(119 140 250 / 16%);
   }
+
   &[data-forecast='ovulation'] {
     border-color: #4f63d8;
-    background: rgba(79, 99, 216, 0.22);
+    background: rgb(79 99 216 / 22%);
   }
 }
 
@@ -97,6 +99,7 @@
     background: #d4ceec;
     color: var(--oct-text);
   }
+
   &[data-daytype='period'] {
     background: #e76666;
   }

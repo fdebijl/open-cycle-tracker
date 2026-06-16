@@ -10,9 +10,9 @@
   font-size: 14px;
   transform: translate(-50%, -50%);
   transform-origin: 50% 50%;
+
   /* Proximity scaler mutates width/height/z-index inline; animate the change. */
   transition: width 0.08s linear, height 0.08s linear;
-
   cursor: pointer;
 
   /* Unlogged slots read as faint placeholders until the user logs that date. */
@@ -27,6 +27,7 @@
     border: 2px dashed #fff;
     opacity: 0.6;
   }
+
   &[data-forecast='ovulation'] {
     background: #4f63d8;
     border: 2px dashed #fff;
@@ -36,12 +37,15 @@
   /* dayType → background, plus a darker ring when it's today. */
   &[data-daytype='none'] {
     background: #d4ceec;
+
     &[data-today] {
       border: 4px solid #8a7ebe;
     }
   }
+
   &[data-daytype='period'] {
     background: #e76666;
+
     &[data-today] {
       border: 4px solid #d14a4a;
     }

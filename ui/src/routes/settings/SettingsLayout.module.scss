@@ -9,6 +9,7 @@
   gap: 4px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--oct-border);
+
   // Let the strip scroll sideways rather than wrap once more tabs land.
   overflow-x: auto;
 }
@@ -21,6 +22,7 @@
   text-decoration: none;
   white-space: nowrap;
   border-bottom: 2px solid transparent;
+
   // Sit on top of the strip's border so the active underline overlaps it.
   margin-bottom: -1px;
 

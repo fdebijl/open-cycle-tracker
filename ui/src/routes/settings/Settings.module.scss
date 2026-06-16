@@ -49,6 +49,7 @@
   dt {
     color: var(--oct-muted);
   }
+
   dd {
     margin: 0;
   }
@@ -59,7 +60,7 @@
 }
 
 .danger {
-  border-color: rgba(227, 52, 52, 0.4);
+  border-color: rgb(227 52 52 / 40%);
 }
 
 .ok {

@@ -1,0 +1,11 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "ignoreFiles": ["dist/**/*"],
+  "rules": {
+    "selector-class-pattern": null,
+    "keyframes-name-pattern": null,
+    "custom-property-empty-line-before": null,
+    "value-keyword-case": null,
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["global", "local"] }]
+  }
+}
