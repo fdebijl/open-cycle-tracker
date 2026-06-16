@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { SUPPORTED_LOCALES } from '@/i18n/config';
 import { Button } from '@/components/Button';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
@@ -16,33 +15,18 @@ import {
   setDuressPassword,
 } from '@/auth/session';
 import { usersApi } from '@/api/resources';
-import { useDisplayName, useUpdateDisplayName } from '@/data/hooks';
 import { useVault } from '@/stores/vault';
 import styles from './Settings.module.scss';
 
-export function Settings() {
-  const user = useVault((s) => s.session?.user);
+export function SecuritySettings() {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-
-  const { data: displayName } = useDisplayName();
-  const updateDisplayName = useUpdateDisplayName();
-  // `null` draft = not editing → show the saved name; a string = the live edit.
-  const [draftName, setDraftName] = useState<string | null>(null);
-  const nameValue = draftName ?? displayName ?? '';
-  const nameUnchanged = nameValue.trim() === (displayName ?? '');
+  const { t } = useTranslation();
 
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
-
-  async function onSaveName(event: FormEvent) {
-    event.preventDefault();
-    await updateDisplayName.mutateAsync(nameValue);
-    setDraftName(null);
-  }
 
   async function onChangePassword(event: FormEvent) {
     event.preventDefault();
@@ -71,51 +55,7 @@ export function Settings() {
   }
 
   return (
-    <section className={styles.page}>
-      <h1>{t('settings.title')}</h1>
-
-      <div className={styles.card}>
-        <h2>{t('settings.account')}</h2>
-        <dl className={styles.account}>
-          <dt>{t('settings.email')}</dt>
-          <dd>{user?.email ?? <span className={styles.muted}>{t('settings.emailNone')}</span>}</dd>
-        </dl>
-        <form onSubmit={onSaveName}>
-          <Field
-            id="displayName"
-            label={t('settings.displayName')}
-            type="text"
-            autoComplete="off"
-            value={nameValue}
-            onChange={(e) => setDraftName(e.target.value)}
-            disabled={updateDisplayName.isPending}
-          />
-          <p className={styles.muted}>{t('settings.displayNameHint')}</p>
-          <Button
-            type="submit"
-            disabled={updateDisplayName.isPending || nameUnchanged}
-          >
-            {updateDisplayName.isPending ? <Spinner size="sm" label={t('settings.saving')} /> : t('settings.saveDisplayName')}
-          </Button>
-        </form>
-      </div>
-
-      <div className={styles.card}>
-        <h2>{t('settings.language')}</h2>
-        <select
-          id="language"
-          aria-label={t('settings.language')}
-          value={i18n.resolvedLanguage}
-          onChange={(e) => i18n.changeLanguage(e.target.value)}
-        >
-          {SUPPORTED_LOCALES.map((locale) => (
-            <option key={locale.code} value={locale.code}>
-              {locale.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
+    <>
       <form className={styles.card} onSubmit={onChangePassword}>
         <h2>{t('settings.changePassword')}</h2>
         <Field
@@ -158,7 +98,7 @@ export function Settings() {
         <p className={styles.muted}>{t('settings.dangerHint')}</p>
         <EmergencyDelete label={t('settings.deleteAccount')} onConfirm={onDelete} />
       </div>
-    </section>
+    </>
   );
 }
 

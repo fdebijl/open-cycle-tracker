@@ -1,0 +1,36 @@
+.page {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--oct-border);
+  // Let the strip scroll sideways rather than wrap once more tabs land.
+  overflow-x: auto;
+}
+
+.tab {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  color: var(--oct-muted);
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  // Sit on top of the strip's border so the active underline overlaps it.
+  margin-bottom: -1px;
+
+  &:hover {
+    color: var(--oct-text);
+  }
+}
+
+.active {
+  color: var(--oct-text);
+  border-bottom-color: var(--oct-purple);
+  font-weight: 600;
+}

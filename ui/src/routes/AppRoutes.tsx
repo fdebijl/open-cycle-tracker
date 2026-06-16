@@ -14,7 +14,12 @@ import { DayTracker } from './tracking/DayTracker';
 import { Today } from './Today';
 import { Calendar } from './Calendar';
 import { Info } from './Info';
-import { Settings } from './Settings';
+import { SettingsLayout } from './settings/SettingsLayout';
+import { ProfileSettings } from './settings/ProfileSettings';
+import { HealthSettings } from './settings/HealthSettings';
+import { PersonalizationSettings } from './settings/PersonalizationSettings';
+import { SecuritySettings } from './settings/SecuritySettings';
+import { AboutSettings } from './settings/AboutSettings';
 
 /** Authenticated + unlocked gate: needs a session AND an in-memory DEK. */
 function RequireUnlocked({ children }: { children: ReactNode }) {
@@ -62,7 +67,14 @@ export function AppRoutes() {
         <Route path="/today" element={<Today />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/info" element={<Info />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={<SettingsLayout />}>
+          <Route index element={<Navigate to="profile" replace />} />
+          <Route path="profile" element={<ProfileSettings />} />
+          <Route path="health" element={<HealthSettings />} />
+          <Route path="personalization" element={<PersonalizationSettings />} />
+          <Route path="security" element={<SecuritySettings />} />
+          <Route path="about" element={<AboutSettings />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
