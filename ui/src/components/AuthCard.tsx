@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import styles from './AuthCard.module.scss';
 
-/** Centered card used by the login / register / unlock / recover screens. */
 export function AuthCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className={styles.screen}>
