@@ -67,6 +67,25 @@
   },
   "settings": {
     "title": "Settings",
+    "tabs": {
+      "profile": "Profile",
+      "health": "Health",
+      "personalization": "Personalization",
+      "security": "Security",
+      "about": "About"
+    },
+    "health": {
+      "title": "Health",
+      "empty": "Nothing here yet. Health settings such as birth control will live here."
+    },
+    "about": {
+      "title": "About",
+      "app": "App",
+      "version": "Version",
+      "license": "License",
+      "source": "Source",
+      "sourceLink": "View on GitHub"
+    },
     "account": "Account",
     "email": "Email",
     "emailNone": "none",
