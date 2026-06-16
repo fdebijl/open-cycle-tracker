@@ -183,11 +183,11 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     doing.
 
 ## Nice-to-have / later
--
+
 11. **Insights & charts** — cycle-regularity trend, symptom-vs-phase
     correlation, period-length history. The Info screen is the seed of this but
     currently just counts.
--
+
 12. **TTC / pregnancy / "late period" handling** — a pregnancy mode, logging
     pregnancy-test results, gracefully handling a skipped/late period instead of
     silently breaking averages.
@@ -225,15 +225,39 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     Do some discovery on what's desirable for these modes
 
 22. GHA
-    Add a GHA for running tests and test-building images on PR's. 
+    Add a GHA for running tests (✅) and test-building images on PR's. 
 
 23. DHI
     Use Docker's Hardened Images for the base images of UI and API
 
-24. Linting + SAST
+24. ✅ Linting + SAST
     Add eslint, csslint and security linters like zizmor and codeql
 
-## Bottom line-
+25. ✅ Fix cycle circle
+    Dots are quite small, animations are a bit wonky and it might need a legend
+
+26. Fix tracking tab not highlighting the navbar button when the page is active
+
+27. Add comparisons to other cycle trackers
+    Like drip and peri on the FOSS side and Clue/Flo on the commercial side
+
+28. Finish docs
+
+29. Setup demo website 
+    Will need a DEMO_MODE flag
+
+30. Allow account registration to be disabled outright or switched to an approve mode
+    Will need a place to approve registration requests - should we add an admin mode/flag?
+
+31. ✅ Cycle circle redesign — toggleable markers + PMS
+    Fold the "fix cycle circle" polish (#25) into a redesign where all four cycle-phase
+    markers (menstruation, fertile, ovulation, PMS) are individually toggleable.
+    Menstruation/fertile/ovulation default on; PMS defaults off. Bring back the PMS
+    highlight from the legacy design, but anchored to the predicted next onset (luteal
+    phase) rather than a flat "last 5 days" offset, and shown only when the cycle can be
+    predicted with some reliability. See [`31_plan_cycle_circle_redesign.md`](./31_plan_cycle_circle_redesign.md).
+
+## Bottom line
 
 Milestone 1 turned the app from a manual logbook into a real onset-driven
 tracker: cycles now begin at a logged period, logging works on any date, and
