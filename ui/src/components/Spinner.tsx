@@ -49,7 +49,7 @@ export function Spinner({
                 ry="4"
                 width="8"
                 height="8"
-                fill={DOT_COLORS[dot] ?? PURPLE}
+                fill={size === 'sm' ? 'white': DOT_COLORS[dot] ?? PURPLE}
                 style={{ animationDelay: `${delay}s` }}
               />
             </g>

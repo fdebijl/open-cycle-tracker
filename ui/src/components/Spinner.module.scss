@@ -30,6 +30,10 @@
   animation: octDotFade 1.8s linear infinite;
 }
 
+button .label {
+  color: var(--oct-text-light);
+}
+
 .label {
   color: var(--oct-muted);
 }
