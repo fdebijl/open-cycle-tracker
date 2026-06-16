@@ -101,6 +101,18 @@
     "passwordChanged": "Password changed.",
     "currentPasswordIncorrect": "Current password is incorrect.",
     "rewrapping": "Re-wrapping key…",
+    "sessionLock": {
+      "title": "Session lock",
+      "intro": "When the vault locks it wipes the key from memory, so your password is needed to reopen it.",
+      "timeoutLabel": "Lock after inactivity",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "lockOnHidden": "Lock when I switch away from this tab",
+      "lockOnHiddenHint": "Most secure, but means re-entering your password whenever you glance at another tab.",
+      "save": "Save lock settings",
+      "saved": "Lock settings saved.",
+      "saveError": "Couldn't save. Please try again."
+    },
     "language": "Language",
     "dangerZone": "Danger zone",
     "dangerHint": "Deleting your account permanently destroys all your encrypted data. This cannot be undone - and because the server cannot read your data, it cannot be recovered.",

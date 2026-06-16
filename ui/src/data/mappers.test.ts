@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { format } from 'date-fns';
 import { randomBytes } from '@/crypto/primitives';
-import { encryptString } from '@/crypto';
+import { encryptJson, encryptString } from '@/crypto';
 import {
   decryptCategory,
   decryptCategoryLevel,
@@ -108,14 +108,30 @@ function baseUser(overrides: Partial<UserDto>): UserDto {
 
 describe('settings mapper', () => {
   it('round-trips settings through encrypt/decrypt', async () => {
-    const enc = await encryptSettings({ averageCycleLength: 30 }, dek);
+    const enc = await encryptSettings(
+      { averageCycleLength: 30, autoLockMs: 15 * 60 * 1000, lockOnHidden: false },
+      dek,
+    );
     const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
     expect(settings.averageCycleLength).toBe(30);
+    expect(settings.autoLockMs).toBe(15 * 60 * 1000);
+    expect(settings.lockOnHidden).toBe(false);
   });
 
-  it('defaults to a 28-day average when settings are absent', async () => {
+  it('falls back to defaults when settings are absent', async () => {
     const settings = await decryptSettings(baseUser({ encSettings: null }), dek);
     expect(settings.averageCycleLength).toBe(28);
+    expect(settings.autoLockMs).toBe(5 * 60 * 1000);
+    expect(settings.lockOnHidden).toBe(true);
+  });
+
+  it('fills missing fields from defaults for older settings blobs', async () => {
+    // A blob written before auto-lock settings existed has only averageCycleLength.
+    const enc = await encryptJson({ averageCycleLength: 21 }, dek);
+    const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
+    expect(settings.averageCycleLength).toBe(21);
+    expect(settings.autoLockMs).toBe(5 * 60 * 1000);
+    expect(settings.lockOnHidden).toBe(true);
   });
 });
 

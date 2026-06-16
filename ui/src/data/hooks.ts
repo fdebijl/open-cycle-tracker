@@ -173,17 +173,21 @@ export function useUpdateDisplayName() {
   });
 }
 
-/** Persist the user's preferences (encrypted). */
+/** Persist a patch to the user's preferences (encrypted). Reads, merges, and
+ * re-writes the whole settings blob so callers only send the fields they change
+ * without clobbering the rest. */
 export function useUpdateSettings() {
   const dek = useDek();
   const userId = useUserId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (settings: UserSettings): Promise<UserSettings> => {
+    mutationFn: async (patch: Partial<UserSettings>): Promise<UserSettings> => {
       if (!dek || !userId) throw new Error('Vault is locked');
-      const encSettings = await encryptSettings(settings, dek);
+      const current = await decryptSettings(await usersApi.get(userId), dek);
+      const next = { ...current, ...patch };
+      const encSettings = await encryptSettings(next, dek);
       await usersApi.update(userId, { encSettings });
-      return settings;
+      return next;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', userId] });
