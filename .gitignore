@@ -1,4 +1,4 @@
 .vscode
+.claude
 node_modules
-
 legacy_ui/
