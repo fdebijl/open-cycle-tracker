@@ -1,4 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { logoutAccount } from '@/auth/session';
 import { useVault } from '@/stores/vault';
 import { useDisplayName } from '@/data/hooks';
@@ -14,6 +15,7 @@ export function AppLayout() {
   const { data: displayName } = useDisplayName();
   const { isDesktop } = useResponsive();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className={isDesktop ? `${styles.shell} ${styles.shellDesktop}` : styles.shell}>
@@ -29,7 +31,7 @@ export function AppLayout() {
           <div className={styles.right}>
             {displayName && <span className={styles.user}>{displayName}</span>}
             <button type="button" className={styles.linkBtn} onClick={() => useVault.getState().relock()}>
-              Lock
+              {t('layout.lock')}
             </button>
             <button
               type="button"
@@ -39,7 +41,7 @@ export function AppLayout() {
                 navigate('/login', { replace: true });
               }}
             >
-              Log out
+              {t('layout.logout')}
             </button>
           </div>
         </header>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Spinner } from '@/components/Spinner';
 import { CycleCircle } from '@/components/cycle/CycleCircle';
 import { CycleSetupForm } from '@/components/cycle/CycleSetupForm';
@@ -33,13 +34,14 @@ export function CurrentCycle() {
   const updateSettings = useUpdateSettings();
   const logDay = useLogDay();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [setupError, setSetupError] = useState<string | null>(null);
 
   if (cyclesQuery.isLoading || daysQuery.isLoading || settingsQuery.isLoading) {
-    return <Spinner label="Loading your cycle…" />;
+    return <Spinner label={t('cycle.loading')} />;
   }
   if (cyclesQuery.error || daysQuery.error) {
-    return <p className="oct-error">Could not load your cycle. Please try again.</p>;
+    return <p className="oct-error">{t('cycle.loadError')}</p>;
   }
 
   const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
@@ -53,16 +55,13 @@ export function CurrentCycle() {
         await updateSettings.mutateAsync({ averageCycleLength: length });
         await startCycle.mutateAsync({ onset });
       } catch (err) {
-        setSetupError(err instanceof Error ? err.message : 'Could not set up your cycle. Please try again.');
+        setSetupError(err instanceof Error ? err.message : t('cycle.setupFailed'));
       }
     };
     return (
       <section className={styles.setup}>
-        <h1>Let’s set up your cycle</h1>
-        <p className={styles.intro}>
-          Tell us when your last period started and your typical cycle length. This anchors your first cycle and seeds
-          your next-period estimate.
-        </p>
+        <h1>{t('cycle.setupTitle')}</h1>
+        <p className={styles.intro}>{t('cycle.setupIntro')}</p>
         <CycleSetupForm
           onSubmit={onSetup}
           busy={updateSettings.isPending || startCycle.isPending}
@@ -113,7 +112,7 @@ export function CurrentCycle() {
         onClick={onStartNewPeriod}
         disabled={startCycle.isPending}
       >
-        Start a new period
+        {t('cycle.startNewPeriod')}
       </button>
     </div>
   );

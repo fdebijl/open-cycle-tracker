@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
@@ -14,12 +15,13 @@ export function Register() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
     if (password !== confirm) {
-      setError('Passwords do not match');
+      setError(t('auth.register.passwordMismatch'));
       return;
     }
     setBusy(true);
@@ -34,17 +36,17 @@ export function Register() {
       // state - it's never persisted.
       navigate('/onboarding', { replace: true, state: { mnemonic: recoveryMnemonic } });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('auth.register.failed'));
       setBusy(false);
     }
   }
 
   return (
-    <AuthCard title="Create account">
+    <AuthCard title={t('auth.register.title')}>
       <form onSubmit={onSubmit}>
         <Field
           id="identifier"
-          label="Username"
+          label={t('fields.username')}
           autoComplete="username"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
@@ -53,7 +55,7 @@ export function Register() {
         />
         <Field
           id="email"
-          label="Email (optional)"
+          label={t('auth.register.emailOptional')}
           type="email"
           autoComplete="email"
           value={email}
@@ -62,7 +64,7 @@ export function Register() {
         />
         <Field
           id="password"
-          label="Password"
+          label={t('fields.password')}
           type="password"
           autoComplete="new-password"
           value={password}
@@ -71,7 +73,7 @@ export function Register() {
         />
         <Field
           id="confirm"
-          label="Confirm password"
+          label={t('auth.register.confirmPassword')}
           type="password"
           autoComplete="new-password"
           value={confirm}
@@ -81,12 +83,12 @@ export function Register() {
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
           <button type="submit" className="oct-primary" disabled={busy || !identifier || !password || !confirm}>
-            {busy ? <Spinner size="sm" label="Generating keys…" /> : 'Create account'}
+            {busy ? <Spinner size="sm" label={t('auth.register.generating')} /> : t('auth.register.submit')}
           </button>
         </div>
       </form>
       <div className="oct-muted-links">
-        <Link to="/login">Back to login</Link>
+        <Link to="/login">{t('auth.register.backToLogin')}</Link>
       </div>
     </AuthCard>
   );

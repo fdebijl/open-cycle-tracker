@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthCard } from '@/components/AuthCard';
 import { CycleSetupForm } from '@/components/cycle/CycleSetupForm';
 import type { CycleSetupValues } from '@/components/cycle/CycleSetupForm';
@@ -28,6 +29,7 @@ export function Onboarding() {
   const updateSettings = useUpdateSettings();
   const startCycle = useStartCycle();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (!hasSession) return <Navigate to="/login" replace />;
   // Reloaded (or arrived without a freshly minted phrase) → fall back to the
@@ -43,24 +45,24 @@ export function Onboarding() {
       await startCycle.mutateAsync({ onset });
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not finish setup. Please try again.');
+      setError(err instanceof Error ? err.message : t('onboarding.setupFailed'));
     }
   }
 
   if (step === 'recovery') {
     return (
-      <AuthCard title="Save your recovery phrase">
+      <AuthCard title={t('onboarding.recoveryTitle')}>
         <RecoveryReveal mnemonic={mnemonic} onConfirm={() => setStep('cycle')} />
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard title="Set up your cycle">
+    <AuthCard title={t('onboarding.cycleTitle')}>
       <p style={{ color: 'var(--oct-muted)', fontSize: 13, marginTop: 0 }}>
-        This anchors your first cycle and seeds your next-period estimate. You can change it later.
+        {t('onboarding.intro')}
       </p>
-      <CycleSetupForm onSubmit={onSetup} busy={busy} error={error} submitLabel="Start tracking" />
+      <CycleSetupForm onSubmit={onSetup} busy={busy} error={error} submitLabel={t('cycleSetup.startTracking')} />
     </AuthCard>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUpdateDay } from '@/data/hooks';
 import styles from './DayTracker.module.scss';
 
@@ -8,6 +9,7 @@ import styles from './DayTracker.module.scss';
  * the text actually changed; an empty note clears it.
  */
 export function DayNote({ dayId, notes }: { dayId: string; notes: string | null }) {
+  const { t } = useTranslation();
   const updateDay = useUpdateDay();
   const [text, setText] = useState(notes ?? '');
 
@@ -27,11 +29,11 @@ export function DayNote({ dayId, notes }: { dayId: string; notes: string | null 
 
   return (
     <label className={styles.noteField}>
-      <span className={styles.noteLabel}>Notes</span>
+      <span className={styles.noteLabel}>{t('tracking.notes')}</span>
       <textarea
         className={styles.note}
         rows={3}
-        placeholder="Anything worth remembering about today…"
+        placeholder={t('tracking.notePlaceholder')}
         value={text}
         disabled={updateDay.isPending}
         onChange={(e) => setText(e.target.value)}

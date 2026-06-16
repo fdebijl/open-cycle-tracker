@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
+import { SUPPORTED_LOCALES } from '@/i18n/config';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { EmergencyDelete } from '@/components/EmergencyDelete';
@@ -20,6 +22,7 @@ import styles from './Settings.module.scss';
 export function Settings() {
   const user = useVault((s) => s.session?.user);
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const { data: displayName } = useDisplayName();
   const updateDisplayName = useUpdateDisplayName();
@@ -44,18 +47,18 @@ export function Settings() {
     event.preventDefault();
     setMsg(null);
     if (next !== confirm) {
-      setMsg({ kind: 'err', text: 'New passwords do not match' });
+      setMsg({ kind: 'err', text: t('settings.passwordMismatch') });
       return;
     }
     setBusy(true);
     try {
       await changePassword(current, next);
-      setMsg({ kind: 'ok', text: 'Password changed.' });
+      setMsg({ kind: 'ok', text: t('settings.passwordChanged') });
       setCurrent('');
       setNext('');
       setConfirm('');
     } catch {
-      setMsg({ kind: 'err', text: 'Current password is incorrect.' });
+      setMsg({ kind: 'err', text: t('settings.currentPasswordIncorrect') });
     } finally {
       setBusy(false);
     }
@@ -68,40 +71,56 @@ export function Settings() {
 
   return (
     <section className={styles.page}>
-      <h1>Settings</h1>
+      <h1>{t('settings.title')}</h1>
 
       <div className={styles.card}>
-        <h2>Account</h2>
+        <h2>{t('settings.account')}</h2>
         <dl className={styles.account}>
-          <dt>Email</dt>
-          <dd>{user?.email ?? <span className={styles.muted}>none</span>}</dd>
+          <dt>{t('settings.email')}</dt>
+          <dd>{user?.email ?? <span className={styles.muted}>{t('settings.emailNone')}</span>}</dd>
         </dl>
         <form onSubmit={onSaveName}>
           <Field
             id="displayName"
-            label="Display name"
+            label={t('settings.displayName')}
             type="text"
             autoComplete="off"
             value={nameValue}
             onChange={(e) => setDraftName(e.target.value)}
             disabled={updateDisplayName.isPending}
           />
-          <p className={styles.muted}>Shown in the app. Stored encrypted - the server never sees it.</p>
+          <p className={styles.muted}>{t('settings.displayNameHint')}</p>
           <button
             type="submit"
             className="oct-primary"
             disabled={updateDisplayName.isPending || nameUnchanged}
           >
-            {updateDisplayName.isPending ? <Spinner size="sm" label="Saving…" /> : 'Save display name'}
+            {updateDisplayName.isPending ? <Spinner size="sm" label={t('settings.saving')} /> : t('settings.saveDisplayName')}
           </button>
         </form>
       </div>
 
+      <div className={styles.card}>
+        <h2>{t('settings.language')}</h2>
+        <select
+          id="language"
+          aria-label={t('settings.language')}
+          value={i18n.resolvedLanguage}
+          onChange={(e) => i18n.changeLanguage(e.target.value)}
+        >
+          {SUPPORTED_LOCALES.map((locale) => (
+            <option key={locale.code} value={locale.code}>
+              {locale.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <form className={styles.card} onSubmit={onChangePassword}>
-        <h2>Change password</h2>
+        <h2>{t('settings.changePassword')}</h2>
         <Field
           id="current"
-          label="Current password"
+          label={t('settings.currentPassword')}
           type="password"
           autoComplete="current-password"
           value={current}
@@ -110,7 +129,7 @@ export function Settings() {
         />
         <Field
           id="new"
-          label="New password"
+          label={t('settings.newPassword')}
           type="password"
           autoComplete="new-password"
           value={next}
@@ -119,7 +138,7 @@ export function Settings() {
         />
         <Field
           id="confirmNew"
-          label="Confirm new password"
+          label={t('settings.confirmNewPassword')}
           type="password"
           autoComplete="new-password"
           value={confirm}
@@ -128,19 +147,16 @@ export function Settings() {
         />
         {msg && <p className={msg.kind === 'err' ? styles.err : styles.ok}>{msg.text}</p>}
         <button type="submit" className="oct-primary" disabled={busy || !current || !next || !confirm}>
-          {busy ? <Spinner size="sm" label="Re-wrapping key…" /> : 'Change password'}
+          {busy ? <Spinner size="sm" label={t('settings.rewrapping')} /> : t('settings.changePassword')}
         </button>
       </form>
 
       <DuressSection />
 
       <div className={`${styles.card} ${styles.danger}`}>
-        <h2>Danger zone</h2>
-        <p className={styles.muted}>
-          Deleting your account permanently destroys all your encrypted data. This cannot be undone - and because the
-          server cannot read your data, it cannot be recovered.
-        </p>
-        <EmergencyDelete label="Hold to delete account" onConfirm={onDelete} />
+        <h2>{t('settings.dangerZone')}</h2>
+        <p className={styles.muted}>{t('settings.dangerHint')}</p>
+        <EmergencyDelete label={t('settings.deleteAccount')} onConfirm={onDelete} />
       </div>
     </section>
   );
@@ -161,6 +177,7 @@ export function Settings() {
  * an onlooker); you know by which password you used.
  */
 function DuressSection() {
+  const { t } = useTranslation();
   const [duressOn, setDuressOn] = useState(false);
   const [destructOn, setDestructOn] = useState(false);
 
@@ -197,7 +214,7 @@ function DuressSection() {
       await action();
       setMsg({ kind: 'ok', text: ok });
     } catch {
-      setMsg({ kind: 'err', text: 'Something went wrong. Please try again.' });
+      setMsg({ kind: 'err', text: t('settings.duress.genericError') });
     } finally {
       setBusy(false);
     }
@@ -206,7 +223,7 @@ function DuressSection() {
   async function onSetDuress(event: FormEvent) {
     event.preventDefault();
     if (duressPw !== duressConfirm) {
-      setMsg({ kind: 'err', text: 'Decoy passwords do not match.' });
+      setMsg({ kind: 'err', text: t('settings.duress.decoyMismatch') });
       return;
     }
     await run(async () => {
@@ -214,13 +231,13 @@ function DuressSection() {
       setDuressOn(true);
       setDuressPw('');
       setDuressConfirm('');
-    }, 'Decoy password set. Log in with it any time to fill the decoy vault.');
+    }, t('settings.duress.decoySet'));
   }
 
   async function onSetDestruct(event: FormEvent) {
     event.preventDefault();
     if (destructPw !== destructConfirm) {
-      setMsg({ kind: 'err', text: 'Destruction passwords do not match.' });
+      setMsg({ kind: 'err', text: t('settings.duress.destructMismatch') });
       return;
     }
     await run(async () => {
@@ -228,26 +245,28 @@ function DuressSection() {
       setDestructOn(true);
       setDestructPw('');
       setDestructConfirm('');
-    }, 'Destruction password set.');
+    }, t('settings.duress.destructSet'));
   }
 
   return (
     <div className={styles.card}>
-      <h2>Decoy &amp; duress</h2>
+      <h2>{t('settings.duress.title')}</h2>
       <p className={styles.muted}>
-        Optional extra passwords for situations where someone may force you to open the app. Both must be{' '}
-        <strong>different</strong> from your main password.
+        <Trans i18nKey="settings.duress.intro">
+          Optional extra passwords for situations where someone may force you to open the app. Both must be{' '}
+          <strong>different</strong> from your main password.
+        </Trans>
       </p>
 
       <form onSubmit={onSetDuress}>
-        <h3>Decoy password {duressOn && <span className={styles.ok}>· configured</span>}</h3>
-        <p className={styles.muted}>
-          Opens a separate, empty vault. Log in with this password whenever you like to add ordinary-looking entries so
-          it appears used; hand it over under pressure. Your real data stays hidden and cannot be opened with it.
-        </p>
+        <h3>
+          {t('settings.duress.decoyHeading')}{' '}
+          {duressOn && <span className={styles.ok}>{t('settings.duress.configured')}</span>}
+        </h3>
+        <p className={styles.muted}>{t('settings.duress.decoyDesc')}</p>
         <Field
           id="duressPw"
-          label={duressOn ? 'New decoy password' : 'Decoy password'}
+          label={duressOn ? t('settings.duress.newDecoyPassword') : t('settings.duress.decoyPassword')}
           type="password"
           autoComplete="new-password"
           value={duressPw}
@@ -256,7 +275,7 @@ function DuressSection() {
         />
         <Field
           id="duressConfirm"
-          label="Confirm decoy password"
+          label={t('settings.duress.confirmDecoyPassword')}
           type="password"
           autoComplete="new-password"
           value={duressConfirm}
@@ -264,7 +283,13 @@ function DuressSection() {
           disabled={busy}
         />
         <button type="submit" className="oct-primary" disabled={busy || !duressPw || !duressConfirm}>
-          {busy ? <Spinner size="sm" label="Saving…" /> : duressOn ? 'Replace decoy password' : 'Set decoy password'}
+          {busy ? (
+            <Spinner size="sm" label={t('settings.saving')} />
+          ) : duressOn ? (
+            t('settings.duress.replaceDecoy')
+          ) : (
+            t('settings.duress.setDecoy')
+          )}
         </button>
         {duressOn && (
           <button
@@ -275,24 +300,29 @@ function DuressSection() {
               run(async () => {
                 await clearDuressPassword();
                 setDuressOn(false);
-              }, 'Decoy password removed and decoy vault deleted.')
+              }, t('settings.duress.decoyRemoved'))
             }
           >
-            Remove decoy &amp; delete its data
+            {t('settings.duress.removeDecoy')}
           </button>
         )}
       </form>
 
       <form onSubmit={onSetDestruct}>
-        <h3>Destruction password {destructOn && <span className={styles.ok}>· configured</span>}</h3>
+        <h3>
+          {t('settings.duress.destructHeading')}{' '}
+          {destructOn && <span className={styles.ok}>{t('settings.duress.configured')}</span>}
+        </h3>
         <p className={styles.muted}>
-          <strong>Irreversible.</strong> Entering this password at the login screen permanently destroys your account
-          and all data - it then shows the same error as a wrong password. There is no recovery. Make sure you have an
-          export elsewhere before relying on it.
+          <Trans i18nKey="settings.duress.destructDesc">
+            <strong>Irreversible.</strong> Entering this password at the login screen permanently destroys your account
+            and all data - it then shows the same error as a wrong password. There is no recovery. Make sure you have an
+            export elsewhere before relying on it.
+          </Trans>
         </p>
         <Field
           id="destructPw"
-          label={destructOn ? 'New destruction password' : 'Destruction password'}
+          label={destructOn ? t('settings.duress.newDestructPassword') : t('settings.duress.destructPassword')}
           type="password"
           autoComplete="new-password"
           value={destructPw}
@@ -301,7 +331,7 @@ function DuressSection() {
         />
         <Field
           id="destructConfirm"
-          label="Confirm destruction password"
+          label={t('settings.duress.confirmDestructPassword')}
           type="password"
           autoComplete="new-password"
           value={destructConfirm}
@@ -309,7 +339,13 @@ function DuressSection() {
           disabled={busy}
         />
         <button type="submit" className="oct-primary" disabled={busy || !destructPw || !destructConfirm}>
-          {busy ? <Spinner size="sm" label="Saving…" /> : destructOn ? 'Replace destruction password' : 'Set destruction password'}
+          {busy ? (
+            <Spinner size="sm" label={t('settings.saving')} />
+          ) : destructOn ? (
+            t('settings.duress.replaceDestruct')
+          ) : (
+            t('settings.duress.setDestruct')
+          )}
         </button>
         {destructOn && (
           <button
@@ -320,10 +356,10 @@ function DuressSection() {
               run(async () => {
                 await clearDestructPassword();
                 setDestructOn(false);
-              }, 'Destruction password removed.')
+              }, t('settings.duress.destructRemoved'))
             }
           >
-            Remove destruction password
+            {t('settings.duress.removeDestruct')}
           </button>
         )}
       </form>

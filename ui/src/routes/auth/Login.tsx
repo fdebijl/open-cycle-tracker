@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
@@ -13,6 +14,7 @@ export function Login() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -22,18 +24,18 @@ export function Login() {
       await loginAccount({ identifier, password });
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : t('auth.login.failed'));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <AuthCard title="Log in">
+    <AuthCard title={t('auth.login.title')}>
       <form onSubmit={onSubmit}>
         <Field
           id="identifier"
-          label="Username"
+          label={t('fields.username')}
           autoComplete="username"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
@@ -42,7 +44,7 @@ export function Login() {
         />
         <Field
           id="password"
-          label="Password"
+          label={t('fields.password')}
           type="password"
           autoComplete="current-password"
           value={password}
@@ -52,13 +54,13 @@ export function Login() {
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
           <button type="submit" className="oct-primary" disabled={busy || !identifier || !password}>
-            {busy ? <Spinner size="sm" label="Deriving key…" /> : 'Log in'}
+            {busy ? <Spinner size="sm" label={t('auth.login.deriving')} /> : t('auth.login.submit')}
           </button>
         </div>
       </form>
       <div className="oct-muted-links">
-        <Link to="/register">Create account</Link>
-        <Link to="/recover">Forgot password?</Link>
+        <Link to="/register">{t('auth.login.createAccount')}</Link>
+        <Link to="/recover">{t('auth.login.forgot')}</Link>
       </div>
     </AuthCard>
   );

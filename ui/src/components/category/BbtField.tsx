@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdiIcon } from '@/components/MdiIcon';
 import { useCreateFactor, useDeleteFactor, useUpdateFactor } from '@/data/hooks';
 import type { Category, CategoryLevel, Factor } from '@/data/types';
@@ -21,6 +22,7 @@ export function BbtField({
   level: CategoryLevel | undefined;
   factor: Factor | undefined;
 }) {
+  const { t } = useTranslation();
   const create = useCreateFactor();
   const update = useUpdateFactor(dayId);
   const remove = useDeleteFactor(dayId);
@@ -62,8 +64,8 @@ export function BbtField({
         step="0.01"
         inputMode="decimal"
         className={styles.numeric}
-        placeholder="°C"
-        aria-label={`${category.name} reading`}
+        placeholder={t('tracking.bbtPlaceholder')}
+        aria-label={t('tracking.bbtReading', { name: category.name })}
         value={text}
         disabled={busy || !level}
         onChange={(e) => setText(e.target.value)}
