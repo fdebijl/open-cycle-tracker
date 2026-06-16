@@ -59,6 +59,26 @@
   color: var(--oct-muted);
 }
 
+/* Label sitting above a standalone control (e.g. the auto-lock <select>). */
+.controlLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+/* A checkbox with its label beside it (no Toggle primitive yet). */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+  }
+}
+
 .danger {
   border-color: rgb(227 52 52 / 40%);
 }

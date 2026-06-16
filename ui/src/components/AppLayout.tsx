@@ -1,8 +1,9 @@
+import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { logoutAccount } from '@/auth/session';
 import { useVault } from '@/stores/vault';
-import { useDisplayName } from '@/data/hooks';
+import { useDisplayName, useUserSettings } from '@/data/hooks';
 import { useResponsive } from '@/hooks/useResponsive';
 import { NavBar } from './NavBar';
 import styles from './AppLayout.module.scss';
@@ -11,9 +12,21 @@ import styles from './AppLayout.module.scss';
  * content, and the NavBar - a bottom bar on mobile, a left sidebar on desktop. */
 export function AppLayout() {
   const { data: displayName } = useDisplayName();
+  const { data: settings } = useUserSettings();
   const { isDesktop } = useResponsive();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  // The vault can't reach React Query, so push the user's decrypted auto-lock
+  // preferences into it once they load (and whenever they change).
+  useEffect(() => {
+    if (settings) {
+      useVault.getState().setAutoLockConfig({
+        autoLockMs: settings.autoLockMs,
+        lockOnHidden: settings.lockOnHidden,
+      });
+    }
+  }, [settings]);
 
   return (
     <div className={isDesktop ? `${styles.shell} ${styles.shellDesktop}` : styles.shell}>

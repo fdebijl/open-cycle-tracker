@@ -16,6 +16,8 @@ import {
 } from '@/auth/session';
 import { usersApi } from '@/api/resources';
 import { useVault } from '@/stores/vault';
+import { useUpdateSettings, useUserSettings } from '@/data/hooks';
+import { AUTO_LOCK_PRESETS_MS } from '@/config/env';
 import styles from './Settings.module.scss';
 
 export function SecuritySettings() {
@@ -91,6 +93,8 @@ export function SecuritySettings() {
         </Button>
       </form>
 
+      <SessionLockSection />
+
       <DuressSection />
 
       <div className={`${styles.card} ${styles.danger}`}>
@@ -99,6 +103,81 @@ export function SecuritySettings() {
         <EmergencyDelete label={t('settings.deleteAccount')} onConfirm={onDelete} />
       </div>
     </>
+  );
+}
+
+function SessionLockSection() {
+  const { t } = useTranslation();
+  const { data: settings } = useUserSettings();
+  const updateSettings = useUpdateSettings();
+
+  // Drafts are null until edited, then fall back to the stored values. `false`
+  // is a valid lockOnHidden draft, so null (not false) is the "untouched" marker.
+  const [draftAutoLockMs, setDraftAutoLockMs] = useState<number | null>(null);
+  const [draftLockOnHidden, setDraftLockOnHidden] = useState<boolean | null>(null);
+  const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+
+  const autoLockMs = draftAutoLockMs ?? settings?.autoLockMs ?? AUTO_LOCK_PRESETS_MS[1];
+  const lockOnHidden = draftLockOnHidden ?? settings?.lockOnHidden ?? true;
+
+  const unchanged =
+    !settings || (autoLockMs === settings.autoLockMs && lockOnHidden === settings.lockOnHidden);
+
+  async function onSave(event: FormEvent) {
+    event.preventDefault();
+    if (!settings) return;
+    setMsg(null);
+    try {
+      await updateSettings.mutateAsync({ autoLockMs, lockOnHidden });
+      setDraftAutoLockMs(null);
+      setDraftLockOnHidden(null);
+      setMsg({ kind: 'ok', text: t('settings.sessionLock.saved') });
+    } catch {
+      setMsg({ kind: 'err', text: t('settings.sessionLock.saveError') });
+    }
+  }
+
+  return (
+    <form className={styles.card} onSubmit={onSave}>
+      <h2>{t('settings.sessionLock.title')}</h2>
+      <p className={styles.muted}>{t('settings.sessionLock.intro')}</p>
+
+      <label className={styles.controlLabel} htmlFor="autoLock">
+        {t('settings.sessionLock.timeoutLabel')}
+      </label>
+      <select
+        id="autoLock"
+        value={autoLockMs}
+        onChange={(e) => setDraftAutoLockMs(Number(e.target.value))}
+        disabled={updateSettings.isPending}
+      >
+        {AUTO_LOCK_PRESETS_MS.map((ms) => (
+          <option key={ms} value={ms}>
+            {t('settings.sessionLock.minutes', { count: ms / 60000 })}
+          </option>
+        ))}
+      </select>
+
+      <label className={styles.toggleRow}>
+        <input
+          type="checkbox"
+          checked={lockOnHidden}
+          onChange={(e) => setDraftLockOnHidden(e.target.checked)}
+          disabled={updateSettings.isPending}
+        />
+        {t('settings.sessionLock.lockOnHidden')}
+      </label>
+      <p className={styles.muted}>{t('settings.sessionLock.lockOnHiddenHint')}</p>
+
+      {msg && <p className={msg.kind === 'err' ? styles.err : styles.ok}>{msg.text}</p>}
+      <Button type="submit" disabled={updateSettings.isPending || unchanged}>
+        {updateSettings.isPending ? (
+          <Spinner size="sm" label={t('settings.saving')} />
+        ) : (
+          t('settings.sessionLock.save')
+        )}
+      </Button>
+    </form>
   );
 }
 

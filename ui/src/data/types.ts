@@ -1,6 +1,8 @@
 /** Decrypted domain models the UI renders. Mirrors the old Ember models, with
  * the encrypted fields resolved to plaintext in `mappers.ts`. */
 
+import { AUTO_LOCK_MS } from '@/config/env';
+
 export interface Cycle {
   id: string;
   createdAt: string;
@@ -56,6 +58,11 @@ export interface UserSettings {
   /** Typical cycle length in days; seeds the next-period estimate and the cycle
    * circle's slot count until real history accumulates. */
   averageCycleLength: number;
+  /** Inactivity timeout before the vault auto-locks, in ms (one of
+   * `AUTO_LOCK_PRESETS_MS`). */
+  autoLockMs: number;
+  /** Whether to lock the vault the instant the tab is hidden/backgrounded. */
+  lockOnHidden: boolean;
 }
 
 /** The default cycle length offered at onboarding and assumed when a user has
@@ -64,4 +71,6 @@ export const DEFAULT_AVERAGE_CYCLE_LENGTH = 28;
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   averageCycleLength: DEFAULT_AVERAGE_CYCLE_LENGTH,
+  autoLockMs: AUTO_LOCK_MS,
+  lockOnHidden: true,
 };
