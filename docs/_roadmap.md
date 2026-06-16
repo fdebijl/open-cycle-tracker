@@ -140,7 +140,7 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
    seized, device can be lost) this is a real hole. There is account *deletion*
    but no way to get tracking data **out** — encrypted export, device migration,
    or restore. The in-memory-only DEK means that if a user loses their device,
-   their data is simply gone absent an export path. Deserves a del-berate design
+   their data is simply gone absent an export path. Deserves a deliberate design
    decision, not an omission.
 
 ## Important gaps
