@@ -52,3 +52,16 @@ a {
 .text--heavy {
   font-weight: 600;
 }
+
+.row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.col {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 12px;
+}

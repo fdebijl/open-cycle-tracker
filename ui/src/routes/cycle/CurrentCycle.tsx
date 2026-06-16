@@ -18,6 +18,7 @@ import { cycleOnset, cycleOnsets } from '@/data/cycles';
 import { cycleStats, predictFertileWindow } from '@/data/prediction';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import styles from './CurrentCycle.module.scss';
+import { Button } from '@/components/Button';
 
 /**
  * The landing screen. Shows the current (newest) cycle as a circle anchored at
@@ -106,14 +107,13 @@ export function CurrentCycle() {
         onSelectDay={(day) => navigate(`/days/${day.id}`)}
         onLogDate={onLogDate}
       />
-      <button
+      <Button
         type="button"
-        className="oct-primary"
         onClick={onStartNewPeriod}
         disabled={startCycle.isPending}
       >
         {t('cycle.startNewPeriod')}
-      </button>
+      </Button>
     </div>
   );
 }

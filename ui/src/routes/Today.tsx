@@ -9,7 +9,11 @@ import { useDays } from '@/data/hooks';
 export function Today() {
   const { t } = useTranslation();
   const daysQuery = useDays();
-  if (daysQuery.isLoading) return <Spinner label={t('tracking.findingToday')} />;
+
+  if (daysQuery.isLoading) {
+    return <Spinner label={t('tracking.findingToday')} />;
+  }
+
   const today = (daysQuery.data ?? []).find((d) => d.date && isToday(d.date));
   return <Navigate to={today ? `/days/${today.id}` : '/'} replace />;
 }
