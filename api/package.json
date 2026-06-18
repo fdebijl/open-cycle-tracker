@@ -27,7 +27,7 @@
     "drizzle-orm": "0.45.2",
     "express": "5.2.1",
     "express-rate-limit": "8.5.2",
-    "helmet": "8.0.0",
+    "helmet": "8.2.0",
     "jsonwebtoken": "9.0.3",
     "libsodium-wrappers-sumo": "0.8.4",
     "pg": "8.21.0",
