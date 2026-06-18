@@ -1,0 +1,48 @@
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--oct-muted);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  /* Logged period days are solid; the forecast markers carry a dashed outline
+   * (and a lower opacity) so the legend reads the same as the circle. */
+  &[data-swatch='period'] {
+    background: #e76666;
+  }
+
+  &[data-swatch='fertile'] {
+    background: #778cfa;
+    border: 1px dashed var(--oct-bg);
+    opacity: 0.85;
+  }
+
+  &[data-swatch='ovulation'] {
+    background: #4f63d8;
+    border: 1px dashed var(--oct-bg);
+    opacity: 0.85;
+  }
+
+  &[data-swatch='pms'] {
+    background: #c98aa6;
+    border: 1px dashed var(--oct-bg);
+    opacity: 0.7;
+  }
+}

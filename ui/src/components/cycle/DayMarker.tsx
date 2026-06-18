@@ -1,6 +1,7 @@
 import { isToday } from 'date-fns';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { ForecastType } from '@/data/prediction';
 import type { Day } from '@/data/types';
 import styles from './DayMarker.module.scss';
 
@@ -20,12 +21,12 @@ export function DayMarker({
   onSelect,
 }: {
   day?: Day;
-  /** Whether this logged day carries a period-level Flow factor (color it as a
-   * period day, taking precedence over its manual phase tag). */
+  /** Whether this logged day should be colored as a period day (a period-level
+   * Flow factor is present *and* the menstruation marker is enabled). */
   isPeriod?: boolean;
   date: Date;
   dayNumber: number;
-  forecast?: 'fertile' | 'ovulation';
+  forecast?: ForecastType;
   style?: CSSProperties;
   onSelect?: () => void;
 }) {

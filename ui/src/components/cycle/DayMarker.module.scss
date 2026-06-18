@@ -7,12 +7,15 @@
   height: 1em;
   border-radius: 50%;
   color: #fff;
-  font-size: 14px;
+
+  /* Bigger base dots (roadmap #25 - they read too small before). */
+  font-size: 20px;
   transform: translate(-50%, -50%);
   transform-origin: 50% 50%;
 
-  /* Proximity scaler mutates width/height/z-index inline; animate the change. */
-  transition: width 0.08s linear, height 0.08s linear;
+  /* Proximity scaler mutates width/height/z-index inline; ease the change so the
+   * dots grow smoothly rather than snapping. */
+  transition: width 0.14s ease-out, height 0.14s ease-out;
   cursor: pointer;
 
   /* Unlogged slots read as faint placeholders until the user logs that date. */
@@ -32,6 +35,15 @@
     background: #4f63d8;
     border: 2px dashed #fff;
     opacity: 0.7;
+  }
+
+  /* PMS is a prediction-on-a-prediction (only shown when the cycle is reliably
+   * predictable), so it reads as the most tentative marker: a muted mauve at a
+   * lower opacity than fertile/ovulation. */
+  &[data-forecast='pms'] {
+    background: #c98aa6;
+    border: 2px dashed #fff;
+    opacity: 0.5;
   }
 
   /* dayType → background, plus a darker ring when it's today. */

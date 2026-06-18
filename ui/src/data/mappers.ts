@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { decryptJson, decryptString, encryptJson, encryptString } from '@/crypto';
 import type { CategoryDto, CategoryLevelDto, DayDto, FactorDto, UserDto } from '@/api/types';
-import { DEFAULT_USER_SETTINGS } from './types';
+import { DEFAULT_CYCLE_MARKERS, DEFAULT_USER_SETTINGS } from './types';
 import type { Category, CategoryLevel, Day, Factor, UserSettings } from './types';
 
 /**
@@ -71,7 +71,13 @@ export async function decryptSettings(dto: UserDto, dek: Uint8Array): Promise<Us
   if (!dto.encSettings) return { ...DEFAULT_USER_SETTINGS };
   try {
     const parsed = await decryptJson<Partial<UserSettings>>(dto.encSettings, dek);
-    return { ...DEFAULT_USER_SETTINGS, ...parsed };
+    // Top-level keys merge shallowly over defaults; `markers` is nested, so an
+    // older blob missing it (or missing a key within it) fills from defaults.
+    return {
+      ...DEFAULT_USER_SETTINGS,
+      ...parsed,
+      markers: { ...DEFAULT_CYCLE_MARKERS, ...parsed.markers },
+    };
   } catch {
     return { ...DEFAULT_USER_SETTINGS };
   }

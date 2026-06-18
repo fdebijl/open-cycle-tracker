@@ -19,8 +19,15 @@ import { useDateFnsLocale } from '@/i18n/format';
 import { Spinner } from '@/components/Spinner';
 import { useCycles, useDays, useLogDay, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleForDate, cycleOnsets } from '@/data/cycles';
-import { cycleStats, forecastDayType, predictFertileWindow, predictNextPeriod } from '@/data/prediction';
-import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
+import {
+  cycleStats,
+  forecastDayType,
+  forecastMarkerEnabled,
+  predictFertileWindow,
+  predictNextPeriod,
+  predictPmsWindow,
+} from '@/data/prediction';
+import { DEFAULT_AVERAGE_CYCLE_LENGTH, DEFAULT_CYCLE_MARKERS } from '@/data/types';
 import styles from './Calendar.module.scss';
 
 /** Month grid of tracked days, colored by day type; clicking a tracked day opens
@@ -59,18 +66,32 @@ export function Calendar() {
     averageCycleLength,
   );
   const currentOnset = cyclesWithOnsets.find((c) => c.id === currentCycleId)?.onset ?? null;
-  const fertile = predictFertileWindow(currentOnset, stats);
+
+  // Overlays are gated on the user's marker preferences (same as the circle), so
+  // a marker turned off doesn't reappear on the calendar. Fertile/ovulation
+  // share one prediction; PMS self-gates on reliability.
+  const markers = settingsQuery.data?.markers ?? DEFAULT_CYCLE_MARKERS;
+  const fertile =
+    markers.fertile || markers.ovulation ? predictFertileWindow(currentOnset, stats) : undefined;
+  const pms = markers.pms ? predictPmsWindow(currentOnset, stats) : undefined;
   const nextPeriod = predictNextPeriod(currentOnset, stats);
 
   // Predicted label for an empty future cell: period window takes precedence,
-  // then ovulation/fertile. `null` for past/today/logged cells.
+  // then ovulation/fertile/PMS. Each is gated by its marker toggle. `null` for
+  // past/today/logged cells.
   const today = new Date();
-  const forecastFor = (date: Date): 'period' | 'fertile' | 'ovulation' | null => {
+  const forecastFor = (date: Date): 'period' | 'fertile' | 'ovulation' | 'pms' | null => {
     if (!isAfter(date, today)) return null;
-    if (nextPeriod.windowStart && nextPeriod.windowEnd && isWithinInterval(date, { start: nextPeriod.windowStart, end: nextPeriod.windowEnd })) {
+    if (
+      markers.menstruation &&
+      nextPeriod.windowStart &&
+      nextPeriod.windowEnd &&
+      isWithinInterval(date, { start: nextPeriod.windowStart, end: nextPeriod.windowEnd })
+    ) {
       return 'period';
     }
-    return forecastDayType(date, fertile);
+    const raw = forecastDayType(date, fertile, pms);
+    return raw && forecastMarkerEnabled(raw, markers) ? raw : null;
   };
 
   const onPick = async (date: Date) => {
@@ -114,9 +135,10 @@ export function Calendar() {
           const key = format(date, 'yyyy-MM-dd');
           const day = byDate.get(key);
           const forecast = day ? null : forecastFor(date);
-          // A logged day is colored as a period day when it carries a Flow factor,
-          // otherwise neutral ('none'); empty cells get no day-type tint.
-          const dayType = day ? (periodDayIds.has(day.id) ? 'period' : 'none') : undefined;
+          // A logged day is colored as a period day when it carries a Flow factor
+          // and the menstruation marker is enabled, otherwise neutral ('none');
+          // empty cells get no day-type tint.
+          const dayType = day ? (markers.menstruation && periodDayIds.has(day.id) ? 'period' : 'none') : undefined;
           const classes = [
             styles.cell,
             isSameMonth(date, month) ? '' : styles.outside,

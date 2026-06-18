@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useResponsive } from '@/hooks/useResponsive';
 import { cycleDayNumber } from '@/data/cycles';
-import { forecastDayType, predictNextPeriod } from '@/data/prediction';
-import type { CycleStats, FertilePrediction } from '@/data/prediction';
-import type { Day } from '@/data/types';
+import { forecastDayType, forecastMarkerEnabled, predictNextPeriod } from '@/data/prediction';
+import type { CycleStats, FertilePrediction, ForecastType, PmsPrediction } from '@/data/prediction';
+import type { CycleMarkers, Day } from '@/data/types';
 import { DayMarker } from './DayMarker';
+import { CycleLegend } from './CycleLegend';
 import { useProximityScaler } from './useProximityScaler';
 import styles from './CycleCircle.module.scss';
 
@@ -41,6 +42,8 @@ export function CycleCircle({
   cycleStart,
   stats,
   fertile,
+  pms,
+  markers,
   periodDayIds,
   includeFuture = false,
   onSelectDay,
@@ -50,6 +53,10 @@ export function CycleCircle({
   cycleStart: Date | null;
   stats: CycleStats;
   fertile?: FertilePrediction;
+  pms?: PmsPrediction;
+  /** Which phase markers to show; gates both the forecast overlays and the
+   * logged-period coloring. */
+  markers: CycleMarkers;
   /** Day ids that carry a period-level Flow factor (drives period coloring). */
   periodDayIds: Set<string>;
   includeFuture?: boolean;
@@ -83,6 +90,14 @@ export function CycleCircle({
   const radius = center * 0.82;
   const n = slots.length || 1;
 
+  // The raw forecast for an empty future slot, kept only if the matching marker
+  // is enabled (so the fertile/ovulation/PMS toggles act independently).
+  const slotForecast = (slot: Slot): ForecastType | undefined => {
+    if (slot.day || !includeFuture) return undefined;
+    const raw = forecastDayType(slot.date, fertile, pms);
+    return raw && forecastMarkerEnabled(raw, markers) ? raw : undefined;
+  };
+
   return (
     <div className={styles.wrapper}>
       <div ref={containerRef} className={styles.circle} style={{ width: size, height: size }}>
@@ -90,15 +105,14 @@ export function CycleCircle({
           const angle = (2 * Math.PI * i) / n - Math.PI / 2;
           const x = center + radius * Math.cos(angle);
           const y = center + radius * Math.sin(angle);
-          const forecast = !slot.day && includeFuture && fertile ? forecastDayType(slot.date, fertile) : null;
           return (
             <DayMarker
               key={slot.dayNumber}
               day={slot.day}
-              isPeriod={slot.day ? periodDayIds.has(slot.day.id) : false}
+              isPeriod={markers.menstruation && slot.day ? periodDayIds.has(slot.day.id) : false}
               date={slot.date}
               dayNumber={slot.dayNumber}
-              forecast={forecast ?? undefined}
+              forecast={slotForecast(slot)}
               style={{ left: x, top: y }}
               onSelect={() => (slot.day ? onSelectDay(slot.day) : onLogDate(slot.date))}
             />
@@ -106,6 +120,7 @@ export function CycleCircle({
         })}
         <p className={styles.countdown}>{countdownLabel(daysUntil, margin, t)}</p>
       </div>
+      <CycleLegend markers={markers} />
     </div>
   );
 }

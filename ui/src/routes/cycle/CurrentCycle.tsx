@@ -15,8 +15,8 @@ import {
   useUserSettings,
 } from '@/data/hooks';
 import { cycleOnset, cycleOnsets } from '@/data/cycles';
-import { cycleStats, predictFertileWindow } from '@/data/prediction';
-import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
+import { cycleStats, predictFertileWindow, predictPmsWindow } from '@/data/prediction';
+import { DEFAULT_AVERAGE_CYCLE_LENGTH, DEFAULT_CYCLE_MARKERS } from '@/data/types';
 import styles from './CurrentCycle.module.scss';
 import { Button } from '@/components/Button';
 
@@ -83,7 +83,14 @@ export function CurrentCycle() {
     .map((c) => c.onset)
     .filter((o): o is Date => o != null);
   const stats = cycleStats(onsets, averageCycleLength);
-  const fertile = predictFertileWindow(cycleStart, stats);
+
+  // Compute overlays only for enabled markers, so a disabled one never reaches a
+  // slot. Fertile and ovulation share one prediction, so it's computed when
+  // either is on; PMS is gated separately (and self-gates on reliability).
+  const markers = settingsQuery.data?.markers ?? DEFAULT_CYCLE_MARKERS;
+  const fertile =
+    markers.fertile || markers.ovulation ? predictFertileWindow(cycleStart, stats) : undefined;
+  const pms = markers.pms ? predictPmsWindow(cycleStart, stats) : undefined;
 
   const onLogDate = async (date: Date) => {
     const day = await logDay.mutateAsync({ date, cycleId: current.id });
@@ -102,6 +109,8 @@ export function CurrentCycle() {
         cycleStart={cycleStart}
         stats={stats}
         fertile={fertile}
+        pms={pms}
+        markers={markers}
         periodDayIds={periodDayIds}
         includeFuture
         onSelectDay={(day) => navigate(`/days/${day.id}`)}

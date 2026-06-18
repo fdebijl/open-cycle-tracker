@@ -53,6 +53,17 @@ export interface CategoryLevel {
   icon: string;
 }
 
+/** Which cycle-phase markers are shown on the circle / calendar. Presentation
+ * only - toggling a marker hides its highlight, never the underlying data. */
+export interface CycleMarkers {
+  /** Logged-period coloring + predicted-period overlay. */
+  menstruation: boolean;
+  fertile: boolean;
+  ovulation: boolean;
+  /** PMS is opt-in and stays hidden until the cycle is predictable enough. */
+  pms: boolean;
+}
+
 /** Per-user preferences, stored end-to-end encrypted in `users.encSettings`. */
 export interface UserSettings {
   /** Typical cycle length in days; seeds the next-period estimate and the cycle
@@ -63,14 +74,26 @@ export interface UserSettings {
   autoLockMs: number;
   /** Whether to lock the vault the instant the tab is hidden/backgrounded. */
   lockOnHidden: boolean;
+  /** Which cycle-phase markers to show on the circle/calendar. */
+  markers: CycleMarkers;
 }
 
 /** The default cycle length offered at onboarding and assumed when a user has
  * no stored settings yet. */
 export const DEFAULT_AVERAGE_CYCLE_LENGTH = 28;
 
+/** Menstruation/fertile/ovulation default on; PMS defaults off (least
+ * universally wanted, most easily misread as authoritative). */
+export const DEFAULT_CYCLE_MARKERS: CycleMarkers = {
+  menstruation: true,
+  fertile: true,
+  ovulation: true,
+  pms: false,
+};
+
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   averageCycleLength: DEFAULT_AVERAGE_CYCLE_LENGTH,
   autoLockMs: AUTO_LOCK_MS,
   lockOnHidden: true,
+  markers: DEFAULT_CYCLE_MARKERS,
 };

@@ -117,6 +117,16 @@
       "saveError": "Couldn't save. Please try again."
     },
     "language": "Language",
+    "markers": {
+      "title": "Cycle markers",
+      "intro": "Choose which phases to highlight on the cycle circle and calendar. This only changes what's shown - your logged data is never hidden or deleted.",
+      "menstruation": "Menstruation",
+      "menstruationHint": "Colors logged period days and the predicted next period. Hides the highlight only - your logged days stay tappable.",
+      "fertile": "Fertile window",
+      "ovulation": "Ovulation",
+      "pms": "PMS",
+      "pmsHint": "Only shown once your cycle is regular enough to predict it."
+    },
     "dangerZone": "Danger zone",
     "dangerHint": "Deleting your account permanently destroys all your encrypted data. This cannot be undone - and because the server cannot read your data, it cannot be recovered.",
     "deleteAccount": "Hold to delete account",
@@ -166,6 +176,9 @@
       "tomorrow": "Your period may start tomorrow",
       "daysUntil_one": "{{count}} day until next period{{band}}",
       "daysUntil_other": "{{count}} days until next period{{band}}"
+    },
+    "legend": {
+      "title": "Markers"
     }
   },
   "cycleSetup": {
