@@ -2,6 +2,9 @@ name: Tests
 
 on: [push]
 
+permissions:
+  contents: read
+
 env:
   NODE_ENV: test
   NODE_VERSION: 24
@@ -17,6 +20,8 @@ jobs:
         working-directory: ui
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -52,6 +57,8 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -71,6 +78,8 @@ jobs:
         working-directory: ui
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: ${{ env.NODE_VERSION }}
