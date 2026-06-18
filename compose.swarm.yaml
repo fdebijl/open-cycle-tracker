@@ -1,0 +1,93 @@
+# Open Cycle Tracker - Docker Swarm stack
+#
+# Env vars:
+#  Required: POSTGRES_PASSWORD, JWT_SECRET, SERVER_SECRET.
+#  Recommended: PUBLIC_API_URL, PUBLIC_UI_URL (must match browser-facing
+#  origins; PUBLIC_API_URL is applied to the UI at runtime, no rebuild).
+
+services:
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-oct}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in your .env}
+      POSTGRES_DB: ${POSTGRES_DB:-oct}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oct} -d ${POSTGRES_DB:-oct}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      # Pin to one node: `pgdata` is node-local, so rescheduling elsewhere = empty
+      # volume = data loss. Use node.hostname == <host> to target a specific node.
+      placement:
+        constraints:
+          - node.role == manager
+
+  # One-shot: wait for Postgres, migrate, seed, exit. condition=none stops Swarm
+  # from restarting it forever; the DB-port poll replaces the ignored depends_on.
+  migrate:
+    image: fdebijl/open-cycle-tracker:latest-api
+    command:
+      - sh
+      - -c
+      - >
+        until node -e "require('net').connect(5432,'postgres').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})"; do
+          echo 'waiting for postgres...'; sleep 2;
+        done;
+        node dist/migrate.js && node dist/seed.js
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-oct}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-oct}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in your .env}
+      SERVER_SECRET: ${SERVER_SECRET:?set SERVER_SECRET in your .env}
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+
+  api:
+    image: fdebijl/open-cycle-tracker:latest-api
+    # Waits for Postgres; if it still races `migrate` and crashes, condition=any
+    # restarts it until the schema exists. Keep at 1 replica.
+    command:
+      - sh
+      - -c
+      - >
+        until node -e "require('net').connect(5432,'postgres').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})"; do
+          echo 'waiting for postgres...'; sleep 2;
+        done;
+        node dist/index.js
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-oct}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-oct}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in your .env}
+      SERVER_SECRET: ${SERVER_SECRET:?set SERVER_SECRET in your .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1209600}
+      CORS_ORIGINS: ${PUBLIC_UI_URL:-http://localhost:8080}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  ui:
+    image: fdebijl/open-cycle-tracker:latest-ui
+    environment:
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:3000}
+    ports:
+      - "${UI_PORT:-8080}:80"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+volumes:
+  pgdata:
