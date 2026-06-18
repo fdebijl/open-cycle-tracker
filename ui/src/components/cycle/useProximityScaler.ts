@@ -8,10 +8,18 @@ import type { RefObject } from 'react';
  * the pointer doesn't re-render 28 markers per frame.
  */
 
-const SCALE_RADIUS_PX = 90;
+// A gentler falloff over a wider radius reads less twitchy than the original
+// steep ramp; the smaller peak scale keeps neighbouring dots from overlapping.
+const SCALE_RADIUS_PX = 120;
 const MIN_EM = 1;
-const MAX_EM = 4;
-const SHOW_LABEL_THRESHOLD = 0.2;
+const MAX_EM = 3;
+const SHOW_LABEL_THRESHOLD = 0.35;
+
+/** Ease the linear distance factor so the size grows smoothly near the pointer
+ * rather than snapping up the moment a marker enters the radius. */
+function ease(t: number): number {
+  return t * t * (3 - 2 * t);
+}
 
 export function useProximityScaler(ref: RefObject<HTMLElement | null>) {
   useEffect(() => {
@@ -26,7 +34,7 @@ export function useProximityScaler(ref: RefObject<HTMLElement | null>) {
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
         const distance = Math.hypot(clientX - cx, clientY - cy);
-        const factor = Math.min(1, Math.max(0, 1 - distance / SCALE_RADIUS_PX));
+        const factor = ease(Math.min(1, Math.max(0, 1 - distance / SCALE_RADIUS_PX)));
         const size = MIN_EM + factor * (MAX_EM - MIN_EM);
         marker.style.width = `${size}em`;
         marker.style.height = `${size}em`;

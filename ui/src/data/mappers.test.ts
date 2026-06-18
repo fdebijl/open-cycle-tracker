@@ -109,13 +109,19 @@ function baseUser(overrides: Partial<UserDto>): UserDto {
 describe('settings mapper', () => {
   it('round-trips settings through encrypt/decrypt', async () => {
     const enc = await encryptSettings(
-      { averageCycleLength: 30, autoLockMs: 15 * 60 * 1000, lockOnHidden: false },
+      {
+        averageCycleLength: 30,
+        autoLockMs: 15 * 60 * 1000,
+        lockOnHidden: false,
+        markers: { menstruation: false, fertile: true, ovulation: false, pms: true },
+      },
       dek,
     );
     const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
     expect(settings.averageCycleLength).toBe(30);
     expect(settings.autoLockMs).toBe(15 * 60 * 1000);
     expect(settings.lockOnHidden).toBe(false);
+    expect(settings.markers).toEqual({ menstruation: false, fertile: true, ovulation: false, pms: true });
   });
 
   it('falls back to defaults when settings are absent', async () => {
@@ -123,15 +129,25 @@ describe('settings mapper', () => {
     expect(settings.averageCycleLength).toBe(28);
     expect(settings.autoLockMs).toBe(5 * 60 * 1000);
     expect(settings.lockOnHidden).toBe(true);
+    // Menstruation/fertile/ovulation default on; PMS off.
+    expect(settings.markers).toEqual({ menstruation: true, fertile: true, ovulation: true, pms: false });
   });
 
   it('fills missing fields from defaults for older settings blobs', async () => {
-    // A blob written before auto-lock settings existed has only averageCycleLength.
+    // A blob written before auto-lock/marker settings existed has only averageCycleLength.
     const enc = await encryptJson({ averageCycleLength: 21 }, dek);
     const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
     expect(settings.averageCycleLength).toBe(21);
     expect(settings.autoLockMs).toBe(5 * 60 * 1000);
     expect(settings.lockOnHidden).toBe(true);
+    expect(settings.markers).toEqual({ menstruation: true, fertile: true, ovulation: true, pms: false });
+  });
+
+  it('deep-merges a partial markers object from defaults', async () => {
+    // A blob that set only the PMS toggle should keep the other markers at their defaults.
+    const enc = await encryptJson({ averageCycleLength: 28, markers: { pms: true } }, dek);
+    const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
+    expect(settings.markers).toEqual({ menstruation: true, fertile: true, ovulation: true, pms: true });
   });
 });
 

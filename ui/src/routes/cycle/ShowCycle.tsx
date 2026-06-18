@@ -5,7 +5,7 @@ import { CycleCircle } from '@/components/cycle/CycleCircle';
 import { useCycles, useDays, useLogDay, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleOnset, cycleOnsets } from '@/data/cycles';
 import { cycleStats } from '@/data/prediction';
-import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
+import { DEFAULT_AVERAGE_CYCLE_LENGTH, DEFAULT_CYCLE_MARKERS } from '@/data/types';
 
 /** View a specific (past) cycle's circle. Doesn't extend to today, but empty
  * slots within the cycle's span are still tappable to backfill a missed day. */
@@ -31,6 +31,7 @@ export function ShowCycle() {
     .map((c) => c.onset)
     .filter((o): o is Date => o != null);
   const stats = cycleStats(onsets, averageCycleLength);
+  const markers = settingsQuery.data?.markers ?? DEFAULT_CYCLE_MARKERS;
 
   const onLogDate = async (date: Date) => {
     if (!id) return;
@@ -43,6 +44,7 @@ export function ShowCycle() {
       days={days}
       cycleStart={cycleOnset(days, periodDayIds)}
       stats={stats}
+      markers={markers}
       periodDayIds={periodDayIds}
       onSelectDay={(day) => navigate(`/days/${day.id}`)}
       onLogDate={onLogDate}

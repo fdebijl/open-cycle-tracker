@@ -6,6 +6,7 @@ import {
   observedCycleLengths,
   predictFertileWindow,
   predictNextPeriod,
+  predictPmsWindow,
 } from './prediction';
 import type { CycleStats } from './prediction';
 
@@ -123,9 +124,38 @@ describe('predictFertileWindow', () => {
   });
 });
 
+describe('predictPmsWindow', () => {
+  const onset = new Date(2026, 2, 1);
+
+  it('spans the PMS_DAYS leading up to the predicted next onset', () => {
+    const { pmsStart, pmsEnd } = predictPmsWindow(onset, learnedStats); // next onset = onset+29
+    expect(pmsStart).toEqual(addDays(onset, 24)); // next onset - 5
+    expect(pmsEnd).toEqual(addDays(onset, 28)); // next onset - 1 (day before onset)
+  });
+
+  it('returns nulls when the onset is unknown', () => {
+    expect(predictPmsWindow(null, learnedStats)).toEqual({ pmsStart: null, pmsEnd: null });
+  });
+
+  it('returns nulls when the average is only configured (not enough history)', () => {
+    const configured: CycleStats = { ...learnedStats, source: 'configured' };
+    expect(predictPmsWindow(onset, configured)).toEqual({ pmsStart: null, pmsEnd: null });
+  });
+
+  it('returns nulls when variability is too wide to trust', () => {
+    expect(predictPmsWindow(onset, { ...learnedStats, variability: 5 })).toEqual({ pmsStart: null, pmsEnd: null });
+  });
+
+  it('returns nulls when the cycle is too short to fit the window after the luteal phase', () => {
+    // LUTEAL_PHASE_DAYS (14) + PMS_DAYS (5) = 19; an average of 19 leaves no room.
+    expect(predictPmsWindow(onset, { ...learnedStats, averageLength: 19 })).toEqual({ pmsStart: null, pmsEnd: null });
+  });
+});
+
 describe('forecastDayType', () => {
   const onset = new Date(2026, 2, 1);
   const fertile = predictFertileWindow(onset, learnedStats); // ovulation onset+15, window onset+10..+16
+  const pms = predictPmsWindow(onset, learnedStats); // window onset+24..+28
 
   it('tags the ovulation day', () => {
     expect(forecastDayType(addDays(onset, 15), fertile)).toBe('ovulation');
@@ -134,6 +164,15 @@ describe('forecastDayType', () => {
   it('tags days inside the fertile window', () => {
     expect(forecastDayType(addDays(onset, 10), fertile)).toBe('fertile');
     expect(forecastDayType(addDays(onset, 16), fertile)).toBe('fertile');
+  });
+
+  it('tags days inside the PMS window when a pms prediction is supplied', () => {
+    expect(forecastDayType(addDays(onset, 24), fertile, pms)).toBe('pms');
+    expect(forecastDayType(addDays(onset, 28), fertile, pms)).toBe('pms');
+  });
+
+  it('ignores the PMS window when no pms prediction is supplied', () => {
+    expect(forecastDayType(addDays(onset, 24), fertile)).toBeNull();
   });
 
   it('is null outside the window', () => {

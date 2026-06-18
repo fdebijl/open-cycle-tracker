@@ -89,6 +89,13 @@
     border-color: #4f63d8;
     background: rgb(79 99 216 / 22%);
   }
+
+  /* PMS: the most tentative forecast (a muted mauve), shown only when the cycle
+   * is reliably predictable. */
+  &[data-forecast='pms'] {
+    border-color: #c98aa6;
+    background: rgb(201 138 166 / 16%);
+  }
 }
 
 .tracked {

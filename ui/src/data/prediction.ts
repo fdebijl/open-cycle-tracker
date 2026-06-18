@@ -1,6 +1,7 @@
 import { addDays, differenceInCalendarDays, isWithinInterval } from 'date-fns';
 import { nextPeriodEstimate } from './cycles';
 import type { NextPeriodEstimate } from './cycles';
+import type { CycleMarkers } from './types';
 
 /**
  * Cycle prediction, learned from observed history. Where `cycles.ts` derives a
@@ -35,6 +36,14 @@ export const LUTEAL_PHASE_DAYS = 14;
 export const FERTILE_PRE_DAYS = 5;
 /** …and closes this many days after (egg lifespan). */
 export const FERTILE_POST_DAYS = 1;
+/** PMS window: this many days before the predicted next onset (tail of the
+ * luteal phase). The symptom cluster is luteal, so we count back from onset, not
+ * from an arbitrary cycle end. */
+export const PMS_DAYS = 5;
+/** Max cycle-length variability (std-dev, days) at which we still trust a PMS
+ * forecast. A band wider than the window itself makes the highlight meaningless,
+ * so above this we suppress it even when opted in. */
+export const PMS_MAX_VARIABILITY = 4;
 
 export interface CycleStats {
   /** Plausible observed onset-to-onset lengths, oldest → newest. */
@@ -64,6 +73,15 @@ export interface FertilePrediction {
   fertileStart: Date | null;
   fertileEnd: Date | null;
 }
+
+export interface PmsPrediction {
+  /** Inclusive PMS-window bounds, or null when it can't be predicted reliably. */
+  pmsStart: Date | null;
+  pmsEnd: Date | null;
+}
+
+/** A forecast label for an empty future slot/cell. */
+export type ForecastType = 'fertile' | 'ovulation' | 'pms';
 
 /** Plausible onset-to-onset lengths from a set of cycle onsets, oldest → newest.
  * The latest onset yields no length (it has no successor), so an in-progress
@@ -141,13 +159,45 @@ export function predictFertileWindow(lastOnset: Date | null, stats: CycleStats):
   };
 }
 
+/** Forecast the PMS window: the `PMS_DAYS` leading up to the predicted next
+ * onset (the tail of the luteal phase). Returns nulls unless the average is
+ * *learned* (≥ `MIN_CYCLES_TO_LEARN` observed cycles), variability is tight
+ * enough to be meaningful, and the window fits in the luteal phase without
+ * colliding with the fertile window - PMS is opt-in and we refuse to show a
+ * guess dressed up as a prediction. */
+export function predictPmsWindow(lastOnset: Date | null, stats: CycleStats): PmsPrediction {
+  const empty: PmsPrediction = { pmsStart: null, pmsEnd: null };
+  if (!lastOnset || stats.source !== 'learned') return empty;
+  if (stats.variability > PMS_MAX_VARIABILITY) return empty;
+  if (stats.averageLength <= LUTEAL_PHASE_DAYS + PMS_DAYS) return empty;
+  const nextOnset = addDays(lastOnset, stats.averageLength);
+  return {
+    // The window ends the day before onset and spans PMS_DAYS inclusive.
+    pmsStart: addDays(nextOnset, -PMS_DAYS),
+    pmsEnd: addDays(nextOnset, -1),
+  };
+}
+
 /** Forecast label for a future `date`, for overlaying predictions on empty
- * circle slots / calendar cells. `ovulation` takes precedence over the wider
- * `fertile` window; `null` when the date falls outside the window. */
-export function forecastDayType(date: Date, fertile: FertilePrediction): 'fertile' | 'ovulation' | null {
-  if (fertile.ovulation && differenceInCalendarDays(date, fertile.ovulation) === 0) return 'ovulation';
-  if (fertile.fertileStart && fertile.fertileEnd && isWithinInterval(date, { start: fertile.fertileStart, end: fertile.fertileEnd })) {
+ * circle slots / calendar cells. Precedence is `ovulation` > `fertile` > `pms`
+ * (deterministic; the reliability gates keep them from overlapping in practice).
+ * `null` when the date falls outside every predicted window. */
+export function forecastDayType(date: Date, fertile?: FertilePrediction, pms?: PmsPrediction): ForecastType | null {
+  if (fertile?.ovulation && differenceInCalendarDays(date, fertile.ovulation) === 0) return 'ovulation';
+  if (fertile?.fertileStart && fertile.fertileEnd && isWithinInterval(date, { start: fertile.fertileStart, end: fertile.fertileEnd })) {
     return 'fertile';
   }
+  if (pms?.pmsStart && pms.pmsEnd && isWithinInterval(date, { start: pms.pmsStart, end: pms.pmsEnd })) {
+    return 'pms';
+  }
   return null;
+}
+
+/** Whether a forecast label maps to a marker the user has switched on. Lets the
+ * fertile and ovulation toggles act independently even though both derive from
+ * one `FertilePrediction`. */
+export function forecastMarkerEnabled(type: ForecastType, markers: CycleMarkers): boolean {
+  if (type === 'fertile') return markers.fertile;
+  if (type === 'ovulation') return markers.ovulation;
+  return markers.pms;
 }
