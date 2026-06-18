@@ -25,4 +25,12 @@ updates:
     cooldown:
       default-days: 14
       semver-major-days: 28
-
+  - package-ecosystem: "docker"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "daily"
+    rebase-strategy: "auto"
+    cooldown:
+      default-days: 14
+      semver-major-days: 28
