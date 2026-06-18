@@ -1,20 +1,16 @@
-# Open Cycle Tracker - suggested self-hosting stack.
+# Open Cycle Tracker - suggested development stack (not recommended for production use without further hardening)
 #
-#   1. Copy the secrets below into a `.env` next to this file (or export them):
-#        POSTGRES_PASSWORD=$(openssl rand -base64 24)
-#        JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))")
-#        SERVER_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))")
-#   2. `docker compose up -d`  (pulls the published images and runs migrations first)
+# Put the secrets in a `.env` next to this file, then `docker compose up -d`:
+#   POSTGRES_PASSWORD=$(openssl rand -base64 24)
+#   JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))")
+#   SERVER_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))")
+# Build locally instead of pulling: `docker compose build`.
 #
-# Build locally instead of pulling:  `docker compose build`
+# PUBLIC_API_URL / PUBLIC_UI_URL must match the origins you reach in the browser
+# (the UI's API target + the API's CORS allowlist). Defaults assume localhost.
 #
-# The browser talks to the API cross-origin, so PUBLIC_API_URL (baked into the
-# UI bundle) and PUBLIC_UI_URL (the API's CORS allowlist) must match the origins
-# you actually reach in the browser. Defaults assume localhost on the ports below.
-#
-# v1 hardening: pin the images by digest instead of a moving `latest-*` tag, e.g.
-#   image: fdebijl/open-cycle-tracker@sha256:<digest>
-# to defend against a compromised/retagged upstream image (supply-chain).
+# Hardening: pin images by digest (image: fdebijl/open-cycle-tracker@sha256:...)
+# rather than the moving `latest-*` tag.
 
 x-public-api-url: &public-api-url ${PUBLIC_API_URL:-http://localhost:3000}
 x-public-ui-url: &public-ui-url ${PUBLIC_UI_URL:-http://localhost:8080}
@@ -83,6 +79,9 @@ services:
       args:
         VITE_API_URL: *public-api-url
     restart: unless-stopped
+    # Runtime API origin (UI entrypoint writes /config.js); build arg is the baked-in fallback.
+    environment:
+      PUBLIC_API_URL: *public-api-url
     ports:
       - "${UI_PORT:-8080}:80"
     depends_on:
