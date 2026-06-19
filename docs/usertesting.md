@@ -1,0 +1,18 @@
+# User 1
+- Add 'typical' to cervical fluid
+- Cycle circle is hard to use on mobile and needs onboarding
+- Move 'High drive' and 'low drive' to mood and add 'sex', or move to new libido category
+- Change pain to 'physical symptoms', separate out cramps into generic cramps stomach cramps
+- Consisteny on noun/verbs for factors (eg anger vs happy)
+- Energy > Energized and energetic feel redundant
+- Increase lowest preset for sleep from 3 to 4
+- Energy > add lethargic
+- Add 'Very light' and 'Super heavy' to flow
+- Change 'Cervical fluid' to discharge
+- Combine 'Mood' with 'Mental' 
+- Combine 'Pain' with 'Digestion'
+- Add tags to existing factors
+- Add 'Period pants' to Collection method
+- Make all factors toggleable, only Flow, Pain, Sex and Mood
+  - Have a callout that others can be toggled
+- Change 'My info' tab name to 'Data' or 'My data' and move current numbers into the main cycle view
