@@ -38,7 +38,7 @@ services:
     build:
       context: .
       dockerfile: api.dockerfile
-    command: ["sh", "-c", "node dist/migrate.js && node dist/seed.js"]
+    command: ["sh", "-c", "node dist/db/migrate.js && node dist/db/seed.js"]
     restart: "no"
     environment:
       NODE_ENV: production
