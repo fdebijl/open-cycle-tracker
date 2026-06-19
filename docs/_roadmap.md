@@ -143,8 +143,6 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
    their data is simply gone absent an export path. Deserves a deliberate design
    decision, not an omission.
 
-## Important gaps
-
 6. ✅ **Symptom coverage is thin for the actual use cases.** _Done — the
    high+medium evidence-based set from
    [`symptom-tracking.md`](./symptom-tracking.md) (Li et al. 2020) is seeded as
@@ -182,8 +180,6 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     reminders, or explicit-y flagging this as a deliberate non-goal, is worth
     doing.
 
-## Nice-to-have / later
-
 11. **Insights & charts** — cycle-regularity trend, symptom-vs-phase
     correlation, period-length history. The Info screen is the seed of this but
     currently just counts.
@@ -197,14 +193,12 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     the DEK is a UX win, but a real tradeoff against the threat model and needs a
     deliberate decision.
 
-# User-provided features (Claude, do not edit this section)
-
 14. ✅ Duress password
     Add two new passwords to the user: one that destroys all data when entered and one
     that unlocks the app in a "duress mode" that looks normal but doesn't show any sensitive data.
 
 15. Configurable security settings
-    Allow users to configure security settings such as auto-lock timeout, number of failed login attempts before data is wiped, and whether to allow biometric authentication.
+    Allow users to configure security settings such as auto-lock timeout ✅, number of failed login attempts before data is wiped, and whether to allow biometric authentication.
 
 16. ✅ i18n / localization
     Support multiple languages and regional settings for date formats, units, and text. Start with just putting each string in a separate file for the English strings currently present, we'll do other langs later.
@@ -213,7 +207,7 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     In the calendar view, show the predicted fertile window and period for the next 3 cycles, not just the next one. This would give users a longer-term forecast to plan around.
 
 18. Installation (basic)
-    Provide Dockerfiles, images, compose files, install steps and recommended security measures
+    Provide Dockerfiles✅, images✅, compose files✅, install steps and recommended security measures
 
 19. Installation (provenance)
     Ensure provenance is provided for dockerfiles and any binaries we ship
@@ -243,7 +237,7 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
 
 28. Finish docs
 
-29. Setup demo website 
+29. ✅ Setup demo website 
     Will need a DEMO_MODE flag
 
 30. Allow account registration to be disabled outright or switched to an approve mode
@@ -257,21 +251,7 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     phase) rather than a flat "last 5 days" offset, and shown only when the cycle can be
     predicted with some reliability. See [`31_plan_cycle_circle_redesign.md`](./31_plan_cycle_circle_redesign.md).
 
-## Bottom line
+32. Add defaults robots.txt
+    Should obviously discourage crawling
 
-Milestone 1 turned the app from a manual logbook into a real onset-driven
-tracker: cycles now begin at a logged period, logging works on any date, and
-onboarding seeds a next-period estimate (#3, #4, #8, #9 done). Milestone 2 then
-made prediction real — cycle length is learned from observed history and the
-fertile window / -vulation is forecast (#1, #2 done). Milestone 3 expanded
-symptom coverage to the evidence-based high+medium set, consolidated the period
-signal into an ordinal Flow scale, and added BBT + per-day notes (#6, #7 done).
-
-The biggest remaining gap is now **data export / backup** (#5, especially given
-the threat model — and more pressing now that we store more sensitive data like
-BBT). The natural next step on top of milestone 3 is graduating the fertility
-forecast from the calendar method to something **BBT/mucus-aware** (the #1
-caveat), and **auto-detecting onset** from logged Flow rather than the manual
-"start a new period" action. The newer security asks (#13 quick-unlock, #14
-duress password, #15 configurable security) are a separate track tied to the
-threat model.
+33. Favicon, logo and keyart
