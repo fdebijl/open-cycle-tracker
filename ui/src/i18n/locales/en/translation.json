@@ -1,4 +1,7 @@
 {
+  "demo": {
+    "warning": "This is a demo for Open Cycle Tracker. Data is wiped regularly and not kept. Don’t enter anything real or sensitive."
+  },
   "nav": {
     "tracking": "Tracking",
     "calendar": "Calendar",

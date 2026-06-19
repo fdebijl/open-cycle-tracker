@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
-import { env } from './config/env.js';
+import { env, isDemo } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 import { httpLogger } from './middleware/httpLogger.js';
 import { apiLimiter } from './middleware/rateLimit.js';
@@ -43,7 +43,7 @@ export function createApp(): Express {
   app.use(apiLimiter);
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
+    res.json({ status: 'ok', demoMode: isDemo });
   });
 
   app.use('/auth', authRouter);

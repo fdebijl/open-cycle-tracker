@@ -75,6 +75,8 @@ services:
       SERVER_SECRET: ${SERVER_SECRET:?set SERVER_SECRET in your .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1209600}
       CORS_ORIGINS: ${PUBLIC_UI_URL:-http://localhost:8080}
+      DEMO_MODE: ${DEMO_MODE:-false}
+      DEMO_WIPE_INTERVAL_MINUTES: ${DEMO_WIPE_INTERVAL_MINUTES:-60}
     ports:
       - "${API_PORT:-3000}:3000"
     networks:
@@ -88,6 +90,7 @@ services:
     image: fdebijl/open-cycle-tracker:latest-ui
     environment:
       PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:3000}
+      PUBLIC_DEMO_MODE: ${PUBLIC_DEMO_MODE:-false}
     ports:
       - "${UI_PORT:-8080}:80"
     deploy:

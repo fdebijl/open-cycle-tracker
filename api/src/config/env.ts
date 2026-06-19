@@ -21,6 +21,8 @@ const envSchema = z.object({
         .map((o) => o.trim())
         .filter(Boolean),
     ),
+  DEMO_MODE: z.stringbool().default(false),
+  DEMO_WIPE_INTERVAL_MINUTES: z.coerce.number().int().positive().default(60),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -36,3 +38,4 @@ if (!parsed.success) {
 export const env = parsed.data;
 export const isTest = env.NODE_ENV === 'test';
 export const isProd = env.NODE_ENV === 'production';
+export const isDemo = env.DEMO_MODE;

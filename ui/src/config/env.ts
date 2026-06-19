@@ -8,6 +8,11 @@ const BUILD_TIME_API_URL =
  * is what actually gets used. */
 export let API_URL: string = BUILD_TIME_API_URL;
 
+/** Whether this deployment is a public demo. Set at runtime from /config.js
+ * (PUBLIC_DEMO_MODE in the UI container). Drives the warning banner; it's a
+ * live binding resolved by loadRuntimeConfig() before render in main.tsx. */
+export let DEMO_MODE = false;
+
 /** Load runtime config from the separately-served `/config.js` — an ES module
  * the UI container's entrypoint writes from $PUBLIC_API_URL on start. It's
  * pulled via a dynamic import of an absolute path (deliberately NOT a static
@@ -19,9 +24,11 @@ export async function loadRuntimeConfig(): Promise<void> {
   try {
     const mod = (await import(/* @vite-ignore */ `${import.meta.env.BASE_URL}config.js`)) as {
       apiUrl?: string;
+      demoMode?: boolean;
     };
     const apiUrl = mod.apiUrl?.trim();
     if (apiUrl) API_URL = apiUrl;
+    if (mod.demoMode === true) DEMO_MODE = true;
   } catch {
     // No /config.js (dev, tests, or a build without the entrypoint) — keep the
     // build-time default.

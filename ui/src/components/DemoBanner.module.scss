@@ -1,0 +1,12 @@
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: var(--oct-md);
+  background: var(--oct-red);
+  color: var(--oct-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.35;
+}

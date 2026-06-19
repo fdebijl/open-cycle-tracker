@@ -7,3 +7,4 @@
 // entrypoint, which substitutes $PUBLIC_API_URL. Editing it here only affects
 // local dev/build, not the deployed container.
 export const apiUrl = '';
+export const demoMode = true;

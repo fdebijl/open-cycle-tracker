@@ -63,6 +63,8 @@ services:
       SERVER_SECRET: ${SERVER_SECRET:?set SERVER_SECRET in your .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1209600}
       CORS_ORIGINS: *public-ui-url
+      DEMO_MODE: ${DEMO_MODE:-false}
+      DEMO_WIPE_INTERVAL_MINUTES: ${DEMO_WIPE_INTERVAL_MINUTES:-60}
     ports:
       - "${API_PORT:-3000}:3000"
     depends_on:
@@ -82,6 +84,7 @@ services:
     # Runtime API origin (UI entrypoint writes /config.js); build arg is the baked-in fallback.
     environment:
       PUBLIC_API_URL: *public-api-url
+      PUBLIC_DEMO_MODE: ${PUBLIC_DEMO_MODE:-false}
     ports:
       - "${UI_PORT:-8080}:80"
     depends_on:
