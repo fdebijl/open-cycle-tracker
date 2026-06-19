@@ -14,6 +14,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-oct}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - oct-internal
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oct} -d ${POSTGRES_DB:-oct}"]
       interval: 10s
@@ -46,6 +48,8 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-oct}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-oct}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in your .env}
       SERVER_SECRET: ${SERVER_SECRET:?set SERVER_SECRET in your .env}
+    networks:
+      - oct-internal
     deploy:
       replicas: 1
       restart_policy:
@@ -73,6 +77,8 @@ services:
       CORS_ORIGINS: ${PUBLIC_UI_URL:-http://localhost:8080}
     ports:
       - "${API_PORT:-3000}:3000"
+    networks:
+      - oct-internal
     deploy:
       replicas: 1
       restart_policy:
@@ -88,6 +94,10 @@ services:
       replicas: 1
       restart_policy:
         condition: any
+
+networks:
+  oct-internal:
+    driver: overlay
 
 volumes:
   pgdata:
