@@ -40,7 +40,7 @@ services:
         until node -e "require('net').connect(5432,'postgres').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})"; do
           echo 'waiting for postgres...'; sleep 2;
         done;
-        node dist/migrate.js && node dist/seed.js
+        node dist/db/migrate.js && node dist/db/seed.js
     environment:
       NODE_ENV: production
       DATABASE_URL: postgres://${POSTGRES_USER:-oct}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-oct}
