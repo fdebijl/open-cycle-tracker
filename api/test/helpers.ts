@@ -4,17 +4,14 @@ import type { Express } from 'express';
 import { createApp } from '../src/app.js';
 import { db, pool } from '../src/db/index.js';
 import { users } from '../src/db/schema.js';
-import { seedGlobalCategories } from '../src/db/globalCategories.js';
+import { wipeAllData } from '../src/db/demoReset.js';
 import * as crypto from '../src/crypto-client/index.js';
 
 export const app: Express = createApp();
 
 /** Truncate all tables and re-seed global categories. Call in beforeEach. */
 export async function resetDb(): Promise<void> {
-  await db.execute(
-    sql`TRUNCATE TABLE users, cycles, days, categories, category_levels, factors, revoked_tokens RESTART IDENTITY CASCADE`,
-  );
-  await seedGlobalCategories(db);
+  await wipeAllData();
 }
 
 export async function closeDb(): Promise<void> {

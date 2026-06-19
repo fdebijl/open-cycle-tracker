@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoutes } from './routes/AppRoutes';
+import { DemoBanner } from './components/DemoBanner';
 import { loadRuntimeConfig } from './config/env';
 import './i18n';
 import './styles/global.scss';
@@ -18,6 +19,7 @@ async function bootstrap() {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
+          <DemoBanner />
           <AppRoutes />
         </BrowserRouter>
       </QueryClientProvider>
