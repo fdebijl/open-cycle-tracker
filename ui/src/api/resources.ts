@@ -56,13 +56,28 @@ export const factorsApi = {
   remove: (id: string) => api.del<void>(`/factors/${id}`),
 };
 
+export interface CategoryWritePayload {
+  encName?: string | null;
+  encIcon?: string | null;
+  encColor?: string | null;
+}
+
 export const categoriesApi = {
   list: () => api.get<CategoryDto[]>('/categories'),
   get: (id: string) => api.get<CategoryDto>(`/categories/${id}`),
+  // Creates a user-owned category (encrypted fields); used when restoring a backup.
+  create: (body: CategoryWritePayload) => api.post<CategoryDto>('/categories', body),
 };
+
+export interface CategoryLevelWritePayload {
+  categoryId: string;
+  encName?: string | null;
+  encIcon?: string | null;
+}
 
 export const categoryLevelsApi = {
   // Note the underscore path (the API mounts this router at /category_levels).
   list: () => api.get<CategoryLevelDto[]>('/category_levels'),
   get: (id: string) => api.get<CategoryLevelDto>(`/category_levels/${id}`),
+  create: (body: CategoryLevelWritePayload) => api.post<CategoryLevelDto>('/category_levels', body),
 };

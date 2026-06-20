@@ -19,6 +19,7 @@ import { ProfileSettings } from './settings/ProfileSettings';
 import { HealthSettings } from './settings/HealthSettings';
 import { PersonalizationSettings } from './settings/PersonalizationSettings';
 import { SecuritySettings } from './settings/SecuritySettings';
+import { DataSettings } from './settings/DataSettings';
 import { AboutSettings } from './settings/AboutSettings';
 
 /** Authenticated + unlocked gate: needs a session AND an in-memory DEK. */
@@ -73,6 +74,7 @@ export function AppRoutes() {
           <Route path="health" element={<HealthSettings />} />
           <Route path="personalization" element={<PersonalizationSettings />} />
           <Route path="security" element={<SecuritySettings />} />
+          <Route path="data" element={<DataSettings />} />
           <Route path="about" element={<AboutSettings />} />
         </Route>
       </Route>

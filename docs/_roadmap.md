@@ -136,12 +136,21 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
    tappable to log a day on demand, and the-new day is filed into the cycle whose
    onset span contains its date (`cycleForDate` in `data/cycles.ts`)._
 
-5. **No data export / backup.** Given the explicit threat model (server can be
-   seized, device can be lost) this is a real hole. There is account *deletion*
-   but no way to get tracking data **out** — encrypted export, device migration,
-   or restore. The in-memory-only DEK means that if a user loses their device,
-   their data is simply gone absent an export path. Deserves a deliberate design
-   decision, not an omission.
+5. ✅ **No data export / backup.** _Done — Settings → Data exports the full
+   dataset as either a self-contained **encrypted backup** (sealed with the
+   in-memory DEK; unlocked by the account's existing 24-word recovery phrase, so
+   it survives a lost password and a vanished server) or, as a warned opt-in, a
+   **plaintext JSON** file for portability. Import merges a backup into the
+   logged-in account, de-duplicating by date (so re-imports are safe) and
+   re-encrypting under the current DEK — which also covers migrating into a fresh
+   self-hosted instance. Entirely client-side: export reuses the recovery
+   material from `POST /auth/recover/init` and restore reuses the existing CRUD
+   endpoints, so the server never sees plaintext and needed no changes. See
+   [`05_plan_import_export.md`](./05_plan_import_export.md)._ Caveat: factor refs
+   resolve across instances by global-category slug/name, and user-defined
+   category levels don't preserve their ordinal `order` (the create endpoint
+   doesn't accept it) — neither matters today since no UI creates custom
+   categories yet.
 
 6. ✅ **Symptom coverage is thin for the actual use cases.** _Done — the
    high+medium evidence-based set from
