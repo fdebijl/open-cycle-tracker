@@ -82,7 +82,10 @@ export function CurrentCycle() {
   const onsets = cycleOnsets(cyclesQuery.data ?? [], allDays, periodDayIds)
     .map((c) => c.onset)
     .filter((o): o is Date => o != null);
-  const stats = cycleStats(onsets, averageCycleLength);
+  const stats = cycleStats(onsets, averageCycleLength, {
+    mode: settingsQuery.data?.trackingMode,
+    asOf: new Date(),
+  });
 
   // Compute overlays only for enabled markers, so a disabled one never reaches a
   // slot. Fertile and ovulation share one prediction, so it's computed when

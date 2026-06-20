@@ -217,6 +217,10 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
 
 21. Menopause/perimenopause mode
     Do some discovery on what's desirable for these modes
+    Discovery done + v1 shipped: a `trackingMode` (standard/perimenopause/postmenopause)
+    that relaxes/suppresses predictions, surfaces "unknown" and long-gap signals, adds
+    vasomotor + somatic symptoms, and gently suggests the mode from a STRAW+10 read of
+    cycle history. See [`21_plan_perimenopause_mode.md`](./21_plan_perimenopause_mode.md).
 
 22. GHA
     Add a GHA for running tests (✅) and test-building images on PR's. 
@@ -263,3 +267,10 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     Allow users to set which birth control method they use. Hormonal birth control should probably feed into cycle predictions, but we should do more research on what the implications are on this.
 
 36. Allow custom categories + factors to be added
+
+37. Perimenopause staging UI (STRAW+10)
+    Build on the `classifyMenopausalStage` helper shipped in #21 to surface the detected
+    stage (early/late menopausal transition, postmenopause) with its signals and the
+    exclusion caveats (pregnancy / hormonal contraception; FSH is suggestive, not
+    diagnostic) on the Info screen. v1 only uses the helper for a gentle mode suggestion.
+    Overlaps #6 (anovulation / ovulation-trend detection needs BBT / cervical-fluid input).

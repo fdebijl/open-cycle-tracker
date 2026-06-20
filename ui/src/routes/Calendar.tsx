@@ -64,6 +64,7 @@ export function Calendar() {
   const stats = cycleStats(
     cyclesWithOnsets.map((c) => c.onset).filter((o): o is Date => o != null),
     averageCycleLength,
+    { mode: settingsQuery.data?.trackingMode, asOf: new Date() },
   );
   const currentOnset = cyclesWithOnsets.find((c) => c.id === currentCycleId)?.onset ?? null;
 

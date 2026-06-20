@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { addDays, isSameDay } from 'date-fns';
+import { addDays, differenceInCalendarDays, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useResponsive } from '@/hooks/useResponsive';
@@ -20,9 +20,11 @@ interface Slot {
 
 /** Human label for the countdown shown at the circle's center, derived from the
  * predicted next-period date. `margin` is the ± confidence band in days (from a
- * learned average's variability); 0 hides it. */
-function countdownLabel(daysUntil: number | null, margin: number, t: TFunction): string {
-  if (daysUntil === null) return '';
+ * learned average's variability); 0 hides it. An empty `daysUntil` with an
+ * `unknown`-confidence forecast becomes an explicit "unknown" rather than a
+ * blank center (perimenopause/postmenopause). */
+function countdownLabel(daysUntil: number | null, margin: number, unknown: boolean, t: TFunction): string {
+  if (daysUntil === null) return unknown ? t('cycle.countdown.unknown') : '';
   const band = margin > 0 ? ` (±${margin})` : '';
   if (daysUntil < 0) return t('cycle.countdown.late', { count: Math.abs(daysUntil) });
   if (daysUntil === 0) return t('cycle.countdown.today');
@@ -82,8 +84,15 @@ export function CycleCircle({
     });
   }, [days, cycleStart, stats.averageLength, includeFuture]);
 
-  const { daysUntil } = predictNextPeriod(cycleStart, stats);
-  const margin = Math.round(stats.variability);
+  const nextPeriod = predictNextPeriod(cycleStart, stats);
+  const { daysUntil } = nextPeriod;
+  // The band shown to the user is the actual predicted window (which may be
+  // floored in perimenopause), not the raw variability.
+  const margin =
+    nextPeriod.date && nextPeriod.windowEnd ? differenceInCalendarDays(nextPeriod.windowEnd, nextPeriod.date) : 0;
+  // A tracked cycle whose next onset can't be forecast (amenorrhea / too little
+  // regular history / postmenopause) shows "unknown" instead of a blank center.
+  const unknown = !!cycleStart && stats.confidence === 'unknown';
 
   const size = Math.max(220, Math.min(width || 360, height || 360) * 0.6);
   const center = size / 2;
@@ -118,7 +127,7 @@ export function CycleCircle({
             />
           );
         })}
-        <p className={styles.countdown}>{countdownLabel(daysUntil, margin, t)}</p>
+        <p className={styles.countdown}>{countdownLabel(daysUntil, margin, unknown, t)}</p>
       </div>
       <CycleLegend markers={markers} />
     </div>

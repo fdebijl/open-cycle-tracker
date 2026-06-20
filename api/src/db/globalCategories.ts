@@ -69,7 +69,9 @@ export const GLOBAL_CATEGORIES: {
     levels: [
       { name: 'Cramps' },
       { name: 'Headache' },
+      { name: 'Migraine' },
       { name: 'Backache' },
+      { name: 'Joint pain' },
       { name: 'Tender breasts' },
       { name: 'Ovulation pain' },
     ],
@@ -108,14 +110,29 @@ export const GLOBAL_CATEGORIES: {
     name: 'Skin',
     icon: 'face-woman-outline',
     color: '#c98fb0',
-    levels: [{ name: 'Acne' }, { name: 'Good' }, { name: 'Oily' }, { name: 'Dry' }],
+    levels: [{ name: 'Acne' }, { name: 'Good' }, { name: 'Oily' }, { name: 'Dry' }, { name: 'Vaginal dryness' }],
   },
   {
     slug: 'mental',
     name: 'Mental',
     icon: 'brain',
     color: '#8e7bbf',
-    levels: [{ name: 'Calm' }, { name: 'Distracted' }, { name: 'Focused' }, { name: 'Stressed' }],
+    levels: [
+      { name: 'Calm' },
+      { name: 'Distracted' },
+      { name: 'Focused' },
+      { name: 'Stressed' },
+      { name: 'Brain fog' },
+    ],
+  },
+  {
+    slug: 'vasomotor',
+    name: 'Vasomotor',
+    icon: 'weather-sunny-alert',
+    color: '#e0795e',
+    // Autonomic/vasomotor symptoms that come to the fore in perimenopause and have
+    // no home in the cycle-oriented categories above (roadmap #21).
+    levels: [{ name: 'Hot flashes' }, { name: 'Night sweats' }, { name: 'Heart palpitations' }],
   },
   {
     slug: 'craving',

@@ -111,6 +111,7 @@ describe('settings mapper', () => {
     const enc = await encryptSettings(
       {
         averageCycleLength: 30,
+        trackingMode: 'perimenopause',
         autoLockMs: 15 * 60 * 1000,
         lockOnHidden: false,
         markers: { menstruation: false, fertile: true, ovulation: false, pms: true },
@@ -119,6 +120,7 @@ describe('settings mapper', () => {
     );
     const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
     expect(settings.averageCycleLength).toBe(30);
+    expect(settings.trackingMode).toBe('perimenopause');
     expect(settings.autoLockMs).toBe(15 * 60 * 1000);
     expect(settings.lockOnHidden).toBe(false);
     expect(settings.markers).toEqual({ menstruation: false, fertile: true, ovulation: false, pms: true });
@@ -138,6 +140,8 @@ describe('settings mapper', () => {
     const enc = await encryptJson({ averageCycleLength: 21 }, dek);
     const settings = await decryptSettings(baseUser({ encSettings: enc }), dek);
     expect(settings.averageCycleLength).toBe(21);
+    // A blob written before tracking modes existed reads as standard.
+    expect(settings.trackingMode).toBe('standard');
     expect(settings.autoLockMs).toBe(5 * 60 * 1000);
     expect(settings.lockOnHidden).toBe(true);
     expect(settings.markers).toEqual({ menstruation: true, fertile: true, ovulation: true, pms: false });
