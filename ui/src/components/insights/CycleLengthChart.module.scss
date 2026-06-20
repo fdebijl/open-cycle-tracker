@@ -1,0 +1,33 @@
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.bar {
+  fill: var(--oct-purple-light);
+}
+
+// Implausible lengths (skipped/late period) are de-emphasised and excluded from
+// the trend, but still shown so the outlier is visible.
+.barOutlier {
+  fill: var(--oct-border);
+}
+
+.band {
+  fill: var(--oct-purple);
+  fill-opacity: 0.12;
+}
+
+.avgLine {
+  fill: none;
+  stroke: var(--oct-purple);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.axisLabel {
+  font-size: 3px;
+  fill: var(--oct-muted);
+}

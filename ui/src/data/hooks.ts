@@ -17,7 +17,10 @@ import {
 import { encryptString } from '@/crypto';
 import type { FactorWritePayload } from '@/api/resources';
 import type { FactorDto } from '@/api/types';
-import { computePeriodDayIds, flowPeriodLevelIds, FLOW_PERIOD_MIN_ORDER, FLOW_SLUG } from './cycles';
+import { computePeriodDayIds, cycleOnsets, flowPeriodLevelIds, FLOW_PERIOD_MIN_ORDER, FLOW_SLUG } from './cycles';
+import { cycleLengthHistory, symptomPhaseMatrix } from './insights';
+import type { CycleLengthHistory, SymptomPhaseMatrix } from './insights';
+import { DEFAULT_AVERAGE_CYCLE_LENGTH } from './types';
 import type { Cycle, Day, UserSettings } from './types';
 
 /**
@@ -151,6 +154,60 @@ export function useDisplayName() {
     enabled: !!dek && !!userId,
     queryFn: async (): Promise<string> => decryptUserName(await usersApi.get(userId!), dek!),
   });
+}
+
+export interface Insights {
+  /** Per-cycle length history + regularity trend (and the headline stats). */
+  history: CycleLengthHistory;
+  /** Symptom counts bucketed by cycle phase. */
+  matrix: SymptomPhaseMatrix;
+  isLoading: boolean;
+}
+
+/**
+ * Derived insights for the Info screen's charts: cycle-length history and the
+ * symptom-vs-phase matrix. Reuses the same queries the screen already loads
+ * (React Query dedupes, so no extra fetches) and runs the pure functions in
+ * `insights.ts` against their decrypted/plaintext outputs.
+ */
+export function useInsights(): Insights {
+  const cycles = useCycles();
+  const days = useDays();
+  const factors = useFactors();
+  const categories = useCategories();
+  const levels = useCategoryLevels();
+  const settings = useUserSettings();
+  const periodDayIds = usePeriodDayIds();
+
+  const averageLength = settings.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
+
+  const history = useMemo(() => {
+    const onsets = cycleOnsets(cycles.data ?? [], days.data ?? [], periodDayIds);
+    return cycleLengthHistory(onsets, averageLength);
+  }, [cycles.data, days.data, periodDayIds, averageLength]);
+
+  const matrix = useMemo(() => {
+    const onsets = cycleOnsets(cycles.data ?? [], days.data ?? [], periodDayIds);
+    return symptomPhaseMatrix({
+      days: days.data ?? [],
+      factors: factors.data ?? [],
+      categories: categories.data ?? [],
+      levels: levels.data ?? [],
+      onsets,
+      periodDayIds,
+      averageLength,
+    });
+  }, [cycles.data, days.data, factors.data, categories.data, levels.data, periodDayIds, averageLength]);
+
+  const isLoading =
+    cycles.isLoading ||
+    days.isLoading ||
+    factors.isLoading ||
+    categories.isLoading ||
+    levels.isLoading ||
+    settings.isLoading;
+
+  return { history, matrix, isLoading };
 }
 
 // ---- Mutations -----------------------------------------------------------

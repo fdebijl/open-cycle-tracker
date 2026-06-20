@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useDateFnsLocale } from '@/i18n/format';
 import { Spinner } from '@/components/Spinner';
+import { InsightsSection } from '@/components/insights/InsightsSection';
 import { useCycles, useDays, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleOnset, cycleOnsets } from '@/data/cycles';
 import { cycleStats, predictFertileWindow, predictNextPeriod, SKIPPED_CYCLE_MIN_GAP } from '@/data/prediction';
@@ -104,6 +105,8 @@ export function Info() {
           {fertile.ovulation && t('info.ovulation', { date: format(fertile.ovulation, 'MMM d', { locale }) })}
         </p>
       )}
+
+      <InsightsSection />
     </section>
   );
 }

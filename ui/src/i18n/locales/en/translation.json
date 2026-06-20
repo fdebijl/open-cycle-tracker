@@ -265,6 +265,35 @@
     "fertileWindow": "Estimated fertile window: {{start}} – {{end}}",
     "ovulation": " (ovulation ~{{date}})"
   },
+  "insights": {
+    "loading": "Loading insights…",
+    "length": {
+      "title": "Cycle length",
+      "empty": "Log a couple of periods to see your cycle-length history.",
+      "barTitle_one": "{{count}} day",
+      "barTitle_other": "{{count}} days",
+      "aria": "Bar chart of your cycle lengths over time, with a rolling-average trend line.",
+      "keepTracking_one": "Keep tracking — {{count}} more cycle to learn your average.",
+      "keepTracking_other": "Keep tracking — {{count}} more cycles to learn your average.",
+      "variabilityCaption_one": "Your recent cycles vary by about ±{{count}} day.",
+      "variabilityCaption_other": "Your recent cycles vary by about ±{{count}} days.",
+      "steady": "Your recent cycles have been very steady."
+    },
+    "symptoms": {
+      "title": "Symptoms by phase",
+      "subtitle": "How often you log each symptom in each cycle phase.",
+      "empty": "Log some symptoms to see how they line up with your cycle.",
+      "symptom": "Symptom",
+      "cellAria_one": "{{symptom}}: logged on {{count}} day in the {{phase}} phase.",
+      "cellAria_other": "{{symptom}}: logged on {{count}} days in the {{phase}} phase."
+    },
+    "phases": {
+      "menstrual": "Menstrual",
+      "follicular": "Follicular",
+      "ovulatory": "Ovulatory",
+      "luteal": "Luteal"
+    }
+  },
   "calendar": {
     "loading": "Loading calendar…",
     "prevMonth": "Previous month",
