@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from 'date-fns';
 import {
+  classifyMenopausalStage,
   cycleStats,
   forecastDayType,
   observedCycleLengths,
+  PERI_MIN_WINDOW_MARGIN,
   predictFertileWindow,
   predictNextPeriod,
   predictPmsWindow,
@@ -78,6 +80,9 @@ const learnedStats: CycleStats = {
   variability: 2,
   sampleSize: 3,
   source: 'learned',
+  confidence: 'high',
+  skippedCycleCount: 0,
+  longestRecentGap: 31,
 };
 
 describe('predictNextPeriod', () => {
@@ -182,5 +187,110 @@ describe('forecastDayType', () => {
 
   it('is null when there is no forecast', () => {
     expect(forecastDayType(onset, { ovulation: null, fertileStart: null, fertileEnd: null })).toBeNull();
+  });
+});
+
+describe('cycleStats - perimenopause mode', () => {
+  it('leaves standard mode untouched: always high confidence, no skip signals', () => {
+    const stats = cycleStats(onsetsFromGaps(BASE, [28, 30, 27, 28]), 28);
+    expect(stats).toMatchObject({ confidence: 'high', skippedCycleCount: 0 });
+  });
+
+  it('downgrades to low confidence when recent cycles are highly variable', () => {
+    // lengths 22,38,24,40 → std-dev ≈ 9 (≥ LOW_CONFIDENCE_VARIABILITY)
+    const stats = cycleStats(onsetsFromGaps(BASE, [22, 38, 24, 40]), 28, { mode: 'perimenopause', asOf: BASE });
+    expect(stats.source).toBe('learned');
+    expect(stats.confidence).toBe('low');
+  });
+
+  it('stays high confidence when peri cycles are still regular', () => {
+    const stats = cycleStats(onsetsFromGaps(BASE, [28, 28, 28]), 28, { mode: 'perimenopause', asOf: BASE });
+    expect(stats.confidence).toBe('high');
+  });
+
+  it('treats a long gap as a skipped cycle - excluded from the average, surfaced as a signal', () => {
+    const onsets = onsetsFromGaps(BASE, [28, 70, 28, 28]); // last onset = BASE + 154
+    const stats = cycleStats(onsets, 28, { mode: 'perimenopause', asOf: addDays(BASE, 159) });
+    // 70 is a skip (≥60), so it never enters the learned average…
+    expect(stats.observedLengths).toEqual([28, 28, 28]);
+    // …but it counts as a skip and shows up as the longest recent gap.
+    expect(stats.skippedCycleCount).toBe(1);
+    expect(stats.longestRecentGap).toBe(70);
+    expect(stats.confidence).toBe('low');
+  });
+
+  it('is unknown confidence during an open amenorrhea (current cycle past the skip threshold)', () => {
+    const onsets = onsetsFromGaps(BASE, [28, 28, 28]); // last onset = BASE + 84
+    const stats = cycleStats(onsets, 28, { mode: 'perimenopause', asOf: addDays(BASE, 154) }); // 70 days since
+    expect(stats.confidence).toBe('unknown');
+    expect(stats.skippedCycleCount).toBe(1);
+  });
+
+  it('postmenopause is always unknown confidence', () => {
+    const stats = cycleStats(onsetsFromGaps(BASE, [28, 28, 28]), 28, { mode: 'postmenopause', asOf: BASE });
+    expect(stats.confidence).toBe('unknown');
+  });
+});
+
+describe('predictNextPeriod - confidence handling', () => {
+  const onset = new Date(2026, 2, 1);
+
+  it('returns nulls (an explicit "unknown") when confidence is unknown', () => {
+    expect(predictNextPeriod(onset, { ...learnedStats, confidence: 'unknown' })).toMatchObject({
+      date: null,
+      daysUntil: null,
+      windowStart: null,
+      windowEnd: null,
+    });
+  });
+
+  it('floors the band to a minimum width when confidence is low', () => {
+    const pred = predictNextPeriod(onset, { ...learnedStats, confidence: 'low', variability: 2 });
+    // variability would give ±2, but a low-confidence band is never tighter than the floor.
+    expect(pred.windowStart).toEqual(addDays(pred.date as Date, -PERI_MIN_WINDOW_MARGIN));
+    expect(pred.windowEnd).toEqual(addDays(pred.date as Date, PERI_MIN_WINDOW_MARGIN));
+  });
+});
+
+describe('predictFertileWindow - confidence gating', () => {
+  const onset = new Date(2026, 2, 1);
+
+  it('is suppressed unless confidence is high (calendar method assumes regularity)', () => {
+    expect(predictFertileWindow(onset, { ...learnedStats, confidence: 'low' })).toEqual({
+      ovulation: null,
+      fertileStart: null,
+      fertileEnd: null,
+    });
+  });
+});
+
+describe('classifyMenopausalStage', () => {
+  it('is reproductive for regular cycles with no amenorrhea', () => {
+    const onsets = onsetsFromGaps(BASE, [28, 28, 28]);
+    expect(classifyMenopausalStage(onsets, addDays(BASE, 89)).stage).toBe('reproductive');
+  });
+
+  it('flags early transition on persistent ≥7-day swings between consecutive cycles', () => {
+    const onsets = onsetsFromGaps(BASE, [28, 36, 28, 36]); // consecutive diffs all 8
+    const staging = classifyMenopausalStage(onsets, addDays(BASE, 133));
+    expect(staging.stage).toBe('early-transition');
+    expect(staging.signals.persistent7DayDiff).toBe(true);
+  });
+
+  it('flags late transition on a ≥60-day gap', () => {
+    const onsets = onsetsFromGaps(BASE, [28, 65]);
+    const staging = classifyMenopausalStage(onsets, addDays(BASE, 98));
+    expect(staging.stage).toBe('late-transition');
+    expect(staging.signals.amenorrhea60Plus).toBe(true);
+  });
+
+  it('flags postmenopause after 12 months of amenorrhea (even from a single onset)', () => {
+    const staging = classifyMenopausalStage([BASE], addDays(BASE, 400));
+    expect(staging.stage).toBe('postmenopause');
+    expect(staging.signals.amenorrhea12mo).toBe(true);
+  });
+
+  it('is indeterminate with no onsets', () => {
+    expect(classifyMenopausalStage([], BASE).stage).toBe('indeterminate');
   });
 });

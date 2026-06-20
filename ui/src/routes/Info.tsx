@@ -4,7 +4,7 @@ import { useDateFnsLocale } from '@/i18n/format';
 import { Spinner } from '@/components/Spinner';
 import { useCycles, useDays, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleOnset, cycleOnsets } from '@/data/cycles';
-import { cycleStats, predictFertileWindow, predictNextPeriod } from '@/data/prediction';
+import { cycleStats, predictFertileWindow, predictNextPeriod, SKIPPED_CYCLE_MIN_GAP } from '@/data/prediction';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import styles from './Info.module.scss';
 
@@ -28,10 +28,11 @@ export function Info() {
   const periodCount = days.filter((d) => periodDayIds.has(d.id)).length;
 
   const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
+  const mode = settingsQuery.data?.trackingMode ?? 'standard';
   const onsets = cycleOnsets(cyclesQuery.data ?? [], allDays, periodDayIds)
     .map((c) => c.onset)
     .filter((o): o is Date => o != null);
-  const stats = cycleStats(onsets, averageCycleLength);
+  const stats = cycleStats(onsets, averageCycleLength, { mode, asOf: new Date() });
   const cycleStart = cycleOnset(days, periodDayIds);
   const { daysUntil: untilNext } = predictNextPeriod(cycleStart, stats);
   const fertile = predictFertileWindow(cycleStart, stats);
@@ -46,29 +47,53 @@ export function Info() {
       ? t('info.learnedFromCycles', { count: stats.sampleSize })
       : t('info.fromSetup');
 
+  const averageStat = (
+    <div className={styles.stat}>
+      <span className={styles.value}>{stats.averageLength}</span>
+      <span className={styles.label}>{t('info.avgCycleLength', { hint: avgHint })}</span>
+    </div>
+  );
+  const rangeStat = range && (
+    <div className={styles.stat}>
+      <span className={styles.value}>{range}</span>
+      <span className={styles.label}>{t('info.observedRange')}</span>
+    </div>
+  );
+  // The next-period forecast is null in perimenopause/postmenopause when it can't
+  // be trusted; say so explicitly rather than showing a bare dash.
+  const nextUnknown = stats.confidence === 'unknown';
+
   return (
     <section className={styles.page}>
       <h1>{t('info.title')}</h1>
       <div className={styles.stats}>
-        <div className={styles.stat}>
-          <span className={styles.value}>{stats.averageLength}</span>
-          <span className={styles.label}>{t('info.avgCycleLength', { hint: avgHint })}</span>
-        </div>
-        {range && (
-          <div className={styles.stat}>
-            <span className={styles.value}>{range}</span>
-            <span className={styles.label}>{t('info.observedRange')}</span>
-          </div>
+        {/* In irregular (peri/postmeno) modes the observed range is the more
+            honest headline than a single learned average, so it leads. */}
+        {mode === 'standard' ? (
+          <>
+            {averageStat}
+            {rangeStat}
+          </>
+        ) : (
+          <>
+            {rangeStat}
+            {averageStat}
+          </>
         )}
         <div className={styles.stat}>
           <span className={styles.value}>{periodCount}</span>
           <span className={styles.label}>{t('info.periodDays')}</span>
         </div>
         <div className={styles.stat}>
-          <span className={styles.value}>{untilNext ?? '-'}</span>
+          <span className={styles.value}>{nextUnknown ? '?' : (untilNext ?? '-')}</span>
           <span className={styles.label}>{t('info.daysUntilNext')}</span>
         </div>
       </div>
+
+      {nextUnknown && <p className={styles.forecast}>{t('info.nextUnknown')}</p>}
+      {stats.longestRecentGap != null && stats.longestRecentGap >= SKIPPED_CYCLE_MIN_GAP && (
+        <p className={styles.forecast}>{t('info.longGap', { days: stats.longestRecentGap })}</p>
+      )}
 
       {fertile.fertileStart && fertile.fertileEnd && (
         <p className={styles.forecast}>

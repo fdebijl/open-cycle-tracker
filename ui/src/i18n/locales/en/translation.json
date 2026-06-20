@@ -80,7 +80,24 @@
     },
     "health": {
       "title": "Health",
-      "empty": "Nothing here yet. Health settings such as birth control will live here."
+      "empty": "Nothing here yet. Health settings such as birth control will live here.",
+      "mode": {
+        "title": "Tracking mode",
+        "intro": "Choose how the app should frame your cycle. This changes how predictions are made and which markers show by default - it never hides or deletes anything you've logged.",
+        "standard": "Standard",
+        "standardHint": "Assumes a fairly regular cycle and forecasts your next period, fertile window and ovulation.",
+        "perimenopause": "Perimenopause",
+        "perimenopauseHint": "Expects irregular cycles: widens or hides predictions when they can't be trusted, treats long gaps as a signal, and turns the fertility markers off by default.",
+        "postmenopause": "Postmenopause",
+        "postmenopauseHint": "Stops forecasting cycles entirely. You can still log days and symptoms and review your history.",
+        "caveat": "These modes are informational and not a medical diagnosis. Cycle changes can have many causes; if you're unsure, talk to a clinician."
+      },
+      "suggestion": {
+        "title": "Your cycles look more variable",
+        "body": "Your recent cycles have been irregular in a way that's common around perimenopause. You may find perimenopause mode a better fit.",
+        "caveat": "This is only a suggestion based on your logged cycles, not a diagnosis - and it can have other causes.",
+        "action": "Switch to perimenopause mode"
+      }
     },
     "data": {
       "title": "Backup & restore",
@@ -207,7 +224,8 @@
       "today": "Your period may start today",
       "tomorrow": "Your period may start tomorrow",
       "daysUntil_one": "{{count}} day until next period{{band}}",
-      "daysUntil_other": "{{count}} days until next period{{band}}"
+      "daysUntil_other": "{{count}} days until next period{{band}}",
+      "unknown": "Next period can't be predicted yet"
     },
     "legend": {
       "title": "Markers"
@@ -242,6 +260,8 @@
     "observedRange": "Observed range (days)",
     "periodDays": "Period days",
     "daysUntilNext": "Days until next period",
+    "nextUnknown": "Your next period can't be predicted right now. Irregular and skipped cycles are normal around perimenopause.",
+    "longGap": "Longest recent gap between periods: {{days}} days.",
     "fertileWindow": "Estimated fertile window: {{start}} – {{end}}",
     "ovulation": " (ovulation ~{{date}})"
   },

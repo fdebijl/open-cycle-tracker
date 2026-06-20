@@ -1,7 +1,7 @@
 import { addDays, differenceInCalendarDays, isWithinInterval } from 'date-fns';
 import { nextPeriodEstimate } from './cycles';
 import type { NextPeriodEstimate } from './cycles';
-import type { CycleMarkers } from './types';
+import type { CycleMarkers, TrackingMode } from './types';
 
 /**
  * Cycle prediction, learned from observed history. Where `cycles.ts` derives a
@@ -45,6 +45,29 @@ export const PMS_DAYS = 5;
  * so above this we suppress it even when opted in. */
 export const PMS_MAX_VARIABILITY = 4;
 
+/** A gap of at least this many days counts as a skipped cycle / amenorrhea
+ * rather than a long-but-normal cycle. The ReSTAGE-validated STRAW+10 threshold
+ * for the late menopausal transition (preferred over the older 90-day rule). In
+ * perimenopause mode this is also the ceiling for lengths fed into the average,
+ * so a skip doesn't quietly inflate the learned cycle length. */
+export const SKIPPED_CYCLE_MIN_GAP = 60;
+/** Amenorrhea of this length (12 months) marks postmenopause under STRAW+10. */
+export const POSTMENOPAUSE_AMENORRHEA_DAYS = 365;
+/** A ≥7-day difference between consecutive cycle lengths is the STRAW+10 early
+ * menopausal transition signal. */
+export const EARLY_TRANSITION_LENGTH_DIFF = 7;
+/** Cycle-length variability (std-dev, days) at or above which a perimenopause
+ * forecast is downgraded to low confidence (and its window floored, below). */
+export const LOW_CONFIDENCE_VARIABILITY = 7;
+/** In perimenopause we never present a next-period band tighter than this, even
+ * if the recent sample looks deceptively tight - the honest uncertainty is wider. */
+export const PERI_MIN_WINDOW_MARGIN = 5;
+
+/** How much to trust a forecast. `standard` is always `high` (predictions behave
+ * exactly as before). Perimenopause downgrades to `low` (wide but shown) or
+ * `unknown` (suppressed - shown as "unknown" rather than a fabricated date). */
+export type PredictionConfidence = 'high' | 'low' | 'unknown';
+
 export interface CycleStats {
   /** Plausible observed onset-to-onset lengths, oldest → newest. */
   observedLengths: number[];
@@ -57,6 +80,24 @@ export interface CycleStats {
   sampleSize: number;
   /** Whether `averageLength` was learned from history or is the configured seed. */
   source: 'learned' | 'configured';
+  /** How far to trust the forecast (drives "unknown"/widened states in
+   * perimenopause; always `high` in standard mode). */
+  confidence: PredictionConfidence;
+  /** Recent onset-to-onset gaps that look like skipped cycles (≥
+   * `SKIPPED_CYCLE_MIN_GAP`) - the signal perimenopause cares about, which the
+   * average deliberately excludes. 0 in standard mode. */
+  skippedCycleCount: number;
+  /** Longest recent onset-to-onset gap in days (including skips), or `null` with
+   * fewer than two onsets. Lets the UI surface "a 60+ day gap was detected". */
+  longestRecentGap: number | null;
+}
+
+/** Options that adapt the stats to a tracking mode. `asOf` (usually today) lets
+ * the model notice an *open* long gap - a current cycle running past the skip
+ * threshold - which onset-to-onset gaps alone can't see. */
+export interface CycleStatsOptions {
+  mode?: TrackingMode;
+  asOf?: Date;
 }
 
 export interface NextPeriodPrediction extends NextPeriodEstimate {
@@ -83,17 +124,25 @@ export interface PmsPrediction {
 /** A forecast label for an empty future slot/cell. */
 export type ForecastType = 'fertile' | 'ovulation' | 'pms';
 
+/** Every onset-to-onset gap, oldest → newest, with no plausibility filtering.
+ * The latest onset yields no gap (it has no successor). Skipped cycles show up
+ * here as large gaps - the raw signal `observedCycleLengths` filters out. */
+function rawCycleGaps(onsets: Date[]): number[] {
+  const sorted = [...onsets].sort((a, b) => a.getTime() - b.getTime());
+  const gaps: number[] = [];
+  for (let i = 1; i < sorted.length; i += 1) {
+    gaps.push(differenceInCalendarDays(sorted[i], sorted[i - 1]));
+  }
+  return gaps;
+}
+
 /** Plausible onset-to-onset lengths from a set of cycle onsets, oldest → newest.
  * The latest onset yields no length (it has no successor), so an in-progress
- * cycle never pollutes the average. */
-export function observedCycleLengths(onsets: Date[]): number[] {
-  const sorted = [...onsets].sort((a, b) => a.getTime() - b.getTime());
-  const lengths: number[] = [];
-  for (let i = 1; i < sorted.length; i += 1) {
-    const len = differenceInCalendarDays(sorted[i], sorted[i - 1]);
-    if (len >= MIN_PLAUSIBLE_LENGTH && len <= MAX_PLAUSIBLE_LENGTH) lengths.push(len);
-  }
-  return lengths;
+ * cycle never pollutes the average. `maxLength` caps what counts as a cycle (vs a
+ * skipped cycle): perimenopause passes a lower ceiling so a skip doesn't inflate
+ * the learned average. */
+export function observedCycleLengths(onsets: Date[], maxLength: number = MAX_PLAUSIBLE_LENGTH): number[] {
+  return rawCycleGaps(onsets).filter((len) => len >= MIN_PLAUSIBLE_LENGTH && len <= maxLength);
 }
 
 function mean(xs: number[]): number {
@@ -108,10 +157,53 @@ function stdDev(xs: number[]): number {
   return Math.sqrt(variance);
 }
 
+/** Pick the forecast confidence from the mode and the shape of recent history.
+ * Standard mode is always `high`, so its predictions are unchanged. */
+function pickConfidence(
+  mode: TrackingMode,
+  source: 'learned' | 'configured',
+  variability: number,
+  openAmenorrhea: boolean,
+  skippedCycleCount: number,
+): PredictionConfidence {
+  if (mode === 'standard') return 'high';
+  // Postmenopause: cycles have ended; we never claim to predict the next one.
+  if (mode === 'postmenopause') return 'unknown';
+  // Perimenopause: be honest about how shaky the forecast is.
+  if (openAmenorrhea) return 'unknown'; // a current cycle running past the skip threshold
+  if (source === 'configured') return 'unknown'; // not enough regular history to trust
+  if (variability >= LOW_CONFIDENCE_VARIABILITY || skippedCycleCount > 0) return 'low';
+  return 'high';
+}
+
 /** Learn a typical cycle length from observed onsets, falling back to the
- * user's configured average until enough history has accumulated. */
-export function cycleStats(onsets: Date[], configuredAverage: number): CycleStats {
-  const observedLengths = observedCycleLengths(onsets);
+ * user's configured average until enough history has accumulated. In a
+ * non-standard `mode` it also derives a `confidence` and surfaces skipped-cycle
+ * signals; pass `asOf` so an open long gap (current cycle past the skip
+ * threshold) is noticed. */
+export function cycleStats(
+  onsets: Date[],
+  configuredAverage: number,
+  options: CycleStatsOptions = {},
+): CycleStats {
+  const mode = options.mode ?? 'standard';
+  // In perimenopause a gap ≥ SKIPPED_CYCLE_MIN_GAP is a skip, not a long cycle,
+  // so it's kept out of the average; standard keeps its existing wider ceiling.
+  const maxLength = mode === 'standard' ? MAX_PLAUSIBLE_LENGTH : SKIPPED_CYCLE_MIN_GAP;
+  const observedLengths = observedCycleLengths(onsets, maxLength);
+
+  // Skipped-cycle signals from the most recent raw gaps, plus an open gap (last
+  // onset → asOf) so an in-progress amenorrhea counts too.
+  const recentRaw = rawCycleGaps(onsets).slice(-ROLLING_WINDOW);
+  const sorted = [...onsets].sort((a, b) => a.getTime() - b.getTime());
+  const lastOnset = sorted.at(-1) ?? null;
+  const openGap = options.asOf && lastOnset ? differenceInCalendarDays(options.asOf, lastOnset) : null;
+  const openAmenorrhea = openGap != null && openGap >= SKIPPED_CYCLE_MIN_GAP;
+  const skippedCycleCount =
+    recentRaw.filter((g) => g >= SKIPPED_CYCLE_MIN_GAP).length + (openAmenorrhea ? 1 : 0);
+  const recentGapsWithOpen = openGap != null ? [...recentRaw, openGap] : recentRaw;
+  const longestRecentGap = recentGapsWithOpen.length > 0 ? Math.max(...recentGapsWithOpen) : null;
+
   if (observedLengths.length < MIN_CYCLES_TO_LEARN) {
     return {
       observedLengths,
@@ -119,24 +211,91 @@ export function cycleStats(onsets: Date[], configuredAverage: number): CycleStat
       variability: 0,
       sampleSize: 0,
       source: 'configured',
+      confidence: pickConfidence(mode, 'configured', 0, openAmenorrhea, skippedCycleCount),
+      skippedCycleCount,
+      longestRecentGap,
     };
   }
   const recent = observedLengths.slice(-ROLLING_WINDOW);
+  const variability = stdDev(recent);
   return {
     observedLengths,
     averageLength: Math.round(mean(recent)),
-    variability: stdDev(recent),
+    variability,
     sampleSize: recent.length,
     source: 'learned',
+    confidence: pickConfidence(mode, 'learned', variability, openAmenorrhea, skippedCycleCount),
+    skippedCycleCount,
+    longestRecentGap,
   };
 }
 
+/** Coarse STRAW+10 reproductive stage, inferred from onset history alone.
+ * Suggestive, never diagnostic: full clinical staging weighs age and excludes
+ * pregnancy / hormonal contraception, and lab/FSH values are secondary. Used in
+ * v1 only to gently suggest perimenopause mode. */
+export type MenopausalStage =
+  | 'reproductive'
+  | 'early-transition'
+  | 'late-transition'
+  | 'postmenopause'
+  | 'indeterminate';
+
+export interface MenopausalStaging {
+  stage: MenopausalStage;
+  signals: {
+    /** A ≥7-day diff between consecutive cycle lengths, recurring (STRAW -2). */
+    persistent7DayDiff: boolean;
+    /** Amenorrhea ≥ 60 days, observed or in progress (STRAW -1). */
+    amenorrhea60Plus: boolean;
+    /** Amenorrhea ≥ 12 months (postmenopause). */
+    amenorrhea12mo: boolean;
+  };
+}
+
+export function classifyMenopausalStage(onsets: Date[], asOf: Date): MenopausalStaging {
+  const sorted = [...onsets].sort((a, b) => a.getTime() - b.getTime());
+  const gaps = rawCycleGaps(sorted);
+  const lastOnset = sorted.at(-1) ?? null;
+  const openGap = lastOnset ? differenceInCalendarDays(asOf, lastOnset) : null;
+
+  const amenorrhea12mo = openGap != null && openGap >= POSTMENOPAUSE_AMENORRHEA_DAYS;
+  const amenorrhea60Plus =
+    (openGap != null && openGap >= SKIPPED_CYCLE_MIN_GAP) || gaps.some((g) => g >= SKIPPED_CYCLE_MIN_GAP);
+
+  // "Persistent" ≥7-day swing: count diffs between consecutive cycle lengths that
+  // hit the threshold within the recent window; recurrence (≥2) makes it persistent.
+  const recent = gaps.slice(-10);
+  let bigSwings = 0;
+  for (let i = 1; i < recent.length; i += 1) {
+    if (Math.abs(recent[i]! - recent[i - 1]!) >= EARLY_TRANSITION_LENGTH_DIFF) bigSwings += 1;
+  }
+  const persistent7DayDiff = bigSwings >= 2;
+
+  // Amenorrhea signals work off the open gap (one onset + `asOf` is enough); the
+  // ≥7-day-swing signal needs at least a couple of completed cycles to read.
+  let stage: MenopausalStage;
+  if (lastOnset == null) stage = 'indeterminate';
+  else if (amenorrhea12mo) stage = 'postmenopause';
+  else if (amenorrhea60Plus) stage = 'late-transition';
+  else if (persistent7DayDiff) stage = 'early-transition';
+  else if (gaps.length >= 2) stage = 'reproductive';
+  else stage = 'indeterminate'; // too little history to say, and no amenorrhea
+
+  return { stage, signals: { persistent7DayDiff, amenorrhea60Plus, amenorrhea12mo } };
+}
+
 /** Forecast the next period: `nextPeriodEstimate` plus a confidence band of
- * ± rounded variability around the predicted date. */
+ * ± rounded variability around the predicted date. When the stats are
+ * `unknown` confidence (perimenopause amenorrhea / too little regular history,
+ * or postmenopause) we refuse to fabricate a date and return nulls, so the UI
+ * shows "unknown" instead. Low-confidence forecasts get a minimum band width. */
 export function predictNextPeriod(lastOnset: Date | null, stats: CycleStats): NextPeriodPrediction {
+  if (stats.confidence === 'unknown') return { date: null, daysUntil: null, windowStart: null, windowEnd: null };
   const estimate = nextPeriodEstimate(lastOnset, stats.averageLength);
   if (!estimate.date) return { ...estimate, windowStart: null, windowEnd: null };
-  const margin = Math.round(stats.variability);
+  const floor = stats.confidence === 'low' ? PERI_MIN_WINDOW_MARGIN : 0;
+  const margin = Math.max(Math.round(stats.variability), floor);
   return {
     ...estimate,
     windowStart: addDays(estimate.date, -margin),
@@ -149,7 +308,9 @@ export function predictNextPeriod(lastOnset: Date | null, stats: CycleStats): Ne
  * average is too short for the luteal-phase model to be meaningful. */
 export function predictFertileWindow(lastOnset: Date | null, stats: CycleStats): FertilePrediction {
   const empty: FertilePrediction = { ovulation: null, fertileStart: null, fertileEnd: null };
-  if (!lastOnset || stats.averageLength <= LUTEAL_PHASE_DAYS) return empty;
+  // The calendar method assumes a regular cycle; only attempt it at high
+  // confidence (always true in standard mode, gated in perimenopause).
+  if (!lastOnset || stats.confidence !== 'high' || stats.averageLength <= LUTEAL_PHASE_DAYS) return empty;
   const nextOnset = addDays(lastOnset, stats.averageLength);
   const ovulation = addDays(nextOnset, -LUTEAL_PHASE_DAYS);
   return {

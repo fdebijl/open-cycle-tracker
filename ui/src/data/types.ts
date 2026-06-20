@@ -64,11 +64,22 @@ export interface CycleMarkers {
   pms: boolean;
 }
 
+/**
+ * How the app frames cycle tracking. `standard` assumes regularity and forecasts
+ * confidently. `perimenopause` expects irregularity: it relaxes/suppresses
+ * predictions, widens bands, surfaces "unknown" and treats long gaps as a signal
+ * rather than an error. `postmenopause` drops cycle forecasts entirely (logging +
+ * history only). See `docs/21_plan_perimenopause_mode.md`.
+ */
+export type TrackingMode = 'standard' | 'perimenopause' | 'postmenopause';
+
 /** Per-user preferences, stored end-to-end encrypted in `users.encSettings`. */
 export interface UserSettings {
   /** Typical cycle length in days; seeds the next-period estimate and the cycle
    * circle's slot count until real history accumulates. */
   averageCycleLength: number;
+  /** How cycle tracking is framed (regular vs perimenopause vs postmenopause). */
+  trackingMode: TrackingMode;
   /** Inactivity timeout before the vault auto-locks, in ms (one of
    * `AUTO_LOCK_PRESETS_MS`). */
   autoLockMs: number;
@@ -93,7 +104,20 @@ export const DEFAULT_CYCLE_MARKERS: CycleMarkers = {
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   averageCycleLength: DEFAULT_AVERAGE_CYCLE_LENGTH,
+  trackingMode: 'standard',
   autoLockMs: AUTO_LOCK_MS,
   lockOnHidden: true,
   markers: DEFAULT_CYCLE_MARKERS,
 };
+
+/**
+ * The marker defaults applied when a user switches into a mode. `standard` keeps
+ * the usual set; perimenopause and postmenopause keep period coloring on but turn
+ * the forecast markers (fertile/ovulation/PMS) off, since they're unreliable or
+ * irrelevant once cycles become irregular. The user can still re-enable any
+ * marker afterwards - this only seeds sensible defaults on the switch.
+ */
+export function defaultMarkersForMode(mode: TrackingMode): CycleMarkers {
+  if (mode === 'standard') return { ...DEFAULT_CYCLE_MARKERS };
+  return { menstruation: true, fertile: false, ovulation: false, pms: false };
+}
