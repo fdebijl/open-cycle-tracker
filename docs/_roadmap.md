@@ -255,3 +255,11 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     Should obviously discourage crawling
 
 33. Favicon, logo and keyart
+
+34. Add age field on users
+    Users can add their birthdate (or just birth year) to their health settings, might aid in perimenopause suggestions
+
+35. Add birth control field on users
+    Allow users to set which birth control method they use. Hormonal birth control should probably feed into cycle predictions, but we should do more research on what the implications are on this.
+
+36. Allow custom categories + factors to be added

@@ -194,4 +194,4 @@ free-text note at the **`Day`** level.
 
 _Source: Li et al., npj Digital Medicine 3:79 (2020),
 https://doi.org/10.1038/s41746-020-0269-8. Code references current as of this writing -
-see [`roadmap.md`](./roadmap.md) for milestone status._
+see [`_roadmap.md`](./_roadmap.md) for milestone status._
