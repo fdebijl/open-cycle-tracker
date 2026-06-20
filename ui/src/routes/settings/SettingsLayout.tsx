@@ -14,6 +14,7 @@ const TABS: SettingsTab[] = [
   { to: 'health', labelKey: 'settings.tabs.health' },
   { to: 'personalization', labelKey: 'settings.tabs.personalization' },
   { to: 'security', labelKey: 'settings.tabs.security' },
+  { to: 'data', labelKey: 'settings.tabs.data' },
   { to: 'about', labelKey: 'settings.tabs.about' },
 ];
 
