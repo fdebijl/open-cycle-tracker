@@ -1,0 +1,32 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.card {
+  padding: 16px;
+  background: var(--oct-bg);
+  border: 1px solid var(--oct-border);
+  border-radius: var(--oct-radius);
+}
+
+.heading {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--oct-muted);
+}
+
+.caption {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--oct-muted);
+  text-align: center;
+}

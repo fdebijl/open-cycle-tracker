@@ -180,9 +180,15 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     reminders, or explicit-y flagging this as a deliberate non-goal, is worth
     doing.
 
-11. **Insights & charts** — cycle-regularity trend, symptom-vs-phase
-    correlation, period-length history. The Info screen is the seed of this but
-    currently just counts.
+11. ✅ **Insights & charts** — _Done — the Info screen now carries two charts
+    below its stat cards: a **cycle-length history** bar chart with a rolling-
+    average **regularity trend** line + ± variability band, and a **symptom-vs-
+    phase** heatmap (categories × menstrual/follicular/ovulatory/luteal). All
+    derived client-side by a new pure, unit-tested `ui/src/data/insights.ts`
+    (`cycleLengthHistory`, `classifyPhase`, `symptomPhaseMatrix`) and rendered as
+    hand-rolled SVG / a `<table>` (no charting dependency). See
+    [`11_plan_insights_charts.md`](./11_plan_insights_charts.md)._ Caveat: a BBT
+    chart is deferred (needs per-day decryption of the encrypted factor values).
 
 12. **TTC / pregnancy / "late period" handling** — a pregnancy mode, logging
     pregnancy-test results, gracefully handling a skipped/late period instead of
