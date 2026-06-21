@@ -37,6 +37,14 @@
     opacity: 0.7;
   }
 
+  /* Symptothermal-confirmed ovulation: backed by logged BBT + mucus, not a
+   * forecast, so it reads as solid and full-strength rather than dashed/faint. */
+  &[data-forecast='ovulation-confirmed'] {
+    background: #4f63d8;
+    border: 2px solid #fff;
+    opacity: 1;
+  }
+
   /* PMS is a prediction-on-a-prediction (only shown when the cycle is reliably
    * predictable), so it reads as the most tentative marker: a muted mauve at a
    * lower opacity than fertile/ovulation. */

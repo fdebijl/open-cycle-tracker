@@ -17,7 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useDateFnsLocale } from '@/i18n/format';
 import { Spinner } from '@/components/Spinner';
-import { useCycles, useDays, useLogDay, usePeriodDayIds, useUserSettings } from '@/data/hooks';
+import { useCurrentCycleSymptoDays, useCycles, useDays, useLogDay, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleForDate, cycleOnsets } from '@/data/cycles';
 import {
   cycleStats,
@@ -26,7 +26,10 @@ import {
   predictFertileWindow,
   predictNextPeriod,
   predictPmsWindow,
+  refineFertileWindow,
 } from '@/data/prediction';
+import type { ForecastType } from '@/data/prediction';
+import { symptothermal } from '@/data/symptothermal';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH, DEFAULT_CYCLE_MARKERS } from '@/data/types';
 import styles from './Calendar.module.scss';
 
@@ -46,11 +49,18 @@ export function Calendar() {
   const navigate = useNavigate();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
 
+  // Derived before the loading return so the symptothermal hook is always called
+  // in the same order (rules of hooks).
+  const cycles = cyclesQuery.data ?? [];
+  const currentCycleId = cycles[0]?.id;
+  const symptoDays = useCurrentCycleSymptoDays(
+    currentCycleId,
+    (daysQuery.data ?? []).filter((d) => d.cycleId === currentCycleId),
+  );
+
   if (daysQuery.isLoading || cyclesQuery.isLoading) return <Spinner label={t('calendar.loading')} />;
 
   const allDays = daysQuery.data ?? [];
-  const cycles = cyclesQuery.data ?? [];
-  const currentCycleId = cycles[0]?.id;
 
   // Index tracked days by calendar date for O(1) cell lookup.
   const byDate = new Map(allDays.filter((d) => d.date).map((d) => [format(d.date as Date, 'yyyy-MM-dd'), d]));
@@ -73,7 +83,9 @@ export function Calendar() {
   // share one prediction; PMS self-gates on reliability.
   const markers = settingsQuery.data?.markers ?? DEFAULT_CYCLE_MARKERS;
   const fertile =
-    markers.fertile || markers.ovulation ? predictFertileWindow(currentOnset, stats) : undefined;
+    markers.fertile || markers.ovulation
+      ? refineFertileWindow(predictFertileWindow(currentOnset, stats), symptothermal(symptoDays))
+      : undefined;
   const pms = markers.pms ? predictPmsWindow(currentOnset, stats) : undefined;
   const nextPeriod = predictNextPeriod(currentOnset, stats);
 
@@ -81,7 +93,7 @@ export function Calendar() {
   // then ovulation/fertile/PMS. Each is gated by its marker toggle. `null` for
   // past/today/logged cells.
   const today = new Date();
-  const forecastFor = (date: Date): 'period' | 'fertile' | 'ovulation' | 'pms' | null => {
+  const forecastFor = (date: Date): 'period' | ForecastType | null => {
     if (!isAfter(date, today)) return null;
     if (
       markers.menstruation &&

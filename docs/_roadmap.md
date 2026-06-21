@@ -10,8 +10,11 @@ tracker is generally expected to do.
    fertile-window / ovulation forecast is computed from the predicted onset and
    shown as a non-persisted overlay (`ui/src/data/pr-diction.ts`)._ The user's
    manual `fertile`/`ovulation` labels still coexist with the computed forecast.
-   Caveat: the fertility forecast is the calendar method only (no BBT / cervical
-   mucus yet — see #6).
+   Update (2026-06-21): the forward forecast is still the calendar method, but
+   the **current cycle's** ovulation is now *confirmed* symptothermally from
+   logged BBT + cervical fluid (Sensiplan 3-over-6 + mucus peak double-check,
+   `ui/src/data/symptothermal.ts`) — informational only, never a contraceptive
+   signal.
 
 2. ✅ **No cycle-length learning or history.** _Done — `c-cleStats` learns the
    average from observed cycles (rolling window of the most recent ones) once ≥3
@@ -54,8 +57,9 @@ tracker is generally expected to do.
    birth control & pregnancy-test result), plus sleep/skin/mental/craving/
    digestion/collection and the Pain/Mood additions. A per-day **free-text note**
    -`days.encNotes`) was added so a day needs no Factor to hold a journal entry._
-   Caveat: BBT/cervical-mucus aren't yet fed into the fertility forecast (still
-   the calendar method — the #1 caveat).
+   Update (2026-06-21): BBT + cervical-mucus now feed a symptothermal
+   ovulation *confirmation* for the current cycle (see #1); the forward forecast
+   is still the calendar method.
 
 7. ✅ **One `dayType` per day is too rigid, and overlaps with categories.** _Done
    — Bleeding + Spotting + `dayType:'period'` collapsed into a single ordinal
@@ -89,13 +93,19 @@ tracker is generally expected to do.
     phase** heatmap (categories × menstrual/follicular/ovulatory/luteal). All
     derived client-side by a new pure, unit-tested `ui/src/data/insights.ts`
     (`cycleLengthHistory`, `classifyPhase`, `symptomPhaseMatrix`) and rendered as
-    hand-rolled SVG / a `<table>` (no charting dependency). See
-    [`11_plan_insights_charts.md`](./11_plan_insights_charts.md)._ Caveat: a BBT
+    hand-rolled SVG / a `<table>` (no charting dependency). A complementary
+    per-user **median-CLD** regularity signal (Li/Urteaga 2020; "consistently
+    highly variable" at > 9 days) also surfaces as a note and widens the
+    next-period band — see [`07_plan_cycle_prediction.md`](./07_plan_cycle_prediction.md).
+    See [`11_plan_insights_charts.md`](./11_plan_insights_charts.md)._ Caveat: a BBT
     chart is deferred (needs per-day decryption of the encrypted factor values).
 
 12. **TTC / pregnancy / "late period" handling** — a pregnancy mode, logging
     pregnancy-test results, gracefully handling a skipped/late period instead of
-    silently breaking averages.
+    silently breaking averages. _Partly done — skipped/late periods are now
+    detected per-user (a cycle whose CLD exceeds the user's own median CLD by
+    ≥10 days is flagged as a likely skipped log) rather than only dropped by the
+    coarse 90-day cap. Pregnancy mode and pregnancy-test logging remain._
 
 13. **Quick-unlock (PIN/biometric)** — auto-lock-on-tab-hidden plus full
     password re-entry every time will be painful in practice. A PIN that unwraps
@@ -194,3 +204,11 @@ tracker is generally expected to do.
 41. Cleanup (verbose) comments
 
 42. Add custom styles for toggle- and radio buttons
+
+43. **Advanced prediction (future).** Beyond the calendar + symptothermal work in
+    [`07_plan_cycle_prediction.md`](./07_plan_cycle_prediction.md): (a) a
+    generative skip-aware Bayesian cycle-length model (Li/Urteaga/Elhadad, JAMIA
+    2022) that models skipped logs as latent variables and yields a posterior
+    predictive band per user; (b) external LH / urinary-hormone-monitor ingestion
+    (Marquette-style) to anchor ovulation directly; (c) reinterpreting a flagged
+    skipped-log gap as multiple cycles (Phase A only *flags* it today).

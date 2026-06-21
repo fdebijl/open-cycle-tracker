@@ -43,3 +43,22 @@
   border: 1px solid #778cfa;
   border-radius: var(--oct-radius);
 }
+
+/* Regularity insight: a quiet, informational note about cycle variability. */
+.note {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--oct-text);
+  background: rgb(201 138 166 / 12%);
+  border: 1px solid #c98aa6;
+  border-radius: var(--oct-radius);
+}
+
+/* Safety disclaimer shown beside any symptothermal confirmation - small and
+ * muted, but always present so the feature is never read as contraception. */
+.disclaimer {
+  margin: -12px 0 20px;
+  font-size: 11px;
+  color: var(--oct-muted);
+}

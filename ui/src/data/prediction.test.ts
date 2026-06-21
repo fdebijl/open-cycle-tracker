@@ -2,15 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { addDays } from 'date-fns';
 import {
   classifyMenopausalStage,
+  cycleLengthDifferences,
   cycleStats,
+  flagSkippedCycles,
   forecastDayType,
+  forecastMarkerEnabled,
+  medianCld,
   observedCycleLengths,
   PERI_MIN_WINDOW_MARGIN,
   predictFertileWindow,
   predictNextPeriod,
   predictPmsWindow,
+  refineFertileWindow,
 } from './prediction';
 import type { CycleStats } from './prediction';
+import type { SymptothermalResult } from './symptothermal';
+import { DEFAULT_CYCLE_MARKERS } from './types';
 
 /** Build a run of onsets from a base date and the gaps between them. */
 function onsetsFromGaps(base: Date, gaps: number[]): Date[] {
@@ -83,6 +90,9 @@ const learnedStats: CycleStats = {
   confidence: 'high',
   skippedCycleCount: 0,
   longestRecentGap: 31,
+  medianCld: 2,
+  isHighlyVariable: false,
+  skippedCount: 0,
 };
 
 describe('predictNextPeriod', () => {
@@ -292,5 +302,143 @@ describe('classifyMenopausalStage', () => {
 
   it('is indeterminate with no onsets', () => {
     expect(classifyMenopausalStage([], BASE).stage).toBe('indeterminate');
+  });
+});
+
+describe('cycleLengthDifferences', () => {
+  it('is the absolute difference between consecutive lengths', () => {
+    expect(cycleLengthDifferences([28, 30, 27, 28])).toEqual([2, 3, 1]);
+  });
+
+  it('is empty for fewer than two lengths', () => {
+    expect(cycleLengthDifferences([28])).toEqual([]);
+    expect(cycleLengthDifferences([])).toEqual([]);
+  });
+});
+
+describe('medianCld', () => {
+  it('takes the median of the CLDs (odd count)', () => {
+    expect(medianCld([28, 30, 27, 28])).toBe(2); // CLDs [2,3,1] -> sorted [1,2,3] -> 2
+  });
+
+  it('averages the two middle CLDs (even count)', () => {
+    expect(medianCld([28, 30, 33, 35, 30])).toBe(2.5); // CLDs [2,3,2,5] -> sorted [2,2,3,5] -> (2+3)/2
+  });
+
+  it('is 0 with fewer than two lengths (no CLD)', () => {
+    expect(medianCld([28])).toBe(0);
+  });
+});
+
+describe('flagSkippedCycles', () => {
+  it('flags a single long gap among regular cycles exactly once', () => {
+    const flags = flagSkippedCycles([28, 28, 60, 28, 28], 0); // threshold 0+10
+    expect(flags).toHaveLength(1);
+    expect(flags[0]).toMatchObject({ index: 2, length: 60 });
+  });
+
+  it('does not over-flag a uniformly variable user', () => {
+    // Alternating 25/45: every CLD is 20, but the median CLD is also 20, so the
+    // 10-day excess threshold (30) is never exceeded.
+    expect(flagSkippedCycles([25, 45, 25, 45], 20)).toEqual([]);
+  });
+});
+
+describe('cycleStats - variability fields', () => {
+  it('reports medianCld and is not highly variable for regular cycles', () => {
+    const stats = cycleStats(onsetsFromGaps(BASE, [28, 30, 27, 28]), 26);
+    expect(stats.medianCld).toBe(2);
+    expect(stats.isHighlyVariable).toBe(false);
+    expect(stats.skippedCount).toBe(0);
+  });
+
+  it('flags a consistently highly variable user (median CLD > 9)', () => {
+    const stats = cycleStats(onsetsFromGaps(BASE, [25, 45, 25, 45, 25]), 28);
+    expect(stats.medianCld).toBeGreaterThan(9);
+    expect(stats.isHighlyVariable).toBe(true);
+  });
+
+  it('leaves the new fields zeroed when falling back to the configured average', () => {
+    const stats = cycleStats(onsetsFromGaps(BASE, [30, 30]), 28); // below the learning threshold
+    expect(stats).toMatchObject({ source: 'configured', medianCld: 0, isHighlyVariable: false, skippedCount: 0 });
+  });
+});
+
+describe('predictNextPeriod - CLD-aware band', () => {
+  const onset = new Date(2026, 2, 1);
+
+  it('widens the band to the median CLD for highly variable users', () => {
+    const stats: CycleStats = { ...learnedStats, variability: 2, medianCld: 8, isHighlyVariable: true };
+    const pred = predictNextPeriod(onset, stats);
+    expect(pred.windowStart).toEqual(addDays(pred.date as Date, -8));
+    expect(pred.windowEnd).toEqual(addDays(pred.date as Date, 8));
+  });
+
+  it('never narrows below the std-dev when not highly variable', () => {
+    const stats: CycleStats = { ...learnedStats, variability: 3, medianCld: 8, isHighlyVariable: false };
+    const pred = predictNextPeriod(onset, stats);
+    expect(pred.windowStart).toEqual(addDays(pred.date as Date, -3));
+  });
+
+  it('caps the margin at half the average length', () => {
+    const stats: CycleStats = { ...learnedStats, averageLength: 30, variability: 2, medianCld: 40, isHighlyVariable: true };
+    const pred = predictNextPeriod(onset, stats);
+    expect(pred.windowStart).toEqual(addDays(pred.date as Date, -15)); // capped at floor(30/2)
+  });
+});
+
+describe('refineFertileWindow', () => {
+  const onset = new Date(2026, 2, 1);
+  const predicted = predictFertileWindow(onset, learnedStats); // forward ovulation onset+15
+
+  it('returns the forecast unchanged when there is no symptothermal result', () => {
+    expect(refineFertileWindow(predicted, null)).toEqual(predicted);
+  });
+
+  it('returns the forecast unchanged when ovulation is not confirmed', () => {
+    const sympto: SymptothermalResult = {
+      confirmed: false,
+      ovulation: null,
+      infertileFrom: null,
+      basis: { temp: true, mucus: false },
+    };
+    expect(refineFertileWindow(predicted, sympto)).toEqual(predicted);
+  });
+
+  it('supersedes the forward estimate with the confirmed ovulation and narrows the window', () => {
+    const confirmedOvulation = new Date(2026, 2, 12);
+    const infertileFrom = new Date(2026, 2, 14);
+    const sympto: SymptothermalResult = {
+      confirmed: true,
+      ovulation: confirmedOvulation,
+      infertileFrom,
+      basis: { temp: true, mucus: true },
+    };
+    const refined = refineFertileWindow(predicted, sympto);
+    expect(refined.confirmed).toBe(true);
+    expect(refined.confirmedOvulation).toEqual(confirmedOvulation);
+    expect(refined.ovulation).toEqual(confirmedOvulation);
+    expect(refined.fertileStart).toEqual(addDays(confirmedOvulation, -5));
+    expect(refined.fertileEnd).toEqual(infertileFrom);
+  });
+});
+
+describe('forecastDayType / forecastMarkerEnabled - confirmed ovulation', () => {
+  const onset = new Date(2026, 2, 1);
+  const confirmedOvulation = new Date(2026, 2, 12);
+  const refined = refineFertileWindow(predictFertileWindow(onset, learnedStats), {
+    confirmed: true,
+    ovulation: confirmedOvulation,
+    infertileFrom: new Date(2026, 2, 14),
+    basis: { temp: true, mucus: true },
+  });
+
+  it('labels the confirmed ovulation day distinctly and with precedence', () => {
+    expect(forecastDayType(confirmedOvulation, refined)).toBe('ovulation-confirmed');
+  });
+
+  it('maps the confirmed label to the ovulation marker toggle', () => {
+    expect(forecastMarkerEnabled('ovulation-confirmed', { ...DEFAULT_CYCLE_MARKERS, ovulation: true })).toBe(true);
+    expect(forecastMarkerEnabled('ovulation-confirmed', { ...DEFAULT_CYCLE_MARKERS, ovulation: false })).toBe(false);
   });
 });

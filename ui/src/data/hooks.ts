@@ -8,6 +8,7 @@ import {
   decryptCategoryLevel,
   decryptDay,
   decryptFactor,
+  decryptFactorValues,
   decryptSettings,
   decryptUserName,
   encryptDayFields,
@@ -17,9 +18,18 @@ import {
 import { encryptString } from '@/crypto';
 import type { FactorWritePayload } from '@/api/resources';
 import type { FactorDto } from '@/api/types';
-import { computePeriodDayIds, cycleOnsets, flowPeriodLevelIds, FLOW_PERIOD_MIN_ORDER, FLOW_SLUG } from './cycles';
+import {
+  BBT_SLUG,
+  computePeriodDayIds,
+  cycleOnsets,
+  flowPeriodLevelIds,
+  FLOW_PERIOD_MIN_ORDER,
+  FLOW_SLUG,
+  FLUID_SLUG,
+} from './cycles';
 import { cycleLengthHistory, symptomPhaseMatrix } from './insights';
 import type { CycleLengthHistory, SymptomPhaseMatrix } from './insights';
+import type { MucusQuality, SymptoDay } from './symptothermal';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from './types';
 import type { Cycle, Day, UserSettings } from './types';
 
@@ -111,6 +121,86 @@ export function usePeriodDayIds(): Set<string> {
     const flowLevels = flowPeriodLevelIds(categories.data ?? [], levels.data ?? []);
     return computePeriodDayIds(factors.data ?? [], flowLevels);
   }, [factors.data, categories.data, levels.data]);
+}
+
+/** The four cervical-fluid qualities the symptothermal engine understands. */
+const MUCUS_QUALITIES: readonly MucusQuality[] = ['egg-white', 'creamy', 'sticky', 'atypical'];
+
+/**
+ * Assemble the current cycle's decrypted BBT + cervical-fluid series for the
+ * symptothermal ovulation check. BBT values are encrypted (`Factor.encValue`),
+ * so this decrypts them - but only for the current cycle (a few dozen readings),
+ * DEK-gated, and re-keyed on the ciphertext so an edited reading invalidates the
+ * cache. Mucus needs no decryption (the level id maps to a plaintext quality).
+ * Returns `[]` while the vault is locked or nothing is logged.
+ */
+export function useCurrentCycleSymptoDays(currentCycleId: string | undefined, currentCycleDays: Day[]): SymptoDay[] {
+  const dek = useDek();
+  const userId = useUserId();
+  const factorsQuery = useFactors();
+  const categories = useCategories();
+  const levels = useCategoryLevels();
+
+  // Resolve the BBT level ids and the fluid level id → quality mapping. Keying
+  // the mucus enum off the level *name* lives here (not in the pure engine), so
+  // the engine never couples to the seeded category strings.
+  const { bbtLevelIds, fluidQualityByLevel } = useMemo(() => {
+    const cats = categories.data ?? [];
+    const lvls = levels.data ?? [];
+    const bbt = cats.find((c) => c.slug === BBT_SLUG);
+    const fluid = cats.find((c) => c.slug === FLUID_SLUG);
+    const bbtIds = new Set(lvls.filter((l) => l.categoryId === bbt?.id).map((l) => l.id));
+    const fluidMap = new Map<string, MucusQuality>();
+    for (const l of lvls) {
+      if (!fluid || l.categoryId !== fluid.id) continue;
+      const quality = l.name.trim().toLowerCase();
+      if ((MUCUS_QUALITIES as readonly string[]).includes(quality)) fluidMap.set(l.id, quality as MucusQuality);
+    }
+    return { bbtLevelIds: bbtIds, fluidQualityByLevel: fluidMap };
+  }, [categories.data, levels.data]);
+
+  // Day id → date for the current cycle's dated days.
+  const dayDates = useMemo(() => {
+    const m = new Map<string, Date>();
+    for (const d of currentCycleDays) if (d.date) m.set(d.id, d.date);
+    return m;
+  }, [currentCycleDays]);
+
+  const allFactors = useMemo(() => factorsQuery.data ?? [], [factorsQuery.data]);
+  // BBT factors on current-cycle days (need decryption); mucus is resolved sync.
+  const bbtFactors = useMemo(
+    () => allFactors.filter((f) => dayDates.has(f.dayId) && bbtLevelIds.has(f.categoryLevelId)),
+    [allFactors, dayDates, bbtLevelIds],
+  );
+  const mucusByDay = useMemo(() => {
+    const m = new Map<string, MucusQuality>();
+    for (const f of allFactors) {
+      if (!dayDates.has(f.dayId)) continue;
+      const quality = fluidQualityByLevel.get(f.categoryLevelId);
+      if (quality) m.set(f.dayId, quality);
+    }
+    return m;
+  }, [allFactors, dayDates, fluidQualityByLevel]);
+
+  // Re-key on factor id + ciphertext so editing a reading busts the cache.
+  const bbtSig = bbtFactors.map((f) => `${f.id}:${f.encValue ?? ''}`).join('|');
+  const valuesQuery = useQuery({
+    queryKey: ['symptoBbt', userId, currentCycleId, bbtSig],
+    enabled: !!dek && !!userId && !!currentCycleId,
+    queryFn: () => decryptFactorValues(bbtFactors, dek!),
+  });
+
+  return useMemo(() => {
+    const temps = valuesQuery.data ?? new Map<string, number>();
+    const out: SymptoDay[] = [];
+    for (const [dayId, date] of dayDates) {
+      const temperature = temps.get(dayId) ?? null;
+      const mucus = mucusByDay.get(dayId) ?? null;
+      if (temperature == null && mucus == null) continue; // nothing symptothermal logged that day
+      out.push({ date, temperature, mucus });
+    }
+    return out.sort((a, b) => a.date.getTime() - b.date.getTime());
+  }, [valuesQuery.data, dayDates, mucusByDay]);
 }
 
 export function useCategories() {
