@@ -1,115 +1,9 @@
 # Open Cycle Tracker - Feature Roadmap
 
 A gap analysis of the current functionality against what a menstrual cycle
-tracker is generally expected to do. The encryption model and data schema are in
-good shape (see [`architecture.md`](./architecture.md) and
-[`encryption.md`](./encryption.md)); the gaps are almost entirely in **product
-logic**.
+tracker is generally expected to do.
 
-> **Update (2026-06-13):** the first milestone shipped - an onset-driven cycle
-> model with onboarding and on-demand logging. This **resolves #3, #4, #8, #9**
-> and **partially addresses #1 and #2** (see the "Shipped" section and the
-> per-gap status tags below).
->
-> **Update (2026-06-14):** the second milestone shipped - real prediction. The
-> average cycle length is now **learned** from observed onset-to-onset history
-> (rolling average + variability) and a **fertile-window / ovulation forecast**
-> is derived and shown as a non-persisted overlay. This **resolves #1 and #2**.
->
-> **Update (2026-06-14):** the third milestone shipped - expanded symptom
-> tracking. The high+medium symptom set (~14 evidence-based categories) is now
-> seeded, period is consolidated into an ordinal **Flow** scale that drives onset
-> (replacing `dayType:'period'` + Bleeding/Spotting), **BBT** is a real encrypted
-> numeric reading, and days carry a free-text note. The `dayType` concept was
-> **removed entirely** — fertile/ovulation aren't user-reportable, so they're now
-> only a computed forecast in the cycle overview. This **resolves #6 and #7**.
-
-## What the app does today
-
-- **Tracking primitives:** a `Cycle` groups `Day`s; each day has a date and one
-  `dayType` (`none | period | fertile | ovulation | pms`). Days carry `Factor`s
-  against category levels (seeded globals: Bleeding, Spotting, Pain, Mood,
-  Energy, plus user-defined custom categories).
-- **Cycle model:** a cycle is anchored at a **period onset**; "current cycle" =
-  newest by `createdAt`. Onset, cycle length, and per-day numbering all derive
-  **client-side** from the decrypted dates (nothing pre-generated). "Start a new
-  period" opens the next cycle.
-- **Onboarding:** new users save their recovery phrase, then give their last
-  period start date + average cycle length (default 28, stored encrypted in
-  `encSettings`), which anchors t-eir first cycle and seeds a simple next--eriod
-  estimate.
-- **Logging:** any calendar date — and any empty slot on the cycle circle — is
-  tappable to log a day on demand; a new day is filed into the cycle whose onset
-  span contains its date.
-- **Views:** circular cycle view, a day editor, a month calendar (colored by day
-  type), an Info screen with stats incl. a next-period estimate, settings with
-  hold-to-delete.
-- **Auth/crypto:** full E2EE (signup, login, unlock, password change, recovery).
-
-## Shipped-
-
-**Milestone 1 — onset-driven cycles + onboarding (2026-06-13).** Replaced the
-placeholder "auto-generate 28 fixed days" bootstrap with Clue's model: cycles
-begin at a logged period onset and their length derives from onset-to-onset
-gaps. Added a registration→onboarding flow (recovery phrase + cycle setup),
-stored average cycle length in encrypted settings, made logging work on any
-date, and replaced the broken next-period stat with an `onset + average`
-estimate. Also fixed a latent bug where the recovery-phrase screen never
-rendered (the `PublicOnly` guard redirected past it). Resolves #3, #4, #8, #9;
-partially addresses #1, #2.
-
-Known limitations carried forward: a new period is started by an explicit action
-rather than auto-detected from bleeding; starting a new period on an
-already-logged-day can create a duplicate day record for that date.
-
-**Milestone 2 — real prediction (2026-06-14).** Replaced the naive `onset +
-average` estimate with - learned model in `ui/src/data/prediction.ts` (pure,
-fully unit-tested). The ave-age cycle length is now learned from observed
-onset-to-onset history — a rolling average over the most recent cycles plus a
-variability (std-dev) band — once ≥3 cycles exist, falling back to the
-onboarding-configured average until then. A -ertile-window / ovulation forecast
-is derived from the predicted onset via a fixed luteal phase (calendar method).
-Both surface as a **non-persisted overlay** — the next-period countdown gains a
-± band, the cycle circle and calendar show predicted fertile/ovulation (and
-predicted period, on the calendar) on empty future cells, and the Info screen
-shows the learned average, observed range, and fertile window. Nothing is
-written to the server or onto `Day` records, so the user's manual
-`fertile`/`ovulation` labels are untouched. Resolves #1, #2.
--
-Known limitations carried forward: the fertile/ovulation forecast is the
-calendar (rhythm) method only — it doesn't yet use BBT or cervical-mucus inputs
-(#6), which would sharpen it; outlier onset gaps (< 15 or > 90 days) are dropped
-rather than mo-elled as skipped/late periods (#12).
-
-**Milestone 3 — expanded symptom tracking + Flow consolidation (2026-06-14).**
-Replaced the 5 placeholder categories with the **high + medium** evidence-based
-set from Li et al. 2020 (~14 categories incl. cervical fluid, sex, sleep, skin,
-mental, craving, digestion, medication w/ birth-control & pregnancy-test, and
-collection method; added tender-breasts/ovulation-pain to Pain and a PMS level to
-Mood). -onsolidated Bleeding + Spotting + `dayType:'period'` into one ordinal
-**Flow** scale (spotting < light < medium < heavy) that is now the period/onset
-signal — `cycleOnset` derives onset from Flow ≥ Light (`computePeriodDayIds`),
-and the circle/calendar/Info color period days off it. The **`dayType` concept
-was removed entirely** (column, enum, and UI): fertile/ovulation aren't things a
-user can self-report accurately, so they're only the computed calendar-method
-forecast in the cycle overview now. Extended the schema (additive migration 0003
-+ a `enc_day_type` drop in 0004): `categories.slug` (identifies Flow/BBT
-structurally, also helps i18n), `categoryLevels.order` (ordinal scales), encryp-ed
-`factors.encValue` (**BBT** as a real numeric reading, create + PATCH), and
-encrypted `days.encNotes` (a per-day **free-text note**, since notes previously
-only attached to a Factor). The seed is now **upsert-by-slug** rather than
-delete-all, so re-seeding no longer cascade-deletes user factors. Resolves #6, #7.
-No prediction-algorithm changes — onset was re-pointed to Flow, not made smarter
-(BBT/mucus-aware fertility and auto-onset detection remain future work).
-
-Known limitations carried forward- fertile/ovulation are forecast-only via the
-calendar method (BBT/mucus aren't fed into the forecast yet, and the forecast
-shows only on empty future cells — logged/past days aren't retro-labelled);
-"start a new period" is still an explicit action (no auto-detection from logged
-Flow); legacy `dayType:'period'` data-from before this milestone needs a dev reset
-(none backfilled — assumes little/no real data on this rewrite).
-
-## Critical gaps (table-stakes for any cycle tracker)
+## Features
 
 1. ✅ **No prediction at all.** _Done — the average cycle length is learned from
    observed o-set-to-onset history (rolling average + variability), and a
@@ -289,3 +183,14 @@ Flow); legacy `dayType:'period'` data-from before this milestone needs a dev res
     exclusion caveats (pregnancy / hormonal contraception; FSH is suggestive, not
     diagnostic) on the Info screen. v1 only uses the helper for a gentle mode suggestion.
     Overlaps #6 (anovulation / ovulation-trend detection needs BBT / cervical-fluid input).
+
+38. Tutorial/usage onboarding
+    Add a screen or guided tour of the app to onboard new users
+
+39. In-app help center
+
+40. Fix onboarding button styling
+
+41. Cleanup (verbose) comments
+
+42. Add custom styles for toggle- and radio buttons
