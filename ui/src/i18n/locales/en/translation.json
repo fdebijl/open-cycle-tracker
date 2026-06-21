@@ -58,7 +58,7 @@
     }
   },
   "recovery": {
-    "warning": "Write these 24 words down and keep them somewhere safe and offline. They are the <1>only</1> way to recover your data if you forget your password. We cannot recover them for you.",
+    "warning": "Write these 24 words down and keep them somewhere safe and offline. They are the <strong>only</strong> way to recover your data if you forget your password. The server owner cannot recover them for you.",
     "acknowledge": "I have written down my recovery phrase.",
     "continue": "Continue"
   },

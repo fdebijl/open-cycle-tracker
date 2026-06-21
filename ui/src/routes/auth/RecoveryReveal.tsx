@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './RecoveryReveal.module.scss';
+import { Button } from '@/components/Button';
 
-/**
- * Shows the one-time recovery mnemonic and forces the user to acknowledge they
- * have stored it. This phrase is the ONLY way to recover data after a forgotten
- * password - the server cannot help, by design.
- */
 export function RecoveryReveal({ mnemonic, onConfirm }: { mnemonic: string; onConfirm: () => void }) {
   const [acknowledged, setAcknowledged] = useState(false);
   const { t } = useTranslation();
@@ -15,10 +11,7 @@ export function RecoveryReveal({ mnemonic, onConfirm }: { mnemonic: string; onCo
   return (
     <div>
       <p className={styles.warning}>
-        <Trans i18nKey="recovery.warning">
-          Write these 24 words down and keep them somewhere safe and offline. They are the <strong>only</strong> way to
-          recover your data if you forget your password. We cannot recover them for you.
-        </Trans>
+        <Trans i18nKey="recovery.warning" />
       </p>
       <ol className={styles.words}>
         {words.map((word, i) => (
@@ -33,9 +26,9 @@ export function RecoveryReveal({ mnemonic, onConfirm }: { mnemonic: string; onCo
         {t('recovery.acknowledge')}
       </label>
       <div className="oct-form-actions">
-        <button type="button" className="oct-primary" disabled={!acknowledged} onClick={onConfirm}>
+        <Button type="button" disabled={!acknowledged} onClick={onConfirm}>
           {t('recovery.continue')}
-        </button>
+        </Button>
       </div>
     </div>
   );

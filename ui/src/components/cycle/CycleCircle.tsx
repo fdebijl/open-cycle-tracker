@@ -56,10 +56,7 @@ export function CycleCircle({
   stats: CycleStats;
   fertile?: FertilePrediction;
   pms?: PmsPrediction;
-  /** Which phase markers to show; gates both the forecast overlays and the
-   * logged-period coloring. */
   markers: CycleMarkers;
-  /** Day ids that carry a period-level Flow factor (drives period coloring). */
   periodDayIds: Set<string>;
   includeFuture?: boolean;
   onSelectDay: (day: Day) => void;
