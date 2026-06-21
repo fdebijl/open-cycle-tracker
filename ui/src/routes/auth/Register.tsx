@@ -6,6 +6,7 @@ import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { registerAccount } from '@/auth/session';
+import { Button } from '@/components/Button';
 
 export function Register() {
   const [identifier, setIdentifier] = useState('');
@@ -31,9 +32,7 @@ export function Register() {
         password,
         email: email.trim() || undefined,
       });
-      // Account is created and unlocked; hand off to onboarding (recovery phrase
-      // + cycle setup) before entering the app. The mnemonic rides in router
-      // state - it's never persisted.
+
       navigate('/onboarding', { replace: true, state: { mnemonic: recoveryMnemonic } });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.register.failed'));
@@ -82,9 +81,9 @@ export function Register() {
         />
         {error && <p className="oct-error">{error}</p>}
         <div className="oct-form-actions">
-          <button type="submit" className="oct-primary" disabled={busy || !identifier || !password || !confirm}>
+          <Button type="submit" disabled={busy || !identifier || !password || !confirm}>
             {busy ? <Spinner size="sm" label={t('auth.register.generating')} /> : t('auth.register.submit')}
-          </button>
+          </Button>
         </div>
       </form>
       <div className="oct-muted-links">

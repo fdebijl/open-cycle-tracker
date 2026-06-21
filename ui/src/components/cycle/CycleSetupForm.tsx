@@ -5,19 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
+import { Button } from '../Button';
 
 export interface CycleSetupValues {
-  /** When the user's most recent period started - anchors their first cycle. */
   onset: Date;
   averageCycleLength: number;
 }
 
-/**
- * Collects the two things needed to bootstrap tracking: when the last period
- * started (the onset that anchors the first cycle) and the typical cycle length
- * (default 28). Presentational - the parent runs the async writes and owns the
- * busy/error state. Reused by onboarding and the no-cycle fallback.
- */
 export function CycleSetupForm({
   onSubmit,
   busy = false,
@@ -71,9 +65,9 @@ export function CycleSetupForm({
       />
       {error && <p className="oct-error">{error}</p>}
       <div className="oct-form-actions">
-        <button type="submit" className="oct-primary" disabled={busy || !onsetStr || !length}>
+        <Button type="submit" disabled={busy || !onsetStr || !length}>
           {busy ? <Spinner size="sm" label={t('cycleSetup.settingUp')} /> : (submitLabel ?? t('cycleSetup.startTracking'))}
-        </button>
+        </Button>
       </div>
     </form>
   );

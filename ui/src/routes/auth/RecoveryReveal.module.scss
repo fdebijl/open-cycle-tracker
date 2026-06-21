@@ -1,11 +1,9 @@
 .warning {
   font-size: 13px;
-  color: var(--oct-text);
-  background: var(--oct-bg-soft);
-  border: 1px solid var(--oct-border);
-  border-left: 3px solid var(--oct-red);
+  color: var(--oct-text-light);
+  background: var(--oct-red);
   border-radius: var(--oct-radius);
-  padding: 10px 12px;
+  padding: var(--oct-md) var(--oct-lg);
   margin: 0 0 16px;
 }
 
@@ -16,7 +14,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px 12px;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-family: ui-monospace, monospace;
 
   li {
     display: flex;
