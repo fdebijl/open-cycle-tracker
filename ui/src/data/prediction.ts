@@ -1,6 +1,7 @@
 import { addDays, differenceInCalendarDays, isWithinInterval } from 'date-fns';
 import { nextPeriodEstimate } from './cycles';
 import type { NextPeriodEstimate } from './cycles';
+import type { SymptothermalResult } from './symptothermal';
 import type { CycleMarkers, TrackingMode } from './types';
 
 /**
@@ -25,9 +26,21 @@ export const MIN_CYCLES_TO_LEARN = 3;
  * estimate tracks recent rhythm rather than ancient history. */
 export const ROLLING_WINDOW = 6;
 /** Onset gaps outside this range are treated as outliers and dropped (a skipped
- * or very late period, or a retroactively inserted onset - roadmap #12). */
+ * or very late period, or a retroactively inserted onset). This is a coarse
+ * outer sanity bound; the personalised, CLD-relative skip detection below
+ * (`flagSkippedCycles`) is the primary signal for "this gap is a skipped log". */
 export const MIN_PLAUSIBLE_LENGTH = 15;
 export const MAX_PLAUSIBLE_LENGTH = 90;
+/** Per-user median Cycle-Length-Difference (CLD) above which a user's cycles are
+ * "consistently highly variable" - the threshold from Li, Urteaga & Elhadad
+ * (npj Digital Medicine 2020, Clue dataset). Used to widen the prediction band
+ * and surface a regularity insight rather than feign day-level precision. */
+export const HIGH_CLD_MEDIAN_DAYS = 9;
+/** A cycle whose CLD exceeds the user's *own* median CLD by at least this many
+ * days is flagged as atypically long - empirically a skipped/unlogged period
+ * (≈89% contain no bleeding) rather than a true long cycle. A relative,
+ * per-user replacement for a fixed length cap (roadmap #12). */
+export const SKIP_CLD_EXCESS_DAYS = 10;
 /** Luteal phase length: days from ovulation to the next period onset. Fairly
  * constant across people, unlike the follicular phase, so we count back from the
  * predicted onset. */
@@ -90,6 +103,19 @@ export interface CycleStats {
   /** Longest recent onset-to-onset gap in days (including skips), or `null` with
    * fewer than two onsets. Lets the UI surface "a 60+ day gap was detected". */
   longestRecentGap: number | null;
+  /** Median Cycle-Length-Difference (|consecutive length diff|) over the same
+   * recent window the average is taken from - a robust variability metric, less
+   * outlier-sensitive than the std-dev. 0 when configured or < 2 lengths. */
+  medianCld: number;
+  /** Whether the user's cycles are "consistently highly variable"
+   * (`medianCld > HIGH_CLD_MEDIAN_DAYS`). Predictions should be framed as
+   * approximate for these users. */
+  isHighlyVariable: boolean;
+  /** How many of the recent observed lengths look like a skipped/unlogged period
+   * by the CLD-relative test (CLD exceeds the user's own median CLD by
+   * `SKIP_CLD_EXCESS_DAYS`). Distinct from `skippedCycleCount`, which is the
+   * absolute ≥60-day perimenopause signal. */
+  skippedCount: number;
 }
 
 /** Options that adapt the stats to a tracking mode. `asOf` (usually today) lets
@@ -108,11 +134,20 @@ export interface NextPeriodPrediction extends NextPeriodEstimate {
 }
 
 export interface FertilePrediction {
-  /** Predicted ovulation day, or `null` when it can't be estimated. */
+  /** Forward-predicted ovulation day (calendar method), or `null` when it can't
+   * be estimated. A point estimate is inherently imprecise (the true day spans a
+   * ~10-day range), so it is presented as the centre of a window, not a promise. */
   ovulation: Date | null;
   /** Inclusive fertile-window bounds, or `null`. */
   fertileStart: Date | null;
   fertileEnd: Date | null;
+  /** Whether symptothermal signals (BBT + cervical fluid) have *confirmed*
+   * ovulation for the current cycle. Only set by `refineFertileWindow`; absent on
+   * the bare forward forecast. Informational only - never a contraceptive signal. */
+  confirmed?: boolean;
+  /** The retrospectively confirmed ovulation day for the current cycle, when
+   * `confirmed`. Distinct from the forward `ovulation` estimate. */
+  confirmedOvulation?: Date | null;
 }
 
 export interface PmsPrediction {
@@ -121,8 +156,10 @@ export interface PmsPrediction {
   pmsEnd: Date | null;
 }
 
-/** A forecast label for an empty future slot/cell. */
-export type ForecastType = 'fertile' | 'ovulation' | 'pms';
+/** A forecast label for an empty future slot/cell. `ovulation-confirmed` is the
+ * retrospectively confirmed ovulation day (symptothermal) for the current cycle,
+ * distinct from the forward `ovulation` estimate. */
+export type ForecastType = 'fertile' | 'ovulation' | 'ovulation-confirmed' | 'pms';
 
 /** Every onset-to-onset gap, oldest → newest, with no plausibility filtering.
  * The latest onset yields no gap (it has no successor). Skipped cycles show up
@@ -176,6 +213,58 @@ function pickConfidence(
   return 'high';
 }
 
+/** Median of a list of numbers. 0 for an empty list. */
+function median(xs: number[]): number {
+  if (xs.length === 0) return 0;
+  const sorted = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+/** Cycle-Length-Differences: the absolute difference between each pair of
+ * consecutive observed lengths. Empty for fewer than two lengths. */
+export function cycleLengthDifferences(lengths: number[]): number[] {
+  const diffs: number[] = [];
+  for (let i = 1; i < lengths.length; i += 1) diffs.push(Math.abs(lengths[i] - lengths[i - 1]));
+  return diffs;
+}
+
+/** Per-user median CLD - a robust variability metric (Li/Urteaga/Elhadad).
+ * 0 when there are fewer than two lengths (no CLD to take). */
+export function medianCld(lengths: number[]): number {
+  return median(cycleLengthDifferences(lengths));
+}
+
+/** A recent observed length flagged as a likely skipped/unlogged period. */
+export interface SkipFlag {
+  /** Index into the `lengths` array passed in. */
+  index: number;
+  /** The flagged onset-to-onset length, in days. */
+  length: number;
+  /** Its CLD (difference from the previous length). */
+  cld: number;
+}
+
+/** Flag lengths whose CLD exceeds the user's own median CLD by at least
+ * `SKIP_CLD_EXCESS_DAYS` - a personalised "this gap is probably a skipped log"
+ * detector that adapts to each user's natural variability, unlike a fixed cap.
+ * `userMedianCld` is taken from the same window as `lengths`. */
+export function flagSkippedCycles(lengths: number[], userMedianCld: number): SkipFlag[] {
+  const diffs = cycleLengthDifferences(lengths);
+  const threshold = userMedianCld + SKIP_CLD_EXCESS_DAYS;
+  const byIndex = new Map<number, SkipFlag>();
+  for (let i = 0; i < diffs.length; i += 1) {
+    if (diffs[i] < threshold) continue;
+    // diffs[i] is the CLD between lengths[i] and lengths[i + 1]; the *longer* of
+    // the pair is the suspected skip. A single long cycle spikes the CLD on both
+    // sides, so dedupe by index and keep the larger CLD.
+    const index = lengths[i + 1] >= lengths[i] ? i + 1 : i;
+    const existing = byIndex.get(index);
+    if (!existing || diffs[i] > existing.cld) byIndex.set(index, { index, length: lengths[index], cld: diffs[i] });
+  }
+  return [...byIndex.values()].sort((a, b) => a.index - b.index);
+}
+
 /** Learn a typical cycle length from observed onsets, falling back to the
  * user's configured average until enough history has accumulated. In a
  * non-standard `mode` it also derives a `confidence` and surfaces skipped-cycle
@@ -214,10 +303,14 @@ export function cycleStats(
       confidence: pickConfidence(mode, 'configured', 0, openAmenorrhea, skippedCycleCount),
       skippedCycleCount,
       longestRecentGap,
+      medianCld: 0,
+      isHighlyVariable: false,
+      skippedCount: 0,
     };
   }
   const recent = observedLengths.slice(-ROLLING_WINDOW);
   const variability = stdDev(recent);
+  const recentMedianCld = medianCld(recent);
   return {
     observedLengths,
     averageLength: Math.round(mean(recent)),
@@ -227,6 +320,9 @@ export function cycleStats(
     confidence: pickConfidence(mode, 'learned', variability, openAmenorrhea, skippedCycleCount),
     skippedCycleCount,
     longestRecentGap,
+    medianCld: recentMedianCld,
+    isHighlyVariable: recentMedianCld > HIGH_CLD_MEDIAN_DAYS,
+    skippedCount: flagSkippedCycles(recent, recentMedianCld).length,
   };
 }
 
@@ -294,8 +390,12 @@ export function predictNextPeriod(lastOnset: Date | null, stats: CycleStats): Ne
   if (stats.confidence === 'unknown') return { date: null, daysUntil: null, windowStart: null, windowEnd: null };
   const estimate = nextPeriodEstimate(lastOnset, stats.averageLength);
   if (!estimate.date) return { ...estimate, windowStart: null, windowEnd: null };
+  // Widen the band for highly variable users (median CLD captures irregularity the
+  // std-dev can understate) and never below the perimenopause low-confidence floor;
+  // only ever widen, then cap so the overlay can't span an implausible range.
   const floor = stats.confidence === 'low' ? PERI_MIN_WINDOW_MARGIN : 0;
-  const margin = Math.max(Math.round(stats.variability), floor);
+  const raw = Math.max(stats.variability, stats.isHighlyVariable ? stats.medianCld : 0, floor);
+  const margin = Math.min(Math.round(raw), Math.floor(stats.averageLength / 2));
   return {
     ...estimate,
     windowStart: addDays(estimate.date, -margin),
@@ -317,6 +417,28 @@ export function predictFertileWindow(lastOnset: Date | null, stats: CycleStats):
     ovulation,
     fertileStart: addDays(ovulation, -FERTILE_PRE_DAYS),
     fertileEnd: addDays(ovulation, FERTILE_POST_DAYS),
+  };
+}
+
+/** Refine a forward fertile-window forecast with symptothermal confirmation for
+ * the *current* cycle. When the double-check (BBT + mucus) has confirmed
+ * ovulation, the confirmed day supersedes the forward estimate and the window's
+ * end is pulled in to the confirming day. Otherwise the forecast is returned
+ * unchanged - so this is safe to call on every cycle, confirmed or not.
+ * Informational only: the confirmation never implies an "infertile/safe" state. */
+export function refineFertileWindow(
+  predicted: FertilePrediction,
+  sympto: SymptothermalResult | null,
+): FertilePrediction {
+  if (!sympto?.confirmed || !sympto.ovulation) return predicted;
+  const confirmedOvulation = sympto.ovulation;
+  return {
+    ...predicted,
+    ovulation: confirmedOvulation,
+    fertileStart: addDays(confirmedOvulation, -FERTILE_PRE_DAYS),
+    fertileEnd: sympto.infertileFrom ?? addDays(confirmedOvulation, FERTILE_POST_DAYS),
+    confirmed: true,
+    confirmedOvulation,
   };
 }
 
@@ -344,6 +466,9 @@ export function predictPmsWindow(lastOnset: Date | null, stats: CycleStats): Pms
  * (deterministic; the reliability gates keep them from overlapping in practice).
  * `null` when the date falls outside every predicted window. */
 export function forecastDayType(date: Date, fertile?: FertilePrediction, pms?: PmsPrediction): ForecastType | null {
+  if (fertile?.confirmedOvulation && differenceInCalendarDays(date, fertile.confirmedOvulation) === 0) {
+    return 'ovulation-confirmed';
+  }
   if (fertile?.ovulation && differenceInCalendarDays(date, fertile.ovulation) === 0) return 'ovulation';
   if (fertile?.fertileStart && fertile.fertileEnd && isWithinInterval(date, { start: fertile.fertileStart, end: fertile.fertileEnd })) {
     return 'fertile';
@@ -359,6 +484,6 @@ export function forecastDayType(date: Date, fertile?: FertilePrediction, pms?: P
  * one `FertilePrediction`. */
 export function forecastMarkerEnabled(type: ForecastType, markers: CycleMarkers): boolean {
   if (type === 'fertile') return markers.fertile;
-  if (type === 'ovulation') return markers.ovulation;
+  if (type === 'ovulation' || type === 'ovulation-confirmed') return markers.ovulation;
   return markers.pms;
 }

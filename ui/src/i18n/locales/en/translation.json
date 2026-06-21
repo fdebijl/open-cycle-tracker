@@ -263,7 +263,10 @@
     "nextUnknown": "Your next period can't be predicted right now. Irregular and skipped cycles are normal around perimenopause.",
     "longGap": "Longest recent gap between periods: {{days}} days.",
     "fertileWindow": "Estimated fertile window: {{start}} – {{end}}",
-    "ovulation": " (ovulation ~{{date}})"
+    "ovulation": " (ovulation ~{{date}})",
+    "highlyVariable": "Your recent cycles vary a lot in length, so these predictions are rough estimates.",
+    "ovulationConfirmed": "Ovulation likely confirmed around {{date}}, from your temperature and cervical-fluid logs.",
+    "notContraceptive": "For understanding your cycle, not birth control — don’t rely on this to avoid pregnancy."
   },
   "insights": {
     "loading": "Loading insights…",

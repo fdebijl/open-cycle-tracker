@@ -6,6 +6,7 @@ import { CycleCircle } from '@/components/cycle/CycleCircle';
 import { CycleSetupForm } from '@/components/cycle/CycleSetupForm';
 import type { CycleSetupValues } from '@/components/cycle/CycleSetupForm';
 import {
+  useCurrentCycleSymptoDays,
   useCycles,
   useDays,
   useLogDay,
@@ -15,7 +16,8 @@ import {
   useUserSettings,
 } from '@/data/hooks';
 import { cycleOnset, cycleOnsets } from '@/data/cycles';
-import { cycleStats, predictFertileWindow, predictPmsWindow } from '@/data/prediction';
+import { cycleStats, predictFertileWindow, predictPmsWindow, refineFertileWindow } from '@/data/prediction';
+import { symptothermal } from '@/data/symptothermal';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH, DEFAULT_CYCLE_MARKERS } from '@/data/types';
 import styles from './CurrentCycle.module.scss';
 import { Button } from '@/components/Button';
@@ -38,6 +40,13 @@ export function CurrentCycle() {
   const { t } = useTranslation();
   const [setupError, setSetupError] = useState<string | null>(null);
 
+  // Derived before the early returns so the symptothermal hook (which runs its
+  // own queries) is always called in the same order, per the rules of hooks.
+  const current = cyclesQuery.data?.[0];
+  const allDays = daysQuery.data ?? [];
+  const days = allDays.filter((d) => d.cycleId === current?.id);
+  const symptoDays = useCurrentCycleSymptoDays(current?.id, days);
+
   if (cyclesQuery.isLoading || daysQuery.isLoading || settingsQuery.isLoading) {
     return <Spinner label={t('cycle.loading')} />;
   }
@@ -46,7 +55,6 @@ export function CurrentCycle() {
   }
 
   const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
-  const current = cyclesQuery.data?.[0];
 
   // No cycle yet: collect setup and bootstrap the first cycle.
   if (!current) {
@@ -73,8 +81,6 @@ export function CurrentCycle() {
     );
   }
 
-  const allDays = daysQuery.data ?? [];
-  const days = allDays.filter((d) => d.cycleId === current.id);
   const cycleStart = cycleOnset(days, periodDayIds);
 
   // Learn the average across every cycle's onset, then forecast off the current
@@ -91,8 +97,12 @@ export function CurrentCycle() {
   // slot. Fertile and ovulation share one prediction, so it's computed when
   // either is on; PMS is gated separately (and self-gates on reliability).
   const markers = settingsQuery.data?.markers ?? DEFAULT_CYCLE_MARKERS;
+  // Forward calendar forecast, then sharpened with symptothermal confirmation for
+  // the current cycle once enough BBT + mucus has been logged (no-op otherwise).
   const fertile =
-    markers.fertile || markers.ovulation ? predictFertileWindow(cycleStart, stats) : undefined;
+    markers.fertile || markers.ovulation
+      ? refineFertileWindow(predictFertileWindow(cycleStart, stats), symptothermal(symptoDays))
+      : undefined;
   const pms = markers.pms ? predictPmsWindow(cycleStart, stats) : undefined;
 
   const onLogDate = async (date: Date) => {

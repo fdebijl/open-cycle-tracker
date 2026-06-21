@@ -83,8 +83,8 @@ export function CycleCircle({
 
   const nextPeriod = predictNextPeriod(cycleStart, stats);
   const { daysUntil } = nextPeriod;
-  // The band shown to the user is the actual predicted window (which may be
-  // floored in perimenopause), not the raw variability.
+  // The band shown to the user is the actual predicted window (floored in
+  // perimenopause, widened for highly variable cycles), not the raw variability.
   const margin =
     nextPeriod.date && nextPeriod.windowEnd ? differenceInCalendarDays(nextPeriod.windowEnd, nextPeriod.date) : 0;
   // A tracked cycle whose next onset can't be forecast (amenorrhea / too little

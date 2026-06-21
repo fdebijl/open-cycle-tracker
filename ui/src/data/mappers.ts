@@ -42,6 +42,23 @@ export async function decryptFactor(dto: FactorDto, dek: Uint8Array): Promise<Fa
   return { id: dto.id, dayId: dto.dayId, categoryLevelId: dto.categoryLevelId, notes, value };
 }
 
+/** Decrypt only the numeric `value` of factors (e.g. BBT readings), keyed by day
+ * id - so the symptothermal engine can read temperatures without decrypting the
+ * full factor set. Factors with no value (or an unparseable one) are skipped; a
+ * day with several is collapsed to the last. */
+export async function decryptFactorValues(
+  dtos: { dayId: string; encValue: string | null }[],
+  dek: Uint8Array,
+): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  for (const dto of dtos) {
+    if (!dto.encValue) continue;
+    const n = Number(await decryptString(dto.encValue, dek));
+    if (Number.isFinite(n)) out.set(dto.dayId, n);
+  }
+  return out;
+}
+
 /** Prefer encrypted fields when present (user-owned), else the plaintext global. */
 export async function decryptCategory(dto: CategoryDto, dek: Uint8Array): Promise<Category> {
   return {

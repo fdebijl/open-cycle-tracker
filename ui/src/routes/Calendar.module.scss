@@ -90,6 +90,14 @@
     background: rgb(79 99 216 / 22%);
   }
 
+  /* Symptothermal-confirmed ovulation: backed by logged data, so it reads as a
+   * solid (not dashed) cell at full tint, unlike the dashed forecast cells. */
+  &[data-forecast='ovulation-confirmed'] {
+    border-style: solid;
+    border-color: #4f63d8;
+    background: rgb(79 99 216 / 38%);
+  }
+
   /* PMS: the most tentative forecast (a muted mauve), shown only when the cycle
    * is reliably predictable. */
   &[data-forecast='pms'] {

@@ -16,6 +16,9 @@ import type { Category, CategoryLevel, Day } from './types';
 export const FLOW_SLUG = 'flow';
 /** Stable slug of the global BBT category (rendered as a numeric reading). */
 export const BBT_SLUG = 'bbt';
+/** Stable slug of the global cervical-fluid category (the mucus signal used for
+ * symptothermal ovulation confirmation). */
+export const FLUID_SLUG = 'fluid';
 /** Flow levels at this ordinal or above count as a period (onset) day; below it
  * (Spotting = order 0) is spotting only and does not anchor a cycle. */
 export const FLOW_PERIOD_MIN_ORDER = 1;

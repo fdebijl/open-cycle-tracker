@@ -3,9 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useDateFnsLocale } from '@/i18n/format';
 import { Spinner } from '@/components/Spinner';
 import { InsightsSection } from '@/components/insights/InsightsSection';
-import { useCycles, useDays, usePeriodDayIds, useUserSettings } from '@/data/hooks';
+import { useCurrentCycleSymptoDays, useCycles, useDays, usePeriodDayIds, useUserSettings } from '@/data/hooks';
 import { cycleOnset, cycleOnsets } from '@/data/cycles';
-import { cycleStats, predictFertileWindow, predictNextPeriod, SKIPPED_CYCLE_MIN_GAP } from '@/data/prediction';
+import {
+  cycleStats,
+  predictFertileWindow,
+  predictNextPeriod,
+  refineFertileWindow,
+  SKIPPED_CYCLE_MIN_GAP,
+} from '@/data/prediction';
+import { symptothermal } from '@/data/symptothermal';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import styles from './Info.module.scss';
 
@@ -19,13 +26,17 @@ export function Info() {
   const settingsQuery = useUserSettings();
   const periodDayIds = usePeriodDayIds();
 
+  // Derived before the early return so the symptothermal hook is always called in
+  // the same order (rules of hooks).
+  const current = cyclesQuery.data?.[0];
+  const days = (daysQuery.data ?? []).filter((d) => d.cycleId === current?.id);
+  const symptoDays = useCurrentCycleSymptoDays(current?.id, days);
+
   if (cyclesQuery.isLoading || daysQuery.isLoading || settingsQuery.isLoading) {
     return <Spinner label={t('info.loading')} />;
   }
 
   const allDays = daysQuery.data ?? [];
-  const current = cyclesQuery.data?.[0];
-  const days = allDays.filter((d) => d.cycleId === current?.id);
   const periodCount = days.filter((d) => periodDayIds.has(d.id)).length;
 
   const averageCycleLength = settingsQuery.data?.averageCycleLength ?? DEFAULT_AVERAGE_CYCLE_LENGTH;
@@ -36,7 +47,7 @@ export function Info() {
   const stats = cycleStats(onsets, averageCycleLength, { mode, asOf: new Date() });
   const cycleStart = cycleOnset(days, periodDayIds);
   const { daysUntil: untilNext } = predictNextPeriod(cycleStart, stats);
-  const fertile = predictFertileWindow(cycleStart, stats);
+  const fertile = refineFertileWindow(predictFertileWindow(cycleStart, stats), symptothermal(symptoDays));
 
   // Observed range, shown only once the average is learned from real cycles.
   const range =
@@ -95,15 +106,26 @@ export function Info() {
       {stats.longestRecentGap != null && stats.longestRecentGap >= SKIPPED_CYCLE_MIN_GAP && (
         <p className={styles.forecast}>{t('info.longGap', { days: stats.longestRecentGap })}</p>
       )}
+      {stats.isHighlyVariable && <p className={styles.note}>{t('info.highlyVariable')}</p>}
 
-      {fertile.fertileStart && fertile.fertileEnd && (
-        <p className={styles.forecast}>
-          {t('info.fertileWindow', {
-            start: format(fertile.fertileStart, 'MMM d', { locale }),
-            end: format(fertile.fertileEnd, 'MMM d', { locale }),
-          })}
-          {fertile.ovulation && t('info.ovulation', { date: format(fertile.ovulation, 'MMM d', { locale }) })}
-        </p>
+      {fertile.confirmed && fertile.confirmedOvulation ? (
+        <>
+          <p className={styles.forecast}>
+            {t('info.ovulationConfirmed', { date: format(fertile.confirmedOvulation, 'MMM d', { locale }) })}
+          </p>
+          <p className={styles.disclaimer}>{t('info.notContraceptive')}</p>
+        </>
+      ) : (
+        fertile.fertileStart &&
+        fertile.fertileEnd && (
+          <p className={styles.forecast}>
+            {t('info.fertileWindow', {
+              start: format(fertile.fertileStart, 'MMM d', { locale }),
+              end: format(fertile.fertileEnd, 'MMM d', { locale }),
+            })}
+            {fertile.ovulation && t('info.ovulation', { date: format(fertile.ovulation, 'MMM d', { locale }) })}
+          </p>
+        )
       )}
 
       <InsightsSection />
