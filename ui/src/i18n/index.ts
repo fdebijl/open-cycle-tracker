@@ -8,11 +8,6 @@ import en from './locales/en/translation.json';
  * Single-namespace (`translation`) i18next setup, imported once from `main.tsx`
  * before the app renders. `react-i18next` reads this global instance, so no
  * extra React provider is required.
- *
- * Language is detected from `localStorage` first (the persisted user choice from
- * the Settings switcher), then the browser, then `DEFAULT_LOCALE`. It's a
- * non-sensitive UI preference, so `localStorage` is fine — no server round-trip
- * and nothing to encrypt.
  */
 i18n
   .use(LanguageDetector)

@@ -16,7 +16,7 @@ function tempSeries(low: number, highs: number[]): SymptoDay[] {
 }
 
 describe('evaluateTempShift', () => {
-  it('confirms the regular 3-over-6 rule (3rd high ≥ 0.2 °C over the coverline)', () => {
+  it('confirms the regular 3-over-6 rule (3rd high >= 0.2 °C over the coverline)', () => {
     const shift = evaluateTempShift(tempSeries(36.4, [36.6, 36.7, 36.7]));
     expect(shift).not.toBeNull();
     expect(shift?.rule).toBe('regular');
@@ -33,7 +33,7 @@ describe('evaluateTempShift', () => {
   });
 
   it('tolerates a single dip via the second exception', () => {
-    // high, dip below coverline, high, then a 4th reading ≥ 0.2 °C above.
+    // high, dip below coverline, high, then a 4th reading >= 0.2 °C above.
     const shift = evaluateTempShift(tempSeries(36.4, [36.6, 36.3, 36.7, 36.8]));
     expect(shift?.rule).toBe('second-exception');
     expect(shift?.confirmedDate).toEqual(addDays(BASE, 9));

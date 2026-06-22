@@ -33,8 +33,6 @@ import { symptothermal } from '@/data/symptothermal';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH, DEFAULT_CYCLE_MARKERS } from '@/data/types';
 import styles from './Calendar.module.scss';
 
-/** Month grid of tracked days, colored by day type; clicking a tracked day opens
- * its editor. Replaces the Ember ember-power-calendar view. */
 export function Calendar() {
   const { t } = useTranslation();
   const locale = useDateFnsLocale();
@@ -113,7 +111,7 @@ export function Calendar() {
       navigate(`/days/${existing.id}`);
       return;
     }
-    // No cycle yet → send the user to set one up first.
+    // No cycle yet > send the user to set one up first.
     if (!currentCycleId) {
       navigate('/');
       return;

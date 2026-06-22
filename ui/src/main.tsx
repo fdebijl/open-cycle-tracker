@@ -10,8 +10,7 @@ import './styles/global.scss';
 
 const queryClient = new QueryClient();
 
-// Resolve the runtime API origin (/config.js) before mounting, so the first
-// request can't race an unconfigured API_URL.
+// Resolve the runtime API origin (/config.js) before mounting, so the first request can't race an unconfigured API_URL.
 async function bootstrap() {
   await loadRuntimeConfig();
 

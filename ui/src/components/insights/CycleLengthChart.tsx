@@ -14,7 +14,7 @@ const PW = 90; // plot width
 const PH = 44; // plot height (bottom edge at PY0 + PH = 48)
 
 /**
- * Cycle-length history as vertical bars (one per completed cycle, oldest →
+ * Cycle-length history as vertical bars (one per completed cycle, oldest >
  * newest). When `showBand` is set, a rolling-average line and a ± variability
  * band are overlaid - that's the regularity trend. Hand-rolled SVG, matching the
  * `CycleCircle` / `Spinner` convention (no charting dependency).
@@ -38,7 +38,7 @@ export function CycleLengthChart({ points, showBand }: { points: CycleLengthPoin
   // Label every cycle when there are few; thin out when there are many.
   const labelEvery = Math.ceil(n / 6);
 
-  // Band polygon: left→right along the high edge, then right→left along the low
+  // Band polygon: left>right along the high edge, then right>left along the low
   // edge, forming a filled ribbon around the rolling average.
   const bandPath =
     points.map((p, i) => `${centerX(i)},${yScale(p.bandHigh)}`).join(' ') +

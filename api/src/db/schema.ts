@@ -90,7 +90,7 @@ export const users = pgTable(
     wrappedDek: cipher('wrapped_dek').notNull(),
     wrappedDekRecovery: cipher('wrapped_dek_recovery').notNull(),
 
-    // --- Duress / decoy (roadmap #14) ----------------------------------------
+    // --- Duress / decoy  ----------------------------------------
     // Optional extra login passwords, configured from an unlocked real session.
     // All three are null on accounts that have not opted in.
     //
@@ -105,14 +105,14 @@ export const users = pgTable(
     duressUserId: uuid('duress_user_id').references((): AnyPgColumn => users.id, {
       onDelete: 'set null',
     }),
-    // Verifier for the duress password → unlocks the decoy (shadow) vault.
+    // Verifier for the duress password > unlocks the decoy (shadow) vault.
     duressAuthHash: text('duress_auth_hash'),
-    // Verifier for the destruction password → silently wipes the account.
+    // Verifier for the destruction password > silently wipes the account.
     destructAuthHash: text('destruct_auth_hash'),
 
     isAdmin: boolean('is_admin').notNull().default(false),
 
-    // Encrypted user profile (parity with the Rails name/info/settings columns).
+    // Encrypted user profile
     // Optional - clients set them after signup. Server cannot read them.
     encName: cipher('enc_name'),
     encInfo: cipher('enc_info'),
@@ -160,9 +160,6 @@ export const cycles = pgTable('cycles', {
  * encrypted (`encDate`, `encNotes`); `order` stays plaintext for stable sorting.
  * There is no "day type" — the period signal is derived client-side from the
  * ordinal Flow category's factors, and fertile/ovulation are a computed forecast.
- * NOTE: the Rails app had a UNIQUE index on `date`; that's impossible on
- * non-deterministic ciphertext, so per-cycle date uniqueness is enforced
- * client-side.
  */
 export const days = pgTable('days', {
   id: uuid('id')

@@ -5,12 +5,6 @@ import { useCreateFactor, useDeleteFactor, useUpdateFactor } from '@/data/hooks'
 import type { Category, CategoryLevel, Factor } from '@/data/types';
 import styles from './CategoryRow.module.scss';
 
-/**
- * A numeric reading (basal body temperature) for a day. Unlike a normal category
- * - which toggles discrete level factors - BBT is a single number, stored as the
- * encrypted `value` on one factor against the category's single level. Commits on
- * blur (or Enter); clearing the field deletes the reading.
- */
 export function BbtField({
   dayId,
   category,
@@ -29,8 +23,6 @@ export function BbtField({
   const value = factor?.value ?? null;
   const [text, setText] = useState(value != null ? String(value) : '');
 
-  // Resync the input when the stored reading changes (e.g. after a refetch) by
-  // tracking the previous value and adjusting during render - no effect needed.
   const [lastValue, setLastValue] = useState(value);
   if (value !== lastValue) {
     setLastValue(value);

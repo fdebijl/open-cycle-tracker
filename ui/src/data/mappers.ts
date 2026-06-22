@@ -8,7 +8,6 @@ import type { Category, CategoryLevel, Day, Factor, UserSettings } from './types
  * The decryption boundary. API DTOs carry opaque base64 ciphertext; these
  * functions turn them into the plaintext domain models the UI renders (and
  * back), using the in-memory DEK. Dates are stored encrypted as `yyyy-MM-dd`
- * (the tracked calendar day - no time component, no timezone ambiguity).
  */
 
 const ISO_DATE = 'yyyy-MM-dd';
@@ -25,6 +24,7 @@ export async function encryptDayFields(
 ): Promise<{ encDate?: string; encNotes?: string | null }> {
   const out: { encDate?: string; encNotes?: string | null } = {};
   if (fields.date !== undefined) out.encDate = await encryptString(format(fields.date, ISO_DATE), dek);
+
   // A null/empty note clears it (sent as null); a non-empty note is encrypted.
   if (fields.notes !== undefined) {
     out.encNotes = fields.notes ? await encryptString(fields.notes, dek) : null;
@@ -43,7 +43,7 @@ export async function decryptFactor(dto: FactorDto, dek: Uint8Array): Promise<Fa
 }
 
 /** Decrypt only the numeric `value` of factors (e.g. BBT readings), keyed by day
- * id - so the symptothermal engine can read temperatures without decrypting the
+ * id, so the symptothermal engine can read temperatures without decrypting the
  * full factor set. Factors with no value (or an unparseable one) are skipped; a
  * day with several is collapsed to the last. */
 export async function decryptFactorValues(

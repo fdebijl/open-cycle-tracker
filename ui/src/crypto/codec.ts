@@ -2,7 +2,6 @@ import { entropyToMnemonic, mnemonicToEntropy } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { getSodium } from './sodium';
 
-/** Standard, padded base64 (the contract's transport encoding for blobs). */
 export async function toBase64(bytes: Uint8Array): Promise<string> {
   const sodium = await getSodium();
   return sodium.to_base64(bytes, sodium.base64_variants.ORIGINAL);
@@ -24,11 +23,7 @@ export function utf8Decode(bytes: Uint8Array): string {
   return decoder.decode(bytes);
 }
 
-/**
- * Encode the 32-byte recovery secret as a 24-word BIP39 mnemonic for the user
- * to write down. The mnemonic is purely a reversible display encoding of the
- * raw secret - the secret bytes, not the words, are what feed the recovery KDF.
- */
+/** Encode the 32-byte recovery secret as a 24-word BIP39 mnemonic for the user to write down. */
 export function secretToMnemonic(secret: Uint8Array): string {
   return entropyToMnemonic(secret, wordlist);
 }

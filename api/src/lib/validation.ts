@@ -55,7 +55,7 @@ export const kdfParamsSchema = z.object({
   memLimit: z.number().int().positive(),
 });
 
-/** A ciphertext field blob (nonce || ciphertext+tag) → Buffer for storage. */
+/** A ciphertext field blob (nonce || ciphertext+tag) > Buffer for storage. */
 export const cipherField = base64Bytes({ maxLen: MAX_CIPHER_BYTES });
 
 export const uuidString = z.string().uuid();

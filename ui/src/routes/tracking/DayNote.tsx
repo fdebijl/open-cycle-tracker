@@ -12,10 +12,6 @@ export function DayNote({ dayId, notes }: { dayId: string; notes: string | null 
   const { t } = useTranslation();
   const updateDay = useUpdateDay();
   const [text, setText] = useState(notes ?? '');
-
-  // React idiom: when the persisted note changes (e.g. after a refetch), reset
-  // the editable text by tracking the previous prop and adjusting during render
-  // - no effect needed (see react.dev "You Might Not Need an Effect").
   const [lastNotes, setLastNotes] = useState(notes);
   if (notes !== lastNotes) {
     setLastNotes(notes);

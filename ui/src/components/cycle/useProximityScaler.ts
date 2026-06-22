@@ -2,21 +2,16 @@ import { useEffect } from 'react';
 import type { RefObject } from 'react';
 
 /**
- * Scales day markers up as the pointer approaches them - the React port of the
- * Ember `child-proximity-scaler` modifier. Mutates child DOM nodes directly
+ * Scales day markers up as the pointer approaches them. Mutates child DOM nodes directly
  * (selected by `[data-day-marker]`) rather than through React state, so moving
  * the pointer doesn't re-render 28 markers per frame.
  */
 
-// A gentler falloff over a wider radius reads less twitchy than the original
-// steep ramp; the smaller peak scale keeps neighbouring dots from overlapping.
 const SCALE_RADIUS_PX = 120;
 const MIN_EM = 1;
 const MAX_EM = 3;
 const SHOW_LABEL_THRESHOLD = 0.35;
 
-/** Ease the linear distance factor so the size grows smoothly near the pointer
- * rather than snapping up the moment a marker enters the radius. */
 function ease(t: number): number {
   return t * t * (3 - 2 * t);
 }

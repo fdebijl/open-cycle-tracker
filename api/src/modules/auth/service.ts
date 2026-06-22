@@ -117,7 +117,7 @@ export async function login(input: LoginInput): Promise<AuthResult> {
   // The client derives ONE authHash (from the account's single saltAuth), so the
   // same value is compared against every configured verifier. Run a fixed number
   // of argon2 verifications regardless of which exist, so timing leaks neither
-  // which password matched nor how many an account has (roadmap #14).
+  // which password matched nor how many an account has.
   const [realOk, duressOk, destructOk] = await Promise.all([
     verifyAuthHash(user?.authHash ?? DUMMY_ARGON, input.authHash),
     verifyAuthHash(user?.duressAuthHash ?? DUMMY_ARGON, input.authHash),
@@ -127,14 +127,14 @@ export async function login(input: LoginInput): Promise<AuthResult> {
   // Real password wins (in case an account misconfigures a duplicate).
   if (user && realOk) return authResultFor(user);
 
-  // Duress password → hand back the decoy (shadow) vault's session. The existing
+  // Duress password > hand back the decoy (shadow) vault's session. The existing
   // per-user scoping then isolates the decoy's data for the whole session.
   if (user && duressOk && user.duressUserId) {
     const shadow = await db.query.users.findFirst({ where: eq(users.id, user.duressUserId) });
     if (shadow) return authResultFor(shadow);
   }
 
-  // Destruction password → silently wipe, then fail exactly like a wrong password.
+  // Destruction password > silently wipe, then fail exactly like a wrong password.
   if (user && destructOk) {
     await destroyAccount(user);
   }
@@ -213,7 +213,7 @@ export async function recoverInit(input: RecoverInitInput): Promise<{
 
 /**
  * Configure duress (decoy-vault) and destruction passwords from an authenticated
- * (real) session (roadmap #14). Each field is tri-state: undefined leaves it
+ * (real) session. Each field is tri-state: undefined leaves it
  * unchanged, `null` clears it, a value sets it. The decoy is created as a
  * separate "shadow" users row that owns its own data; the primary points at it
  * via `duressUserId` and stores the verifiers.

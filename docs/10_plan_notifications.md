@@ -12,7 +12,7 @@ shape every option:
    know when to fire a reminder* unless the client leaks the schedule to it.
 2. **The app is not a PWA and the DEK is wiped on background.** No manifest, no
    service worker (`ui/` is a React 19 + Vite SPA served by nginx). The
-   in-memory DEK is zeroed on `visibilitychange→hidden` and after 5 min idle
+   in-memory DEK is zeroed on `visibilitychange>hidden` and after 5 min idle
    (`ui/src/stores/vault.ts`, `AUTO_LOCK_MS` in `ui/src/config/env.ts`). A
    backgrounded service worker has **no key** to decrypt anything.
 

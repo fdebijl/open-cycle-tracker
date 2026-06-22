@@ -5,12 +5,11 @@ import type { AuthUser } from '@/api/types';
 
 /**
  * The in-memory key vault. This is the security core of the web client: the DEK
- * lives **only here, in memory** - never localStorage/IndexedDB. A full page
- * reload wipes everything (so the user re-logs in on each launch, per the
- * contract); an auto-lock wipes just the DEK while keeping the non-secret
+ * lives only here, in memory, never in localStorage/IndexedDB. A full page
+ * reload wipes everything (so the user re-logs in on each launch);
+ * an auto-lock wipes just the DEK while keeping the non-secret
  * wrapping material so the user can re-unlock with their password alone.
  */
-
 export interface Session {
   token: string;
   user: AuthUser;

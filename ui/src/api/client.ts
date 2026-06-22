@@ -31,10 +31,8 @@ async function request<T>(method: Method, path: string, body?: unknown): Promise
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // An authenticated request rejected as unauthorized means our token is dead -
-  // drop the whole session so the app falls back to the login screen. We only
-  // do this when a session existed, so a 401 from /auth/login (bad password)
-  // surfaces as an error instead of a spurious logout.
+  // An authenticated request rejected as unauthorized means our token is dead
+  // drop the whole session so the app falls back to the login screen.
   if (res.status === 401 && session) {
     useVault.getState().logout();
   }

@@ -21,7 +21,7 @@ describe('cycleOnset', () => {
       day({ id: 'd1', date: new Date(2026, 0, 1) }),
       day({ id: 'd0', date: new Date(2025, 11, 28) }),
     ];
-    // d1 and d3 are period (flow ≥ Light); d0 (the earliest dated) is not.
+    // d1 and d3 are period (flow >= Light); d0 (the earliest dated) is not.
     expect(cycleOnset(days, new Set(['d1', 'd3']))).toEqual(new Date(2026, 0, 1));
   });
 
@@ -48,7 +48,7 @@ describe('flow period detection', () => {
     { id: 'cramps', categoryId: 'pain', order: 0, name: 'Cramps', icon: '' },
   ];
 
-  it('flowPeriodLevelIds returns flow levels at intensity ≥ Light (excludes spotting)', () => {
+  it('flowPeriodLevelIds returns flow levels at intensity >= Light (excludes spotting)', () => {
     expect(flowPeriodLevelIds(categories, levels)).toEqual(new Set(['light', 'heavy']));
   });
 

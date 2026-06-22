@@ -41,7 +41,7 @@ export function CurrentCycle() {
   const [setupError, setSetupError] = useState<string | null>(null);
 
   // Derived before the early returns so the symptothermal hook (which runs its
-  // own queries) is always called in the same order, per the rules of hooks.
+  // own queries) is always called in the same order.
   const current = cyclesQuery.data?.[0];
   const allDays = daysQuery.data ?? [];
   const days = allDays.filter((d) => d.cycleId === current?.id);

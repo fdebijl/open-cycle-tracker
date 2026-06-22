@@ -68,7 +68,7 @@ KEK are unrelated.
 
 1. `dek = randombytes_buf(32)`
 2. `saltAuth, saltKek, saltRecovery = randombytes_buf(16) ×3`
-3. `recoveryCode = randombytes_buf(32)` → display to user once (e.g. base64 or
+3. `recoveryCode = randombytes_buf(32)` > display to user once (e.g. base64 or
    a mnemonic). Never stored by the client.
 4. `kek = Argon2id(password, saltKek)`; `wrappedDek = nonce || AEAD(dek, kek)`
 5. `recoveryKek = Argon2id(recoveryCode, saltRecovery)`;
@@ -82,12 +82,12 @@ The client keeps `dek` in memory only.
 
 ### Login
 
-1. POST `/auth/prelogin { identifier }` → `{ saltAuth (b64), kdfParams }`.
+1. POST `/auth/prelogin { identifier }` > `{ saltAuth (b64), kdfParams }`.
    For unknown identifiers the server returns a **deterministic pseudo-salt**
    (`HMAC-SHA256(SERVER_SECRET, identifier)` truncated to 16 bytes) so attackers
    cannot enumerate accounts by observing whether a salt is returned.
 2. `authHash = Argon2id(password, saltAuth)`
-3. POST `/auth/login { identifier, authHash (b64) }` → on success
+3. POST `/auth/login { identifier, authHash (b64) }` > on success
    `{ token, saltKek (b64), wrappedDek (b64), kdfParams }`.
 4. `kek = Argon2id(password, saltKek)`; `dek = AEAD_open(wrappedDek, kek)`.
    Hold `dek` in memory only.

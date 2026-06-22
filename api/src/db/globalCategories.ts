@@ -3,19 +3,17 @@ import type { Database } from './index.js';
 import { categories, categoryLevels } from './schema.js';
 
 /**
- * The global, system-defined categories and their levels. NOT user secrets, so
- * stored in plaintext and readable by everyone.
+ * The global, system-defined categories and their levels. NOT user secrets, so stored in plaintext and readable by everyone.
  *
- * Evidence-based coverage (high + medium priority) drawn from Li et al. 2020's
- * analysis of 378k Clue users - see docs/symptom-tracking.md. Each category
- * carries a stable `slug`: most are cosmetic, but the client keys real behaviour
- * off two of them - `flow` is the period/onset signal (an ordinal scale that
- * replaces the old Bleeding + Spotting categories and the `period` day type) and
- * `bbt` renders a numeric input whose reading lives in the (encrypted)
- * `factors.encValue` rather than a discrete level.
+ * Each category carries a stable `slug`: most are cosmetic, but the client keys real behaviour
+ * off two of them:
+ * - `flow`, which is the period/onset signal (an ordinal scale that replaces the old Bleeding + Spotting categories and the `period` day type)
+ * - `bbt`, which renders a numeric input whose reading lives in the (encrypted) `factors.encValue` rather than a discrete level.
  *
  * Level `order` is the ordinal position within the category. It's meaningful for
  * ordered scales (Flow, Sleep) and harmless display order for the rest.
+ *
+ * TODO: The names are currently hardcoded here, but ideally the UI should use the slug as an i18n key
  */
 export const GLOBAL_CATEGORIES: {
   slug: string;

@@ -51,10 +51,10 @@ The Stages of Reproductive Aging Workshop +10 (Harlow et al., 2012) is the
 gold-standard staging framework and, usefully, gives **computable thresholds** off
 menstrual-cycle characteristics alone (labs/FSH are secondary and assay-dependent):
 
-- **Early menopausal transition (stage −2)** — a *persistent* difference of ≥7
+- **Early menopausal transition (stage −2)** — a *persistent* difference of >=7
   days in length between consecutive cycles ("persistent" = recurs within 10
   cycles).
-- **Late menopausal transition (stage −1)** — amenorrhea of ≥60 days. The
+- **Late menopausal transition (stage −1)** — amenorrhea of >=60 days. The
   ReSTAGE Collaboration (Harlow et al., 2006) validated 60 days over the older
   90-day rule.
 - **Postmenopause** — 12 months of amenorrhea.
@@ -84,12 +84,12 @@ Guiding choices:
 - **Confidence, not deletion.** `cycleStats` derives a `confidence`
   (`high | low | unknown`). `standard` is always `high`, so its predictions are
   byte-for-byte unchanged. Perimenopause downgrades to `low` (band shown but
-  widened, with a floor) or `unknown` (suppressed → UI shows "unknown" instead of
+  widened, with a floor) or `unknown` (suppressed > UI shows "unknown" instead of
   a fabricated date).
-- **Long gaps are signal, not error.** In peri, a gap ≥60 days is treated as a
+- **Long gaps are signal, not error.** In peri, a gap >=60 days is treated as a
   skipped cycle: kept *out* of the learned average (so it can't inflate it) but
   surfaced via `skippedCycleCount` / `longestRecentGap`, plus an open-gap
-  (last onset → today) check so an in-progress amenorrhea also counts.
+  (last onset > today) check so an in-progress amenorrhea also counts.
 - **Suggestive staging only (v1).** `classifyMenopausalStage` implements the
   STRAW+10 thresholds and is used for a single gentle banner suggesting peri mode.
   The full staging UI is deferred — see roadmap #34.

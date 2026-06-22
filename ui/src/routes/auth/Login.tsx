@@ -9,7 +9,6 @@ import { loginAccount } from '@/auth/session';
 import { Button } from '@/components/Button';
 
 export function Login() {
-  // Controlled inputs: React holds the value in state and the input reflects it.
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);

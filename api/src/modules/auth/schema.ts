@@ -67,7 +67,7 @@ export const recoverSchema = z.object({
 });
 
 /**
- * Configure duress/decoy + destruction passwords (authenticated; roadmap #14).
+ * Configure duress/decoy + destruction passwords.
  * `shadow` is the full envelope for the decoy's own (separate) users row; the
  * server assigns its identifier. Each top-level field is tri-state:
  * absent = leave unchanged, `null` = clear, value = set.

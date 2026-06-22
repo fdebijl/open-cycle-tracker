@@ -2,15 +2,6 @@ import { deriveKeyRaw } from './primitives';
 import type { KdfParams } from './types';
 import type { DeriveRequest, DeriveResponse } from './worker';
 
-/**
- * Worker-backed Argon2id derivation. In a browser the work is offloaded to a
- * dedicated Web Worker so the slow, memory-hard KDF never janks the UI. In Node
- * / test environments (no `Worker`), it falls back to deriving inline.
- *
- * This is the function the rest of the app should call - never `deriveKeyRaw`
- * directly, so derivations stay off the main thread.
- */
-
 let worker: Worker | null = null;
 let nextId = 0;
 const pending = new Map<number, { resolve: (key: Uint8Array) => void; reject: (err: Error) => void }>();
@@ -35,6 +26,11 @@ function getWorker(): Worker {
   return worker;
 }
 
+/**
+ * Derive a key from a password and salt, using argon2id.
+ *
+ * This function runs in a worker to prevent the slow, memory-hard KDF from slowing down the UI.
+ */
 export async function deriveKey(
   password: string | Uint8Array,
   salt: Uint8Array,

@@ -2,7 +2,7 @@
  * Encode a `bytea` ciphertext column to base64 for JSON, preserving null.
  *
  * Drizzle returns bytea differently depending on the query path:
- *  - `db.select()` / `.returning()` → a Node `Buffer`
+ *  - `db.select()` / `.returning()` > a Node `Buffer`
  *  - relational queries (`db.query.x.findFirst({ with })`) build nested rows
  *    via JSON aggregation in Postgres, which emits bytea as a hex string of the
  *    form `\x<hex>`.

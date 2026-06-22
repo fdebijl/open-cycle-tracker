@@ -106,7 +106,7 @@ config/    env.ts (VITE_API_URL, AUTO_LOCK_MS).
 ### Vault & key hygiene (`src/stores/vault.ts`)
 The DEK lives **only in this Zustand store, in memory** - never
 localStorage/IndexedDB. State: `session` (token + user + wrapping material) and
-`dek`. A full reload wipes everything → re-login each launch. **Auto-lock**
+`dek`. A full reload wipes everything > re-login each launch. **Auto-lock**
 (`installAutoLock`, called once from `AppRoutes`) wipes just the DEK on
 inactivity (`AUTO_LOCK_MS`) and on tab-hidden (`visibilitychange`), keeping the
 non-secret wrapping material so the user can re-unlock with their password alone
@@ -137,7 +137,7 @@ Composes crypto + API + vault so screens stay thin: `registerAccount`,
 `logoutAccount`, `deleteAccount`.
 
 ### Routing (`src/routes/AppRoutes.tsx`)
-Guards: `RequireUnlocked` (needs session **and** DEK → else `/unlock` or
+Guards: `RequireUnlocked` (needs session **and** DEK > else `/unlock` or
 `/login`), `RequireSession` (the unlock screen), `PublicOnly` (auth screens).
 Routes: `/login /register /recover /unlock` (public) and, under `AppLayout`:
 `/` (current cycle), `/cycles/:id`, `/days/:id`, `/today` (resolver), `/calendar`,

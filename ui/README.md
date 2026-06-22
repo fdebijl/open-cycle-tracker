@@ -3,7 +3,6 @@
 The Open Cycle Tracker web client. A full React rewrite that replaced the
 original Ember app. Its defining feature is **client-side end-to-end
 encryption**: the server stores only opaque ciphertext and never holds a key.
-See `for_claude/encryption.md` for the full contract.
 
 ## Stack
 
@@ -61,15 +60,3 @@ re-unlock with their password alone.
 - `src/auth/session.ts` - login / signup / unlock / recover / change-password.
 - `src/stores/vault.ts` - in-memory key vault + auto-lock.
 - `src/routes/`, `src/components/` - screens and UI.
-
-## Status - rewrite complete
-
-- **Auth + crypto:** register (one-time recovery phrase), login, unlock, logout,
-  **password change**, **account recovery** (all wired to the API).
-- **Tracker:** cycle circle (proximity-scaled day markers), current/show cycle,
-  day editor (phase + factor toggling).
-- **Phase 3:** calendar (month grid), info (stats), settings (account, password
-  change, hold-to-delete account).
-
-Tests: crypto envelope round-trip + no-plaintext assertions, and DTO↔domain
-mapper tests.

@@ -5,8 +5,7 @@ let readyPromise: Promise<typeof _sodium> | null = null;
 /**
  * Returns the initialized libsodium instance. We use the **sumo** build because
  * the standard `libsodium-wrappers` build omits `crypto_pwhash` (Argon2id),
- * which this app's key derivation depends on. Safe to call repeatedly - the
- * `ready` promise resolves once and is cached.
+ * which this app's key derivation depends on. Safe to call repeatedly.
  */
 export function getSodium(): Promise<typeof _sodium> {
   if (!readyPromise) {

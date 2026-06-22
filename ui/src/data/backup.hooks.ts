@@ -28,14 +28,6 @@ import {
 import type { BackupDocument, ImportCounts } from './backup';
 import type { Cycle } from './types';
 
-/**
- * I/O orchestration around the pure `backup.ts` core: gather + decrypt for
- * export, and parse + decrypt + re-create for import. Both re-encrypt under the
- * current session's DEK, so nothing plaintext is ever sent to the server.
- */
-
-/** Trigger a browser download of `text` as a file. The app has no other file
- * handling, so this is intentionally minimal. */
 function downloadTextFile(filename: string, text: string) {
   const blob = new Blob([text], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -53,8 +45,7 @@ function backupFilename(encrypted: boolean): string {
   return `open-cycle-tracker-backup-${stamp}-${encrypted ? 'encrypted' : 'plaintext'}.json`;
 }
 
-/** Export the full dataset as an encrypted (recovery-phrase-unlocked) or
- * plaintext JSON file and trigger its download. */
+/** Export the full dataset as an encrypted (recovery-phrase-unlocked) or plaintext JSON file and trigger its download. */
 export function useExportBackup() {
   const dek = useVault((s) => s.dek);
   const session = useVault((s) => s.session);

@@ -11,8 +11,7 @@ import { Button } from '@/components/Button';
 
 /**
  * Shown after an auto-lock: the session (token) is still held, but the DEK was
- * wiped from memory. The user re-enters their password to re-derive it - no
- * network round-trip needed.
+ * wiped from memory. The user re-enters their password to re-derive it.
  */
 export function Unlock() {
   const identifier = useVault((s) => s.session?.user.identifier);

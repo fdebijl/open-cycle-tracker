@@ -27,7 +27,7 @@ export function DayTracker() {
   const deleteFactor = useDeleteFactor(id ?? '');
 
   // Group levels under their category, ordered by their ordinal `order` so
-  // scales like Flow read spotting → heavy.
+  // scales like Flow read spotting > heavy.
   const levelsByCategory = useMemo(() => {
     const map = new Map<string, CategoryLevel[]>();
     for (const level of levelsQuery.data ?? []) {
