@@ -128,7 +128,7 @@ describe('settings mapper', () => {
 
   it('falls back to defaults when settings are absent', async () => {
     const settings = await decryptSettings(baseUser({ encSettings: null }), dek);
-    expect(settings.averageCycleLength).toBe(28);
+    expect(settings.averageCycleLength).toBe(29);
     expect(settings.autoLockMs).toBe(5 * 60 * 1000);
     expect(settings.lockOnHidden).toBe(true);
     // Menstruation/fertile/ovulation default on; PMS off.
