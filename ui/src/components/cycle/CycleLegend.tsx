@@ -11,8 +11,6 @@ const ITEMS: { key: keyof CycleMarkers; swatch: string }[] = [
   { key: 'pms', swatch: 'pms' },
 ];
 
-/** A small legend below the cycle circle mapping each *enabled* marker to its
- * color/style (roadmap #25). Renders nothing when every marker is off. */
 export function CycleLegend({ markers }: { markers: CycleMarkers }) {
   const { t } = useTranslation();
   const visible = ITEMS.filter((item) => markers[item.key]);

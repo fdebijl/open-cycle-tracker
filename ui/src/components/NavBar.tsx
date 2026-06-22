@@ -6,15 +6,11 @@ import styles from './NavBar.module.scss';
 interface NavItem {
   to: string;
   icon: string;
-  // i18next key for the label, resolved with t() inside the component (ITEMS is
-  // module-level, where the t() hook isn't available).
   labelKey: string;
   size: number;
   priority?: boolean;
 }
 
-// Order and icons mirror the Ember nav-bar. "Cycle" is the priority item
-// (larger, and floated to the top on desktop).
 const ITEMS: NavItem[] = [
   { to: '/today', icon: 'pencil-outline', labelKey: 'nav.tracking', size: 1.2 },
   { to: '/calendar', icon: 'calendar-month', labelKey: 'nav.calendar', size: 1.2 },

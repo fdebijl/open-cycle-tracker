@@ -15,8 +15,8 @@ export function serializeUser(u: User) {
     encName: encOut(u.encName),
     encInfo: encOut(u.encInfo),
     encSettings: encOut(u.encSettings),
-    // Whether duress/destruction passwords are set (roadmap #14). Booleans only -
-    // never the verifiers. On a decoy session these read false (the shadow has no
+    // Whether duress/destruction passwords are set. Booleans only, never the verifiers.
+    // On a decoy session these read false (the shadow has no
     // decoy of its own), so the real config is not revealed inside duress mode.
     duressConfigured: u.duressAuthHash !== null,
     destructConfigured: u.destructAuthHash !== null,

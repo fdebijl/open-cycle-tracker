@@ -1,12 +1,5 @@
 import type { KdfParams } from '@/crypto/types';
 
-/**
- * DTOs mirroring the Node API's plain-JSON responses. Encrypted fields are
- * base64 strings of opaque ciphertext (`nonce || ct+tag`); the client decrypts
- * them in the data layer. Kept isolated here so API contract drift is a
- * single-file change.
- */
-
 export interface AuthUser {
   id: string;
   identifier: string;
@@ -17,8 +10,6 @@ export interface AuthUser {
 export interface AuthResult {
   token: string;
   user: AuthUser;
-  /** The account's login salt (stable across password changes); used to re-derive
-   * the authHash on a password change so duress/destruct verifiers survive. */
   saltAuth: string;
   saltKek: string;
   wrappedDek: string;
@@ -39,7 +30,6 @@ export interface UserDto {
   encName: string | null;
   encInfo: string | null;
   encSettings: string | null;
-  /** Whether a duress (decoy) / destruction password is configured (roadmap #14). */
   duressConfigured: boolean;
   destructConfigured: boolean;
   createdAt: string;
@@ -59,7 +49,6 @@ export interface FactorDto {
   userId: string;
   categoryLevelId: string;
   encNotes: string | null;
-  /** Optional encrypted numeric reading (e.g. BBT). */
   encValue: string | null;
   createdAt: string;
   updatedAt: string;
@@ -74,7 +63,6 @@ export interface DayDto {
   order: number | null;
   createdAt: string;
   updatedAt: string;
-  /** Present only on `GET /days/:id`. */
   factors?: FactorDto[];
 }
 
@@ -82,7 +70,6 @@ export interface CategoryDto {
   id: string;
   userId: string | null;
   global: boolean;
-  /** Stable identifier on global categories (e.g. `flow`, `bbt`); null otherwise. */
   slug: string | null;
   name: string | null;
   icon: string | null;
@@ -97,7 +84,6 @@ export interface CategoryDto {
 export interface CategoryLevelDto {
   id: string;
   categoryId: string;
-  /** Ordinal position within the category (0-based); null where unordered. */
   order: number | null;
   name: string | null;
   icon: string | null;

@@ -1,17 +1,6 @@
 import { addDays, differenceInCalendarDays } from 'date-fns';
 import type { Category, CategoryLevel, Day } from './types';
 
-/**
- * Pure cycle math, shared by the circle, calendar and info screens. In the
- * onset-driven model a cycle's boundaries aren't stored on the server (it can't
- * read the encrypted dates) - they're derived here, client-side, from the
- * decrypted day dates.
- *
- * The period signal is the ordinal Flow category: a day with a Flow factor of
- * intensity ≥ Light is a "period day". Callers compute the set of such day ids
- * once (`computePeriodDayIds`) and thread it through.
- */
-
 /** Stable slug of the global Flow category (the period/onset signal). */
 export const FLOW_SLUG = 'flow';
 /** Stable slug of the global BBT category (rendered as a numeric reading). */
@@ -20,10 +9,10 @@ export const BBT_SLUG = 'bbt';
  * symptothermal ovulation confirmation). */
 export const FLUID_SLUG = 'fluid';
 /** Flow levels at this ordinal or above count as a period (onset) day; below it
- * (Spotting = order 0) is spotting only and does not anchor a cycle. */
+ * (Spotting = order 0) is spotting only and does not anchor/start a cycle. */
 export const FLOW_PERIOD_MIN_ORDER = 1;
 
-/** The Flow level ids that count as a period day (intensity ≥ Light). */
+/** The Flow level ids that count as a period day (intensity >= Light). */
 export function flowPeriodLevelIds(categories: Category[], levels: CategoryLevel[]): Set<string> {
   const flow = categories.find((c) => c.slug === FLOW_SLUG);
   if (!flow) return new Set();
@@ -34,7 +23,7 @@ export function flowPeriodLevelIds(categories: Category[], levels: CategoryLevel
   );
 }
 
-/** Day ids that count as a period day: those carrying a Flow factor ≥ Light.
+/** Day ids that count as a period day: those carrying a Flow factor >= Light.
  * Works on raw factor DTOs - `categoryLevelId` is plaintext, so no decryption
  * (and no DEK) is needed just to locate onset. */
 export function computePeriodDayIds(

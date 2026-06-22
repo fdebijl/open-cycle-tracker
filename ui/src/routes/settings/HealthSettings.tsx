@@ -68,8 +68,8 @@ function TrackingModeSection({
 }
 
 /** A gentle, dismissible-by-switching suggestion to consider perimenopause mode
- * when recent cycles look like the early/late menopausal transition. Suggestive
- * only - it never changes the mode on its own. */
+ * when recent cycles look like the early/late menopausal transition. Suggests only.
+ */
 function StagingHint({ mode, onSwitchToPeri }: { mode: TrackingMode; onSwitchToPeri: () => void }) {
   const { t } = useTranslation();
   const cyclesQuery = useCycles();

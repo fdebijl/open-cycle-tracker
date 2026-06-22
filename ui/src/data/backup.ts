@@ -7,7 +7,7 @@ import { cycleOnset, FLOW_PERIOD_MIN_ORDER, FLOW_SLUG } from './cycles';
 import type { Category, CategoryLevel, Cycle, Day, Factor, UserSettings } from './types';
 
 /**
- * Encrypted/plaintext export + import of a user's full dataset (roadmap #5).
+ * Encrypted/plaintext export + import of a user's full dataset.
  *
  * Everything here is pure (no React, no API, no `Date.now`) so it can be
  * unit-tested like `prediction.ts`/`cycles.ts`. The orchestration that does
@@ -393,7 +393,7 @@ export function planImport(doc: BackupDocument, ctx: ImportContext): ImportPlan 
   const existingUserCatNames = new Set(ctx.targetCategories.filter((c) => !c.global).map((c) => c.name));
   const userCategories = doc.userCategories.filter((c) => !existingUserCatNames.has(c.name));
 
-  // Existing onset → cycle id, so re-imports merge instead of duplicating.
+  // Existing onset > cycle id, so re-imports merge instead of duplicating.
   const onsetToCycleId = new Map<string, string>();
   for (const c of ctx.existingCycles) {
     const onset = cycleOnset(

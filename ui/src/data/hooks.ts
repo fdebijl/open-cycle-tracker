@@ -109,7 +109,7 @@ export function useFactors() {
 
 /**
  * The set of day ids that count as period (onset) days - those carrying a Flow
- * factor of intensity ≥ Light. Joins the raw factors with the Flow category's
+ * factor of intensity >= Light. Joins the raw factors with the Flow category's
  * levels client-side. Empty while loading, which makes onset degrade to the
  * earliest dated day rather than break. Shared by the circle, calendar and info.
  */
@@ -141,7 +141,7 @@ export function useCurrentCycleSymptoDays(currentCycleId: string | undefined, cu
   const categories = useCategories();
   const levels = useCategoryLevels();
 
-  // Resolve the BBT level ids and the fluid level id → quality mapping. Keying
+  // Resolve the BBT level ids and the fluid level id > quality mapping. Keying
   // the mucus enum off the level *name* lives here (not in the pure engine), so
   // the engine never couples to the seeded category strings.
   const { bbtLevelIds, fluidQualityByLevel } = useMemo(() => {
@@ -159,7 +159,7 @@ export function useCurrentCycleSymptoDays(currentCycleId: string | undefined, cu
     return { bbtLevelIds: bbtIds, fluidQualityByLevel: fluidMap };
   }, [categories.data, levels.data]);
 
-  // Day id → date for the current cycle's dated days.
+  // Day id > date for the current cycle's dated days.
   const dayDates = useMemo(() => {
     const m = new Map<string, Date>();
     for (const d of currentCycleDays) if (d.date) m.set(d.id, d.date);

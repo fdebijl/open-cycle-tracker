@@ -24,7 +24,7 @@ is opted in, it stays hidden until the prediction is trustworthy.
 ## Where things stand today
 
 - **Prediction** (`ui/src/data/prediction.ts`, pure + unit-tested): `cycleStats`
-  learns an average + variability from observed onsets once ≥3 cycles exist
+  learns an average + variability from observed onsets once >=3 cycles exist
   (`source: 'learned'`), else falls back to the configured average
   (`source: 'configured'`). `predictFertileWindow` counts a fixed
   `LUTEAL_PHASE_DAYS` (14) back from the predicted next onset, and is already
@@ -72,14 +72,14 @@ export interface PmsPrediction {
 }
 
 /** Forecast the PMS window: the PMS_DAYS leading up to the predicted next onset.
- * Returns nulls unless the average is *learned* (≥ MIN_CYCLES_TO_LEARN observed
+ * Returns nulls unless the average is *learned* (>= MIN_CYCLES_TO_LEARN observed
  * cycles) and variability is tight enough to be meaningful — PMS is opt-in and
  * we refuse to show a guess dressed up as a prediction. */
 export function predictPmsWindow(lastOnset: Date | null, stats: CycleStats): PmsPrediction
 ```
 
 Reliability gate, all required:
-- `lastOnset` present and `stats.source === 'learned'` (so ≥3 real cycles — we
+- `lastOnset` present and `stats.source === 'learned'` (so >=3 real cycles — we
   never PMS-highlight off the onboarding default), and
 - `stats.variability <= PMS_MAX_VARIABILITY`, and
 - `stats.averageLength > LUTEAL_PHASE_DAYS + PMS_DAYS` (window must fit in the
@@ -172,7 +172,7 @@ so a marker the user turned off doesn't reappear on the calendar.
 ## Out of scope / future
 
 - PMS prediction stays **calendar-method** here — it does not yet use logged PMS
-  *symptoms* (Mood→PMS level, from the symptom-tracking milestone). Once enough
+  *symptoms* (Mood>PMS level, from the symptom-tracking milestone). Once enough
   symptom history exists, an observed-PMS model would beat the predicted band;
   that's a natural follow-up, not part of this pass.
 - Predicting markers across the **next 3 cycles** is roadmap #17 — this redesign

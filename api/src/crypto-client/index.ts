@@ -56,7 +56,7 @@ export function randomSalt(): Uint8Array {
   return s().randombytes_buf(s().crypto_pwhash_SALTBYTES);
 }
 
-/** Argon2id derivation of a `length`-byte key from a UTF-8 password + salt. */
+/** Derive a `length`-byte key from a UTF-8 password + salt using argon2id */
 export function deriveKey(
   password: string,
   salt: Uint8Array,

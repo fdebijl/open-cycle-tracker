@@ -2,7 +2,7 @@ import { hash, verify } from '@node-rs/argon2';
 
 /**
  * Server-side hashing of the client's authHash (a "double hash"). The client
- * already ran Argon2id(password) → authHash; we hash THAT again with a fresh
+ * already ran Argon2id(password) > authHash; we hash THAT again with a fresh
  * server-side Argon2id salt so a DB leak reveals neither the password nor the
  * authHash. We never see the password itself.
  */

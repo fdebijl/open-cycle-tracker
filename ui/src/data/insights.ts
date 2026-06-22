@@ -13,7 +13,7 @@ import { BBT_SLUG, FLOW_SLUG } from './cycles';
 import type { Day } from './types';
 
 /**
- * Derived insights for the Info screen's charts (roadmap #11): cycle-length
+ * Derived insights for the Info screen's charts: cycle-length
  * history with a regularity trend, and a symptom-vs-cycle-phase matrix.
  *
  * Like `cycles.ts` and `prediction.ts` this is pure and client-side - no React,
@@ -61,7 +61,7 @@ export interface CycleLengthPoint {
 }
 
 export interface CycleLengthHistory {
-  /** One point per completed cycle, oldest → newest. The in-progress current
+  /** One point per completed cycle, oldest > newest. The in-progress current
    * cycle (no successor onset) yields no point. */
   points: CycleLengthPoint[];
   /** The same learned/configured stats the rest of the app shows, for the
@@ -127,8 +127,8 @@ export type CyclePhase = (typeof PHASES)[number];
  *
  * - A period day (`isPeriodDay`) is `menstrual`, regardless of count-back.
  * - Otherwise the next onset is `nextOnset` if known, else `onset + averageLength`.
- *   With neither, the phase can't be placed → `null`.
- * - A date before `onset` belongs to an earlier cycle → `null`.
+ *   With neither, the phase can't be placed > `null`.
+ * - A date before `onset` belongs to an earlier cycle > `null`.
  */
 export function classifyPhase(args: {
   date: Date;
@@ -210,7 +210,7 @@ export function symptomPhaseMatrix(args: {
   const { days, factors, categories, levels, onsets, periodDayIds, averageLength } = args;
   const excludeSlugs = args.excludeSlugs ?? new Set([FLOW_SLUG, BBT_SLUG]);
 
-  // Lookups: level → category, and the set of excluded category/level ids.
+  // Lookups: level > category, and the set of excluded category/level ids.
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const excludedCategoryIds = new Set(
     categories.filter((c) => c.slug != null && excludeSlugs.has(c.slug)).map((c) => c.id),
@@ -225,7 +225,7 @@ export function symptomPhaseMatrix(args: {
 
   const phaseDayTotals = zeroCounts();
   let unclassifiedDays = 0;
-  // dayId → phase, for the days we managed to classify.
+  // dayId > phase, for the days we managed to classify.
   const phaseByDay = new Map<string, CyclePhase>();
 
   for (const day of days) {

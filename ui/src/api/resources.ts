@@ -16,9 +16,8 @@ export const usersApi = {
 
 /**
  * Thin wrappers over the resource endpoints. Bodies carry encrypted fields as
- * base64; the data layer (`src/data/`) handles encrypt/decrypt around these.
+ * base64; the data layer (see `src/data/`) handles encrypt/decrypt around these.
  */
-
 export const cyclesApi = {
   list: () => api.get<CycleDto[]>('/cycles'),
   get: (id: string) => api.get<CycleDto>(`/cycles/${id}`),
@@ -65,7 +64,6 @@ export interface CategoryWritePayload {
 export const categoriesApi = {
   list: () => api.get<CategoryDto[]>('/categories'),
   get: (id: string) => api.get<CategoryDto>(`/categories/${id}`),
-  // Creates a user-owned category (encrypted fields); used when restoring a backup.
   create: (body: CategoryWritePayload) => api.post<CategoryDto>('/categories', body),
 };
 
@@ -76,7 +74,6 @@ export interface CategoryLevelWritePayload {
 }
 
 export const categoryLevelsApi = {
-  // Note the underscore path (the API mounts this router at /category_levels).
   list: () => api.get<CategoryLevelDto[]>('/category_levels'),
   get: (id: string) => api.get<CategoryLevelDto>(`/category_levels/${id}`),
   create: (body: CategoryLevelWritePayload) => api.post<CategoryLevelDto>('/category_levels', body),

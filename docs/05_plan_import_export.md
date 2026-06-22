@@ -37,7 +37,7 @@ through the existing CRUD endpoints, re-encrypting under the current DEK.
   that same DEK, the user's real recovery phrase opens the file — no secret entry
   at export time, no typo risk.
 - **Restore of an encrypted file** prompts for the 24-word phrase, then
-  `mnemonicToRecoveryCode` → `recoverDek(...)` → file DEK → `aeadDecrypt`. A wrong
+  `mnemonicToRecoveryCode` > `recoverDek(...)` > file DEK > `aeadDecrypt`. A wrong
   phrase fails AEAD auth and surfaces a friendly error. All from
   `ui/src/crypto/envelope.ts`.
 
@@ -54,7 +54,7 @@ Plaintext envelope:
 { "format": "oct-backup", "encrypted": false, "schema": 1, "document": <BackupDocument> }
 ```
 `BackupDocument` holds `exportedAt`, `app`, `displayName`, `settings`,
-`userCategories[]`, and `cycles[]` → `days[]` → `factors[]`. Each factor records
+`userCategories[]`, and `cycles[]` > `days[]` > `factors[]`. Each factor records
 a `CategoryLevelRef` rather than a raw UUID, because global-category UUIDs differ
 per instance:
 - global: `{ scope: 'global', categorySlug?, categoryName, levelName, levelOrder }`
@@ -100,8 +100,8 @@ per instance:
 
 1. `cd ui && npx vitest run` (85 passing) + `tsc -b` + `eslint .`.
 2. Manual end-to-end: log cycles/days/factors (incl. a BBT value + note), set a
-   display name + cycle length → export *Encrypted* → on a second fresh account,
-   import with the first account's recovery phrase → data reappears intact.
-   Re-import → all days reported skipped, nothing duplicated. Export/import the
+   display name + cycle length > export *Encrypted* > on a second fresh account,
+   import with the first account's recovery phrase > data reappears intact.
+   Re-import > all days reported skipped, nothing duplicated. Export/import the
    *Plaintext* path. A bad recovery phrase shows the friendly error with no
    partial writes.

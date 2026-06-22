@@ -30,22 +30,22 @@ Pure, client-side, no DEK required — symptom aggregation runs on raw factor DT
 dates. Reuses constants/`cycleStats` from `prediction.ts` rather than
 duplicating them.
 
-- **`cycleLengthHistory(onsets, configuredAverage)`** → `{ points, stats }`. One
+- **`cycleLengthHistory(onsets, configuredAverage)`** > `{ points, stats }`. One
   `CycleLengthPoint` per *completed* cycle (the in-progress current cycle has no
-  successor onset, so yields no point), oldest → newest, each carrying its
+  successor onset, so yields no point), oldest > newest, each carrying its
   length, a **causal** rolling average + sample-std-dev variability (last
   `ROLLING_WINDOW` *plausible* lengths up to and including that point), and a ±
   band. Implausible gaps (outside 15–90 days) are still drawn but excluded from
   the trend — the same policy as `observedCycleLengths`. `stats` is the shared
   `cycleStats` so the learned/configured headline matches the rest of the app.
-- **`classifyPhase({ date, onset, nextOnset?, averageLength?, isPeriodDay })`** →
+- **`classifyPhase({ date, onset, nextOnset?, averageLength?, isPeriodDay })`** >
   `menstrual | follicular | ovulatory | luteal | null`. Luteal-phase (calendar)
   method, aligned with `predictFertileWindow`: a period day is `menstrual`;
   otherwise ovulation = nextOnset − `LUTEAL_PHASE_DAYS`, with the fertile window
   around it `ovulatory`, before it `follicular`, after it `luteal`. Falls back to
   `onset + averageLength` when the next onset is unknown, and to a cycle-midpoint
   split when the cycle is too short for the luteal model.
-- **`symptomPhaseMatrix({...})`** → `{ categories, phaseDayTotals,
+- **`symptomPhaseMatrix({...})`** > `{ categories, phaseDayTotals,
   unclassifiedDays }`. Buckets each logged factor onto the phase of its day
   (per-category counts with a per-level drilldown, desc by total). Flow (defines
   the menstrual phase) and BBT (numeric/encrypted) are excluded by slug; custom
@@ -60,10 +60,10 @@ dedupes — no extra fetches), memoizes `cycleOnsets(...)`, and returns
 
 ### UI — `ui/src/components/insights/`
 
-- **`InsightsSection`** — owns the hook, joins category ids → decrypted
+- **`InsightsSection`** — owns the hook, joins category ids > decrypted
   name/color, and gates each chart's empty / insufficient-data state.
 - **`CycleLengthChart`** — SVG bars + rolling-average polyline + filled
-  variability-band polygon (shown once the average is *learned*, i.e. ≥3
+  variability-band polygon (shown once the average is *learned*, i.e. >=3
   cycles). Scales via `viewBox` + `width:100%` (mobile-first).
 - **`SymptomPhaseChart`** — `<table>` heatmap; each cell's color is the
   category color at an opacity scaled by logging *frequency* in that phase, with
@@ -86,5 +86,5 @@ convention; dates via `useDateFnsLocale()`).
 
 - `cd ui && pnpm test` — `insights.test.ts` (24 cases) green alongside the suite.
 - `cd ui && pnpm lint && pnpm lint:css && pnpm build` — clean.
-- Manual: open `/info` with <3 cycles (placeholders) and with ≥3 logged cycles
+- Manual: open `/info` with <3 cycles (placeholders) and with >=3 logged cycles
   (full length chart + band + caption; symptom heatmap shaded by phase).

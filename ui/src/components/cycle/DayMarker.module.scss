@@ -54,7 +54,7 @@
     opacity: 0.5;
   }
 
-  /* dayType → background, plus a darker ring when it's today. */
+  /* dayType > background, plus a darker ring when it's today. */
   &[data-daytype='none'] {
     background: #d4ceec;
 

@@ -27,7 +27,7 @@ describe('Spinner', () => {
   it('staggers the per-dot animation delay', () => {
     const { container } = render(<Spinner dotCount={20} />);
     const rects = container.querySelectorAll('rect');
-    // Legacy stagger: begin = -(0.75 - (0.75/dotCount) * dot). Last dot → 0s.
+    // Legacy stagger: begin = -(0.75 - (0.75/dotCount) * dot). Last dot > 0s.
     expect((rects[0] as SVGRectElement).style.animationDelay).toBe('-1.71s');
     expect(parseFloat((rects[19] as SVGRectElement).style.animationDelay)).toBeCloseTo(0);
   });

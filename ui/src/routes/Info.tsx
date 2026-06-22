@@ -16,8 +16,6 @@ import { symptothermal } from '@/data/symptothermal';
 import { DEFAULT_AVERAGE_CYCLE_LENGTH } from '@/data/types';
 import styles from './Info.module.scss';
 
-/** Read-only stats derived from the current cycle's decrypted days. (The Ember
- * page held user-entered averages; computing from tracked data is more useful.) */
 export function Info() {
   const { t } = useTranslation();
   const locale = useDateFnsLocale();

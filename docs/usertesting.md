@@ -1,4 +1,8 @@
-# User 1
+# Usertesting
+
+This document contains user testing notes from the pre-release stage of Open Cycle Tracker.
+
+## User A
 - Add 'typical' to cervical fluid
 - Cycle circle is hard to use on mobile and needs onboarding
 - Move 'High drive' and 'low drive' to mood and add 'sex', or move to new libido category

@@ -207,7 +207,7 @@ describe('cycleStats - perimenopause mode', () => {
   });
 
   it('downgrades to low confidence when recent cycles are highly variable', () => {
-    // lengths 22,38,24,40 → std-dev ≈ 9 (≥ LOW_CONFIDENCE_VARIABILITY)
+    // lengths 22,38,24,40 > std-dev ≈ 9 (>= LOW_CONFIDENCE_VARIABILITY)
     const stats = cycleStats(onsetsFromGaps(BASE, [22, 38, 24, 40]), 28, { mode: 'perimenopause', asOf: BASE });
     expect(stats.source).toBe('learned');
     expect(stats.confidence).toBe('low');
@@ -221,7 +221,7 @@ describe('cycleStats - perimenopause mode', () => {
   it('treats a long gap as a skipped cycle - excluded from the average, surfaced as a signal', () => {
     const onsets = onsetsFromGaps(BASE, [28, 70, 28, 28]); // last onset = BASE + 154
     const stats = cycleStats(onsets, 28, { mode: 'perimenopause', asOf: addDays(BASE, 159) });
-    // 70 is a skip (≥60), so it never enters the learned average…
+    // 70 is a skip (>=60), so it never enters the learned average…
     expect(stats.observedLengths).toEqual([28, 28, 28]);
     // …but it counts as a skip and shows up as the longest recent gap.
     expect(stats.skippedCycleCount).toBe(1);
@@ -280,14 +280,14 @@ describe('classifyMenopausalStage', () => {
     expect(classifyMenopausalStage(onsets, addDays(BASE, 89)).stage).toBe('reproductive');
   });
 
-  it('flags early transition on persistent ≥7-day swings between consecutive cycles', () => {
+  it('flags early transition on persistent >=7-day swings between consecutive cycles', () => {
     const onsets = onsetsFromGaps(BASE, [28, 36, 28, 36]); // consecutive diffs all 8
     const staging = classifyMenopausalStage(onsets, addDays(BASE, 133));
     expect(staging.stage).toBe('early-transition');
     expect(staging.signals.persistent7DayDiff).toBe(true);
   });
 
-  it('flags late transition on a ≥60-day gap', () => {
+  it('flags late transition on a >=60-day gap', () => {
     const onsets = onsetsFromGaps(BASE, [28, 65]);
     const staging = classifyMenopausalStage(onsets, addDays(BASE, 98));
     expect(staging.stage).toBe('late-transition');

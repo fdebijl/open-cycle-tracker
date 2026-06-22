@@ -28,7 +28,7 @@ cases")**, which is still open, and touch **#7, #1/#2, #11, #12**.
 Clue exposes **20 tracking categories** (paper Table 3). OCT today seeds only **five**
 global categories in
 [`api/src/db/globalCategories.ts`](../api/src/db/globalCategories.ts) - Bleeding, Spotting,
-Pain, Mood, Energy - modeled as `Category` → `CategoryLevel` → `Factor` in
+Pain, Mood, Energy - modeled as `Category` > `CategoryLevel` > `Factor` in
 [`ui/src/data/types.ts`](../ui/src/data/types.ts). The table maps Clue's categories onto
 ours. "Tracking %" is the share of all observations in the paper's lower-variability group
 (Table 3) - a proxy for how much users actually engage with each category.
@@ -143,7 +143,7 @@ free-text note at the **`Day`** level.
     [`prediction.ts`](../ui/src/data/prediction.ts) already drops onset gaps `< 15` or
     `> 90` days - this **aligns** with the published method.
   - **Flag "atypically long" cycles** where a cycle's max CLD exceeds the user's *median*
-    CLD by **≥ 10 days** (the diagonal in Fig. 7 / Fig. 9). This is a smarter
+    CLD by **>= 10 days** (the diagonal in Fig. 7 / Fig. 9). This is a smarter
     skipped/late-period detector than OCT's current hard 90-day cutoff and is the principled
     way to address roadmap **#12** (graceful late-period handling) instead of silently
     dropping outliers.

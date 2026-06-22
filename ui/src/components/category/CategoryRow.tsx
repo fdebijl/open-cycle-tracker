@@ -3,11 +3,6 @@ import { MdiIcon } from '@/components/MdiIcon';
 import type { Category, CategoryLevel } from '@/data/types';
 import styles from './CategoryRow.module.scss';
 
-/**
- * One category and its selectable levels for a given day. A selected level means
- * a factor links this day to that category-level; toggling creates/deletes it.
- * Ports the Ember `category-row` + `category/level` components.
- */
 export function CategoryRow({
   category,
   levels,

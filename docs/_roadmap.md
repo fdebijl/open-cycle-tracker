@@ -17,7 +17,7 @@ tracker is generally expected to do.
    signal.
 
 2. ✅ **No cycle-length learning or history.** _Done — `c-cleStats` learns the
-   average from observed cycles (rolling window of the most recent ones) once ≥3
+   average from observed cycles (rolling window of the most recent ones) once >=3
    exist, falling back to the configured `averageCycleLength` until then, and the
    Info screen surfaces the learned average, observed range, and variability._
 
@@ -33,7 +33,7 @@ tracker is generally expected to do.
    tappable to log a day on demand, and the-new day is filed into the cycle whose
    onset span contains its date (`cycleForDate` in `data/cycles.ts`)._
 
-5. ✅ **No data export / backup.** _Done — Settings → Data exports the full
+5. ✅ **No data export / backup.** _Done — Settings > Data exports the full
    dataset as either a self-contained **encrypted backup** (sealed with the
    in-memory DEK; unlocked by the account's existing 24-word recovery phrase, so
    it survives a lost password and a vanished server) or, as a warned opt-in, a
@@ -64,7 +64,7 @@ tracker is generally expected to do.
 7. ✅ **One `dayType` per day is too rigid, and overlaps with categories.** _Done
    — Bleeding + Spotting + `dayType:'period'` collapsed into a single ordinal
    **Flow** scale (spotting < light < medium < heavy) which is now the period/
-   onset signal (onset derives from Flow ≥ Light via `computePeriodDayIds` /
+   onset signal (onset derives from Flow >= Light via `computePeriodDayIds` /
    `cycle-nset`). The `dayType` concept was then **removed entirely** — PMS moved
    to a Mood level, and fertile/ovulation are forecast-only (not user-reported),
    so days no longer carry a phase enum at all._
@@ -104,7 +104,7 @@ tracker is generally expected to do.
     pregnancy-test results, gracefully handling a skipped/late period instead of
     silently breaking averages. _Partly done — skipped/late periods are now
     detected per-user (a cycle whose CLD exceeds the user's own median CLD by
-    ≥10 days is flagged as a likely skipped log) rather than only dropped by the
+    >=10 days is flagged as a likely skipped log) rather than only dropped by the
     coarse 90-day cap. Pregnancy mode and pregnancy-test logging remain._
 
 13. **Quick-unlock (PIN/biometric)** — auto-lock-on-tab-hidden plus full

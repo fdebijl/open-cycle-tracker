@@ -3,23 +3,13 @@ const BUILD_TIME_API_URL =
   'http://localhost:3000';
 
 /** API base URL. Starts at the build-time default and is upgraded at startup by
- * loadRuntimeConfig() when the container shipped a /config.js. It's a live
- * binding read lazily per request (see api/client.ts), so the post-load value
- * is what actually gets used. */
+ * loadRuntimeConfig() when the container shipped a /config.js. */
 export let API_URL: string = BUILD_TIME_API_URL;
 
-/** Whether this deployment is a public demo. Set at runtime from /config.js
- * (PUBLIC_DEMO_MODE in the UI container). Drives the warning banner; it's a
- * live binding resolved by loadRuntimeConfig() before render in main.tsx. */
 export let DEMO_MODE = false;
 
-/** Load runtime config from the separately-served `/config.js` — an ES module
- * the UI container's entrypoint writes from $PUBLIC_API_URL on start. It's
- * pulled via a dynamic import of an absolute path (deliberately NOT a static
- * import) so it stays OUT of the bundle and can be swapped per deploy without a
- * rebuild. Must be awaited before the first API call; main.tsx does so before
- * render. No-op (keeps the build-time default) if the file is absent or empty,
- * which is the case in dev and tests. */
+/** Load runtime config from the separately-served `/config.js`, an ES module
+ * the UI container's entrypoint writes from $PUBLIC_API_URL on start. */
 export async function loadRuntimeConfig(): Promise<void> {
   try {
     const mod = (await import(/* @vite-ignore */ `${import.meta.env.BASE_URL}config.js`)) as {
@@ -30,15 +20,13 @@ export async function loadRuntimeConfig(): Promise<void> {
     if (apiUrl) API_URL = apiUrl;
     if (mod.demoMode === true) DEMO_MODE = true;
   } catch {
-    // No /config.js (dev, tests, or a build without the entrypoint) — keep the
-    // build-time default.
+    // No /config.js (dev, tests, or a build without the entrypoint), keep the build-time default.
   }
 }
 
-/** Default inactivity timeout before the vault auto-locks (wipes the DEK). Also
- * the value used until the user's stored preference loads after unlock. */
+/** Default inactivity timeout before the vault auto-locks (wipes the DEK). */
 export const AUTO_LOCK_MS = 5 * 60 * 1000;
 
-/** The inactivity timeouts offered in Settings → Security (in ms). There is no
+/** The inactivity timeouts offered in Settings > Security (in ms). There is no
  * "off" option: an unlocked, idle device should always wipe the key eventually. */
 export const AUTO_LOCK_PRESETS_MS = [1, 5, 15, 30].map((minutes) => minutes * 60 * 1000);

@@ -4,13 +4,6 @@ import { fromBase64, mnemonicToSecret, secretToMnemonic, toBase64 } from './code
 import { DEK_BYTES, RECOVERY_BYTES, SALT_BYTES } from './types';
 import type { KdfParams } from './types';
 
-/**
- * The crypto envelope: signup key generation, login DEK unwrap, recovery, and
- * password change. Implements the client side of `for_claude/encryption.md`.
- * The server stores only the base64 values produced here and can decrypt none
- * of them.
- */
-
 /** Exact request body for `POST /auth/signup`. */
 export interface SignupPayload {
   identifier: string;
@@ -28,13 +21,12 @@ export interface SignupPayload {
 
 export interface SignupResult {
   payload: SignupPayload;
-  /** The raw DEK - held in memory after signup, never persisted. */
+  /** The raw DEK, held in memory after signup, never persisted. */
   dek: Uint8Array;
-  /** The recovery mnemonic - shown to the user exactly once. */
+  /** The recovery mnemonic, shown to the user exactly once. */
   recoveryMnemonic: string;
 }
 
-/** Build the full signup envelope locally. The password never leaves the client. */
 export async function createSignup(
   identifier: string,
   password: string,
@@ -49,9 +41,6 @@ export async function createSignup(
   const saltRecovery = await randomBytes(SALT_BYTES);
   const saltRecoveryAuth = await randomBytes(SALT_BYTES);
   const recoverySecret = await randomBytes(RECOVERY_BYTES);
-  // The recovery code is the base64 of the secret - this string is the KDF
-  // input (matching the API's reference client), while the user sees the BIP39
-  // mnemonic of the same bytes. The two encode the identical secret.
   const recoveryCode = await toBase64(recoverySecret);
 
   const kek = await deriveKey(password, saltKek, params);
@@ -89,7 +78,7 @@ export async function deriveAuthHash(password: string, saltAuthB64: string, para
 }
 
 /**
- * Decoy/duress setup (roadmap #14). Built from an unlocked real session.
+ * Decoy/duress setup, built from an unlocked real session.
  *
  * The decoy vault is a *separate* (shadow) account with its own DEK and salts;
  * `shadow` is the full envelope the server stores on that row. `duressAuthHash`

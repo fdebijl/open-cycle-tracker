@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AuthCard } from '@/components/AuthCard';
 import { Field } from '@/components/Field';
 import { Spinner } from '@/components/Spinner';
-import { recoverAccount } from '@/auth/session';
+import { recoverAccountWithMnemonic } from '@/auth/session';
 
 export function Recover() {
   const [identifier, setIdentifier] = useState('');
@@ -22,7 +22,7 @@ export function Recover() {
     setError(null);
     setBusy(true);
     try {
-      await recoverAccount({ identifier, mnemonic, newPassword });
+      await recoverAccountWithMnemonic({ identifier, mnemonic, newPassword });
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.recover.failed'));

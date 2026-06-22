@@ -36,7 +36,6 @@ export async function listDays(ctx: AuthContext, ids: string[] | null) {
   return rows.map(serializeDay);
 }
 
-/** Show a day with its factors nested (mirrors the Rails DaySerializer). */
 export async function getDay(id: string, ctx: AuthContext) {
   const row = await db.query.days.findFirst({
     where: and(eq(days.id, id), eq(days.userId, ctx.userId)),

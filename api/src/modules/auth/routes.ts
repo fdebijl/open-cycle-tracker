@@ -77,7 +77,7 @@ authRouter.post(
   }),
 );
 
-// Configure duress/decoy + destruction passwords (authenticated; roadmap #14).
+// Configure duress/decoy + destruction passwords
 authRouter.post(
   '/duress',
   requireAuth,

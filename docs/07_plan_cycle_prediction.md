@@ -32,7 +32,7 @@ Robust, per-user variability handling, no new user data. All in `prediction.ts`.
   *npj Digital Medicine* 2020). `medianCld > 9 days` ⇒ "consistently highly variable."
   Exposed on `CycleStats` as `medianCld` / `isHighlyVariable`.
 - **Skip detection** (`flagSkippedCycles`): a length whose CLD exceeds the user's *own* median
-  CLD by ≥10 days is flagged as a likely skipped/unlogged period (≈89% of such gaps contain no
+  CLD by >=10 days is flagged as a likely skipped/unlogged period (≈89% of such gaps contain no
   bleeding) — a personalised replacement for the fixed cap. The 15–90 day bound stays only as a
   coarse outer sanity guard. Surfaced as `skippedCount`.
 - **Personalised band** (`predictNextPeriod`): the ± window widens to the median CLD for highly
@@ -46,14 +46,14 @@ Robust, per-user variability handling, no new user data. All in `prediction.ts`.
 Uses the BBT (numeric) + cervical-fluid data OCT already collects. New pure module
 [`ui/src/data/symptothermal.ts`](../ui/src/data/symptothermal.ts); decrypted inputs assembled
 by `useCurrentCycleSymptoDays` ([`hooks.ts`](../ui/src/data/hooks.ts)), which decrypts only the
-current cycle's BBT readings (DEK-gated, cache-keyed on ciphertext) and maps fluid level → mucus
+current cycle's BBT readings (DEK-gated, cache-keyed on ciphertext) and maps fluid level > mucus
 enum.
 
 The reimplemented Sensiplan rules:
 
 - **Temperature 3-over-6** (`evaluateTempShift`): coverline = max of the 6 readings before a
   candidate First Higher Measurement; the *regular rule* confirms when 3 consecutive readings
-  exceed it and the 3rd is ≥0.2 °C above; two documented exceptions tolerate a single dip
+  exceed it and the 3rd is >=0.2 °C above; two documented exceptions tolerate a single dip
   (4th reading required). Ovulation ≈ FHM − 1 day. (BBT is logged in °C, so the 0.2 °C margin
   applies directly.)
 - **Cervical-mucus peak +3** (`evaluateMucusPeak`): the last most-fertile day (egg-white >
@@ -107,7 +107,7 @@ the research evaluated PMS-window accuracy, so it was left as-is.
 ## 7. Sources
 
 - Li, Urteaga, Wiggins, Druet, Shea, Vitzthum & Elhadad (2020), *npj Digital Medicine* 3:79 —
-  CLD, the >9-day variability threshold, the ≥10-day skip flag.
+  CLD, the >9-day variability threshold, the >=10-day skip flag.
 - Urteaga, Li, Elhadad et al. (2021 MLHC / 2022 *JAMIA*; arXiv:2102.12439) — generative
   skip-aware cycle-length model.
 - Johnson, Marriott & Zinaman (2018), *Current Medical Research and Opinion* — ovulation-day

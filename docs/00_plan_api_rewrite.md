@@ -1,4 +1,4 @@
-# Rewrite Open Cycle Tracker API: Rails → Node.js + TypeScript + Express (E2EE)
+# Rewrite Open Cycle Tracker API: Rails > Node.js + TypeScript + Express (E2EE)
 
 ## Context
 
@@ -44,12 +44,12 @@ This is a documented, client-agnostic spec (`docs/encryption.md` + shared TS typ
 5. Send to server: `identifier`, `email?`, `authHash`, `salt_auth`, `salt_kek`, `salt_recovery`, `kdfParams`, `wrappedDEK`, `wrappedDEK_recovery`. Server stores `argon2id(authHash)` (double-hashed) + the rest verbatim.
 
 **Login:**
-- `POST /auth/prelogin { identifier }` → `{ salt_auth, kdfParams }`. For unknown identifiers, return a **deterministic pseudo-salt** (`HMAC(serverSecret, identifier)`) to prevent user enumeration.
-- Client derives authHash, then `POST /auth/login { identifier, authHash }` → verifies, returns `{ token, salt_kek, wrappedDEK, kdfParams }`. Client derives KEK, unwraps DEK **in memory only**.
+- `POST /auth/prelogin { identifier }` > `{ salt_auth, kdfParams }`. For unknown identifiers, return a **deterministic pseudo-salt** (`HMAC(serverSecret, identifier)`) to prevent user enumeration.
+- Client derives authHash, then `POST /auth/login { identifier, authHash }` > verifies, returns `{ token, salt_kek, wrappedDEK, kdfParams }`. Client derives KEK, unwraps DEK **in memory only**.
 
 **Field encryption:** each sensitive field value = AEAD(plaintext, key=DEK, random nonce), stored as `bytea` (`nonce || ciphertext || tag`). The server treats these as opaque.
 
-**Password change:** re-derive KEK, re-wrap DEK (cheap; data untouched). **Recovery:** enter recovery code → unwrap DEK → set new password → re-wrap. **Server can never recover - by design, so it can't be compelled to.**
+**Password change:** re-derive KEK, re-wrap DEK (cheap; data untouched). **Recovery:** enter recovery code > unwrap DEK > set new password > re-wrap. **Server can never recover - by design, so it can't be compelled to.**
 
 **Client (web) key hygiene:** DEK lives in memory only - never `localStorage`/`IndexedDB`; re-prompt for password on each launch; auto-lock + wipe key on background/timeout. (Web's ceiling vs. a powered-off seized device; native later raises it.)
 
@@ -136,9 +136,9 @@ test/                 vitest + supertest
 
 ## Verification
 
-- **Unit (Vitest):** envelope round-trip in the shared crypto lib (derive → wrap → unwrap → encrypt → decrypt; assert server payload contains no plaintext); argon2 auth-hash verify; jwt + jti revocation; policy ownership (owner allowed, non-owner 403, global category read).
-- **Request (Supertest):** pseudonymous signup (no email), prelogin user-enumeration resistance (consistent salt for unknown identifier), login → token, CRUD on cycles/days/factors with base64 ciphertext blobs, cross-user access → 403, rate-limit triggers on repeated bad logins.
-- **Manual:** `docker` Postgres → `drizzle-kit migrate` → start server → `curl` signup/login/create-day → **inspect Postgres with `psql` and confirm `enc_*` columns are opaque `bytea` and no plaintext date/notes/day_type exist anywhere.** This last check is the acceptance test for the whole security premise.
+- **Unit (Vitest):** envelope round-trip in the shared crypto lib (derive > wrap > unwrap > encrypt > decrypt; assert server payload contains no plaintext); argon2 auth-hash verify; jwt + jti revocation; policy ownership (owner allowed, non-owner 403, global category read).
+- **Request (Supertest):** pseudonymous signup (no email), prelogin user-enumeration resistance (consistent salt for unknown identifier), login > token, CRUD on cycles/days/factors with base64 ciphertext blobs, cross-user access > 403, rate-limit triggers on repeated bad logins.
+- **Manual:** `docker` Postgres > `drizzle-kit migrate` > start server > `curl` signup/login/create-day > **inspect Postgres with `psql` and confirm `enc_*` columns are opaque `bytea` and no plaintext date/notes/day_type exist anywhere.** This last check is the acceptance test for the whole security premise.
 
 ## Out of scope (flag for later)
 Native client; client-driven data migration; advanced device-side defenses (duress/decoy, plausible deniability); full email-less account recovery beyond recovery codes; defense against a *live-surveilled/compromised* endpoint (unsolvable at the app layer - document the boundary so the project doesn't over-promise).

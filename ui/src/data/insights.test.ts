@@ -22,14 +22,14 @@ function day(overrides: Partial<Day>): Day {
 }
 
 describe('cycleLengthHistory', () => {
-  it('pairs completed cycles oldest → newest, one point per gap', () => {
+  it('pairs completed cycles oldest > newest, one point per gap', () => {
     const { points } = cycleLengthHistory(onsetSeries(BASE, [28, 30, 27]), 28);
     expect(points.map((p) => p.length)).toEqual([28, 30, 27]);
     // Each point is anchored at the earlier onset and names that cycle.
     expect(points.map((p) => p.cycleId)).toEqual(['c0', 'c1', 'c2']);
   });
 
-  it('excludes the in-progress current cycle (n onsets → n−1 points)', () => {
+  it('excludes the in-progress current cycle (n onsets > n−1 points)', () => {
     const { points } = cycleLengthHistory(onsetSeries(BASE, [28, 28]), 28);
     expect(points).toHaveLength(2);
   });
@@ -69,7 +69,7 @@ describe('cycleLengthHistory', () => {
   });
 
   it("stats.source flips from configured to learned once enough cycles exist", () => {
-    // 2 gaps → 2 observed lengths → still below MIN_CYCLES_TO_LEARN (3).
+    // 2 gaps > 2 observed lengths > still below MIN_CYCLES_TO_LEARN (3).
     expect(cycleLengthHistory(onsetSeries(BASE, [28, 30]), 28).stats.source).toBe('configured');
     expect(cycleLengthHistory(onsetSeries(BASE, [28, 30, 27]), 28).stats.source).toBe('learned');
   });

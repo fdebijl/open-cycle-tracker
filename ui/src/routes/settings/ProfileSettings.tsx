@@ -14,7 +14,6 @@ export function ProfileSettings() {
 
   const { data: displayName } = useDisplayName();
   const updateDisplayName = useUpdateDisplayName();
-  // `null` draft = not editing → show the saved name; a string = the live edit.
   const [draftName, setDraftName] = useState<string | null>(null);
   const nameValue = draftName ?? displayName ?? '';
   const nameUnchanged = nameValue.trim() === (displayName ?? '');
