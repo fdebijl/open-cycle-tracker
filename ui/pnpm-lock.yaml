@@ -61,8 +61,8 @@ importers:
         specifier: 0.8.2
         version: 0.8.2
       '@types/node':
-        specifier: 24.12.3
-        version: 24.12.3
+        specifier: 24.13.1
+        version: 24.13.1
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
@@ -71,7 +71,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       '@vitejs/plugin-react':
         specifier: 6.0.1
-        version: 6.0.1(vite@8.0.16(@types/node@24.12.3)(sass@1.100.0))
+        version: 6.0.1(vite@8.0.16(@types/node@24.13.1)(sass@1.100.0))
       eslint:
         specifier: 10.4.1
         version: 10.4.1
@@ -104,10 +104,10 @@ importers:
         version: 8.59.2(eslint@10.4.1)(typescript@6.0.2)
       vite:
         specifier: 8.0.16
-        version: 8.0.16(@types/node@24.12.3)(sass@1.100.0)
+        version: 8.0.16(@types/node@24.13.1)(sass@1.100.0)
       vitest:
         specifier: 4.1.8
-        version: 4.1.8(@types/node@24.12.3)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@24.12.3)(sass@1.100.0))
+        version: 4.1.8(@types/node@24.13.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@24.13.1)(sass@1.100.0))
 
 packages:
 
@@ -656,8 +656,8 @@ packages:
     resolution: {integrity: sha512-uFOBpg/r21hExVlh2ty8YpDfSR+Yy3Jn8XS4+SSjitbhTxdYq+pBz/49XRxyUFe8SzqujHf/Wu0/O4d+FUtNfQ==}
     deprecated: This is a stub types definition. libsodium-wrappers-sumo provides its own type definitions, so you do not need this installed.
 
-  '@types/node@24.12.3':
-    resolution: {integrity: sha512-8oljBDGun9cIsZRJR6fkihn0TSXJI0UDOOhncYaERq6M0JMDoPLxyscwruJcb4GKS6dvK/d8xebYBg27h/duaQ==}
+  '@types/node@24.13.1':
+    resolution: {integrity: sha512-RSpUJGmvsJ1ZeBehQZFhIdpsz+bIpES0nIQXko4Ybq+N+kX6XvOq3Jo+iJ82FWLdblFq85AsMikd3m35jgezYg==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -1826,8 +1826,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-types@7.16.0:
-    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+  undici-types@7.18.2:
+    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
   undici@7.27.2:
     resolution: {integrity: sha512-uZsKNuzQxDMUY6M3pIMvy5tvlGmtq8XJ2oLAkfRKGNu+1VQAIvLy2xIVG5ATZl5wDXl/tddByAWCizRbOme+TA==}
@@ -2512,9 +2512,9 @@ snapshots:
     dependencies:
       libsodium-wrappers-sumo: 0.8.4
 
-  '@types/node@24.12.3':
+  '@types/node@24.13.1':
     dependencies:
-      undici-types: 7.16.0
+      undici-types: 7.18.2
 
   '@types/react-dom@19.2.3(@types/react@19.2.14)':
     dependencies:
@@ -2615,10 +2615,10 @@ snapshots:
       '@typescript-eslint/types': 8.59.2
       eslint-visitor-keys: 5.0.1
 
-  '@vitejs/plugin-react@6.0.1(vite@8.0.16(@types/node@24.12.3)(sass@1.100.0))':
+  '@vitejs/plugin-react@6.0.1(vite@8.0.16(@types/node@24.13.1)(sass@1.100.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.7
-      vite: 8.0.16(@types/node@24.12.3)(sass@1.100.0)
+      vite: 8.0.16(@types/node@24.13.1)(sass@1.100.0)
 
   '@vitest/expect@4.1.8':
     dependencies:
@@ -2629,13 +2629,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/mocker@4.1.8(vite@8.0.16(@types/node@24.12.3)(sass@1.100.0))':
+  '@vitest/mocker@4.1.8(vite@8.0.16(@types/node@24.13.1)(sass@1.100.0))':
     dependencies:
       '@vitest/spy': 4.1.8
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.0.16(@types/node@24.12.3)(sass@1.100.0)
+      vite: 8.0.16(@types/node@24.13.1)(sass@1.100.0)
 
   '@vitest/pretty-format@4.1.8':
     dependencies:
@@ -3646,7 +3646,7 @@ snapshots:
 
   typescript@6.0.2: {}
 
-  undici-types@7.16.0: {}
+  undici-types@7.18.2: {}
 
   undici@7.27.2: {}
 
@@ -3668,7 +3668,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite@8.0.16(@types/node@24.12.3)(sass@1.100.0):
+  vite@8.0.16(@types/node@24.13.1)(sass@1.100.0):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -3676,14 +3676,14 @@ snapshots:
       rolldown: 1.0.3
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 24.12.3
+      '@types/node': 24.13.1
       fsevents: 2.3.3
       sass: 1.100.0
 
-  vitest@4.1.8(@types/node@24.12.3)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@24.12.3)(sass@1.100.0)):
+  vitest@4.1.8(@types/node@24.13.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@24.13.1)(sass@1.100.0)):
     dependencies:
       '@vitest/expect': 4.1.8
-      '@vitest/mocker': 4.1.8(vite@8.0.16(@types/node@24.12.3)(sass@1.100.0))
+      '@vitest/mocker': 4.1.8(vite@8.0.16(@types/node@24.13.1)(sass@1.100.0))
       '@vitest/pretty-format': 4.1.8
       '@vitest/runner': 4.1.8
       '@vitest/snapshot': 4.1.8
@@ -3700,10 +3700,10 @@ snapshots:
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vite: 8.0.16(@types/node@24.12.3)(sass@1.100.0)
+      vite: 8.0.16(@types/node@24.13.1)(sass@1.100.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 24.12.3
+      '@types/node': 24.13.1
       jsdom: 29.1.1(@noble/hashes@2.2.0)
     transitivePeerDependencies:
       - msw
